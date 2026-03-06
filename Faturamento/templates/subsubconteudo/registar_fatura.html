@@ -1,0 +1,126 @@
+{% load static %}
+<div id="box-registar-fatura" class="modern-modal" title="Registar Fatura" style="display:none;">
+    <div class="modal-body">
+        <div class="form-group">
+            <label for="select-cliente">Cliente</label>
+            <select id="select-cliente" class="form-control">
+                <option value="">Selecione o cliente...</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}" data-prazo="{{ cliente.prazo }}">{{ cliente.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="documento">Tipo de documento</label>
+            <select id="documento" class="form-control">
+                <option value="">Selecione o tipo...</option>
+                <option value="FT">Fatura</option>
+                <option value="FS">Fatura-Simplificada</option>
+                <option value="FR">Fatura-Recibo</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group flex-1">
+                <label for="data_emissao_modal">Data de Emissão</label>
+                <input type="date" id="data_emissao_modal" class="form-control">
+            </div>
+
+            <div class="form-group flex-1">
+                <label for="data_vencimento_modal">Data de Vencimento</label>
+                <input type="date" id="data_vencimento_modal" class="form-control">
+            </div>
+        </div>
+
+        <button class="btn-submit" id="btn-registar-fatura">
+            <span class="icon">➕</span> Registar Fatura
+        </button>
+    </div>
+</div>
+<script>
+$(document).ready(function() {
+
+    // Inicializar modal
+    $('#box-registar-fatura').dialog({
+        autoOpen: false,
+        modal: true,
+        width: 450,
+        draggable: true,
+        resizable: false
+    });
+
+    $('#tools_close_fatura, #btnAddFatura').on('click', function() {
+        // Seta a data de emissão para hoje
+        const hoje = new Date().toISOString().slice(0,10);
+        $('#data_emissao_modal').val(hoje);
+
+
+        // Se ainda não selecionou cliente, não quebra
+        if ($('#select-cliente').val()) {
+            atualizarVencimento();
+        } else {
+            // Apenas seta vencimento igual a emissão
+            $('#data_vencimento').val(hoje);
+            $('#data_vencimento').attr('min', hoje);
+        }
+
+        $('#box-registar-fatura').dialog('open');
+    });
+
+    $.getJSON("{% url 'get_clientes' %}", function(clientes) {
+        var select = $('#select-cliente');  // Seleciona o seu select
+        clientes.forEach(function(c) {
+            select.append(
+                `<option value="${c.id}" data-prazo="${c.prazo}">${c.nome}</option>`
+            );
+        });
+    });
+
+    function atualizarVencimento() {
+        const prazo = parseInt($('#select-cliente option:selected').data('prazo') || 0);
+        const emissao = new Date($('#data_emissao_modal').val());
+
+        if (!isNaN(emissao.getTime())) {
+            const vencimento = new Date(emissao);
+            vencimento.setDate(vencimento.getDate() + prazo);
+
+            const yyyy = vencimento.getFullYear();
+            const mm = ('0' + (vencimento.getMonth() + 1)).slice(-2);
+            const dd = ('0' + vencimento.getDate()).slice(-2);
+            const vencimentoStr = `${yyyy}-${mm}-${dd}`;
+
+            $('#data_vencimento_modal').val(vencimentoStr);
+
+            // Impede que seja menor que a emissão
+            $('#data_vencimento_modal').attr('min', $('#data_emissao_modal').val());
+        }
+    }
+
+    $('#select-cliente, #data_emissao_modal').on('change', atualizarVencimento);
+
+    $('#data_emissao_modal').val(new Date().toISOString().slice(0,10));
+    atualizarVencimento();
+
+    $('#btn-registar-fatura').on('click', function(){
+        const clienteId = $('#select-cliente').val();
+        const documento = $('#documento').val();
+        const dataEmissao = $('#data_emissao_modal').val();
+        const dataVencimento = $('#data_vencimento_modal').val();
+
+        $.post("{% url 'criar_documento_temp' %}", {
+            cliente: clienteId,
+            documento: documento,
+            data_emissao: dataEmissao,
+            data_vencimento: dataVencimento,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(response){
+            console.log("Documento criado:", response);
+            window.location.href = `/faturas/novo/?temp_id=${response.id}&numero=${response.numero}&cliente=${clienteId}`;
+        }).fail(function(xhr){
+            alert("Erro: " + xhr.responseText);
+        });
+    });
+
+});
+</script>

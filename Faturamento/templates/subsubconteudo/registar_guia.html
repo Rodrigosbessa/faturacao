@@ -1,0 +1,95 @@
+{% load static %}
+<div id="box-registar-guia" class="modern-modal" title="Registar Guia de Transporte" style="display:none;">
+    <div class="modal-body">
+        <div class="form-group">
+            <label for="guia-select-cliente">Cliente</label>
+            <select id="guia-select-cliente" class="form-control">
+                <option value="">Selecione o cliente...</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}" data-prazo="{{ cliente.prazo }}">{{ cliente.nome }}</option>
+                {% endfor %}
+                </select>
+        </div>
+
+        <div class="form-group">
+            <label for="guia-data-emissao">Data de Emissão</label>
+            <input type="date" id="guia-data-emissao" class="form-control">
+        </div>
+
+        <input type="hidden" id="guia-documento-tipo" value="GT">
+
+        <button class="btn-submit" id="btn-registar-guia-submit">
+            <span class="icon">🚛</span> Criar Guia
+        </button>
+    </div>
+</div>
+<script>
+$(document).ready(function() {
+    $('#box-registar-guia').dialog({
+        autoOpen: false,
+        modal: true,
+        width: 400,
+        draggable: true,
+        resizable: false
+    });
+
+    function configurarDataHoje() {
+        const hoje = new Date().toISOString().slice(0, 10);
+
+        const campoData = $('#guia-data-emissao');
+
+        campoData.val(hoje);
+        campoData.attr('min', hoje);
+    }
+
+    $('#btnAddGuia, #tools_close_guia').on('click', function() {
+        configurarDataHoje();
+        $('#box-registar-guia').dialog('open');
+    });
+
+    $.getJSON("{% url 'get_clientes' %}", function(clientes) {
+        var select = $('#guia-select-cliente');
+        select.find('option:not(:first)').remove();
+        clientes.forEach(function(c) {
+            select.append(`<option value="${c.id}">${c.nome}</option>`);
+        });
+    });
+
+    $('#btn-registar-guia-submit').on('click', function() {
+        const clienteId = $('#guia-select-cliente').val();
+        const dataEmissao = $('#guia-data-emissao').val();
+        const tipoDoc = $('#guia-documento-tipo').val() || 'GT';
+
+        if (!clienteId) {
+            alert("Por favor, selecione um cliente.");
+            return;
+        }
+
+        $(this).prop('disabled', true).text('A reservar número...');
+
+        $.post("{% url 'reservar_numero_guia' %}", {
+            cliente: clienteId,
+            documento: tipoDoc,
+            data_emissao: dataEmissao,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(response) {
+
+
+            const params = $.param({
+                cliente: response.cliente_id,
+                tipo: response.tipo,
+                serie: response.serie,
+                numero: response.numero,
+                ano: response.ano,
+                data: response.data_emissao
+            });
+
+            window.location.href = `/guias/novo/?${params}`;
+
+        }).fail(function(xhr) {
+            alert("Erro ao reservar número: " + xhr.responseText);
+            $('#btn-registar-guia-submit').prop('disabled', false).html('<span class="icon">🚛</span> Criar Guia');
+        });
+    });
+});
+</script>

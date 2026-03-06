@@ -1,0 +1,940 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <title>Invoice Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/fatura.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- jQuery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.6.3/jquery-ui-timepicker-addon.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.6.3/jquery-ui-timepicker-addon.min.js"></script>
+</head>
+<body>
+<a href="/" class="btn-voltar-fixo">
+    <i class="fa fa-home"></i> Voltar
+</a>
+<div id="top-progress"></div>
+    <div class="document-wrapper">
+        <div class="paper">
+            <div class="document-number">
+            </div>
+            <div class="cabecalho">
+                <div class="left-content">
+                    <div class="from">De</div>
+
+                    <div class="entity" id="empresaNome"></div>
+
+                    <div class="address" id="empresaMorada"></div>
+
+                    <div class="postcode" id="empresaLocalidade"></div>
+
+                    <div class="country" id="empresaPais"></div>
+
+                    <div class="email">
+                        <a id="empresaEmailLink" href=""></a>
+                    </div>
+
+                    <div class="nif">
+                        Nº Contribuinte: <span id="empresaNif"></span>
+                    </div>
+                </div>
+                <div class="mid-content">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td class="field">Documento nº</td>
+                            </tr>
+                            <tr>
+                                <td class="data" id="doc_numero"></td>
+                            </tr>
+                            <tr>
+                                <td class="field">Data de Emissão</td>
+                            </tr>
+                            <tr>
+                                <td class="data" style="position: relative;">
+                                    <input type="hidden" id="data_emissao" name="data_emissao">
+                                    <div class="data_date" id="date_text">
+                                    </div>
+                                    <div class="date_input" style="display:none;">
+                                        <input type="text" name="date_input" id="date_input" value="" style="width:80px;">
+                                    </div>
+
+                                    <div class="icon-group">
+                                        <img src="{% static 'images/icon_edit_off.png' %}" id="date_edit" title="Editar" class="icon-btn">
+                                        <img src="{% static 'images/icon_cancel_off.png' %}" id="date_cancel" title="Cancelar" class="icon-btn" style="display:none;">
+                                        <img src="{% static 'images/icon_save_off.png' %}" id="date_update" title="Salvar" class="icon-btn" style="display:none;">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="field">Data de Vencimento</td>
+                            </tr>
+                            <tr>
+                                <td class="data" style="position: relative;">
+                                    <input type="hidden" id="data_vencimento" name="data_vencimento">
+                                    <div class="data_date" id="payment_date_text">
+                                    </div>
+                                    <div class="date_input" style="display:none;">
+                                        <input type="text" name="payment_date_input" id="payment_date_input" value="" style="width:80px;">
+                                    </div>
+
+                                    <div class="icon-group">
+                                        <img src="{% static 'images/icon_edit_off.png' %}" id="payment_date_edit" title="Editar" class="icon-btn">
+                                        <img src="{% static 'images/icon_cancel_off.png' %}" id="payment_date_cancel" title="Cancelar" class="icon-btn" style="display:none;">
+                                        <img src="{% static 'images/icon_save_off.png' %}" id="payment_date_update" title="Salvar" class="icon-btn" style="display:none;">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="field">Moeda</td>
+                            </tr>
+                            <tr>
+                                <td class="data" style="position: relative;">
+
+                                    <div class="data_currency" id="currency_text">
+                                    </div>
+
+                                    <div class="currency_input" style="display:none;">
+                                        <select name="currency_input" id="currency_input" style="width:80px;"></select>
+                                    </div>
+                                    <input type="hidden" id="currency_value" name="currency_value" value="">
+                                    <div class="icon-group">
+                                        <img src="{% static 'images/icon_edit_off.png' %}" id="currency_edit" class="icon-btn" title="Editar">
+                                        <img src="{% static 'images/icon_cancel_off.png' %}" id="currency_cancel" class="icon-btn" title="Cancelar" style="display:none;">
+                                        <img src="{% static 'images/icon_save_off.png' %}" id="currency_update" class="icon-btn" title="Salvar" style="display:none;">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="right-content">
+                    <div class="to">Para</div>
+
+                    <div class="entity" id="cli_entity"></div>
+                    <div class="address" id="cli_address"></div>
+                    <div class="postcode" id="cli_postcode"></div>
+                    <div class="country" id="cli_country"></div>
+                    <div class="email" id="cli_email"></div>
+                    <div class="nif" id="cli_nif"></div>
+                </div>
+            </div>
+            <div class="morefields">
+                <a class="add-fields" id="toggle_morefields">
+                    <img src="{% static 'images/icon_add_off.png' %}" id="icon_add">
+                    Campos Adicionais
+                </a>
+                <div class="morefields-wrapper">
+                    <div class="morefields-group" style="display:none;">
+                        <div class="morefields-unit">
+                            <div class="morefields-field">Ordem de Compra</div>
+                            <div class="morefields-data">
+                                <input type="text" id="purchaseorder" value="">
+                            </div>
+                        </div>
+                        <div class="morefields-unit">
+                            <div class="morefields-field">Número de Compromisso</div>
+                            <div class="morefields-data">
+                                <input type="text" id="tcustom2" value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="margin-block">
+                <div class="description_block" style="position: relative;">
+                    <!-- Texto da descrição -->
+                    <div class="data_description" id="description_text">
+                        Caso pretenda pode adicionar aqui uma descrição...
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="icon-group">
+                        <img src="{% static 'images/icon_edit_off.png' %}" id="button_edit" class="icon-btn" title="Editar">
+                        <img src="{% static 'images/icon_cancel_off.png' %}" id="button_cancel" class="icon-btn" title="Cancelar" style="display:none;">
+                        <img src="{% static 'images/icon_save_off.png' %}" id="button_update" class="icon-btn" title="Salvar" style="display:none;">
+                    </div>
+                    <div class="description_input" style="display:none;">
+                        <textarea name="description" id="description" cols="90" rows="4" style="width:100%" maxlength="200"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="items">
+                    <div class="head">Lista de Artigos</div>
+
+                    <table cellspacing="0" cellpadding="0" width="100%" class="items">
+                    <tbody>
+                    <tr>
+                        <th nowrap="" class="itemtype">Tipo</th>
+                        <th nowrap="">COD.</th>
+                        <th nowrap="" class="item">DESCRIÇÃO DO ARTIGO</th>
+                        <th nowrap="">QUANT.</th>
+                        <th nowrap="">PREÇO</th>
+                        <th nowrap="">DESC.</th>
+                        <th nowrap="">IVA (%)</th>
+                        <th nowrap="">TOTAL</th>
+                        <th class="buttons"></th>
+                    </tr>
+                    <tr class="input">
+                            <td nowrap="" class="buttons type">
+                                <a id="item_type_service">
+                                    <img src="{% static 'images/icon_type_service_off.png' %}" width="18" height="18" alt="">
+                                </a>
+                                <a id="item_type_tax" style="display: none">
+                                    <img src="{% static 'images/icon_type_tax_off.png' %}" width="18" height="18" alt="">
+                                </a>
+                                <a id="item_type_product">
+                                    <img src="{% static 'images/icon_type_product_off.png' %}" width="18" height="18" alt="">
+                                </a>
+                                <input type="hidden" name="producttype" id="producttype" value="">
+                                <input type="hidden" name="pid" id="pid" value="">
+                                <input type="hidden" id="poriginal" value="">
+                                <input type="hidden" id="tcustom1" value="">
+
+                            </td>
+                            <style>
+                                    .paper .items table tr.input td {
+                                        padding: 5px;
+                                    }
+                                    .paper .items table th.item {
+                                        width: 31%;
+                                    }
+                            </style>
+                            <td>
+                                <input type="text" name="code" id="code" class="code" maxlength="100" disabled="" style="width: 45px">
+                            </td>
+                            <td>
+                                <input type="text" name="item" id="item" class="item" maxlength="100" style="width: 175px">
+                            </td>
+                            <td>
+                                <input type="text" name="quantity" id="quantity" class="quantity" value="1">
+                            </td>
+
+
+                            <td>
+                                <div class="price_container" style="position: relative">
+                                    <input type="text" name="price" id="price" class="price" value="0,00">
+                                    <img src="{% static 'images/icon_edit_off.png' %}" id="icon_edit_price" width="18" height="18" alt="">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="discount_container">
+                                    <input type="text" name="discount" id="discount" class="discount">
+                                    <img src="{% static 'images/icon_percent.png' %}" id="icon_percent" width="18" height="18" alt="">
+                                </div>
+                            </td>
+                            <td class="centered">
+                                <input type="text" name="tax" id="tax" class="tax ui-autocomplete-input" value="0" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">
+                            </td>
+                            <td>
+                                <input type="text" name="total" id="total" class="total" value="0,00" disabled="">
+                            </td>
+                            <td class="buttons">
+                                <a class="update" id="item_update" title="Adicionar"></a>
+                            </td>
+                        </tr>
+                    <tr class="blank">
+                        <td>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100" class="head2">
+                            Resumo
+                        </td>
+                    </tr>
+                    <tr class="resume subtotal">
+                        <td colspan="3">
+                            Subtotal da Factura
+                        </td>
+                        <td colspan="100" class="value" id="subtotal_value">
+                            0,00
+                        </td>
+                    </tr>
+                    <tbody id="iva_lines"></tbody>
+                    <tr class="resume total">
+                        <td colspan="3">
+                            Total da Factura
+                        </td>
+                        <td colspan="100" class="value" id="total_value">
+                            0,00
+                        </td>
+                    </tr>
+                    </tbody>
+                    </table>
+            </div>
+
+            <div class="footer product_edit">
+                <div class="icon-group">
+                    <img src="{% static 'images/icon_edit_off.png' %}"
+                         data-off="{% static 'images/icon_edit_off.png' %}"
+                         data-on="{% static 'images/icon_edit_on.png' %}"
+                         id="button_edit_footer"
+                         class="icon-btn"
+                         title="Editar">
+
+                    <img src="{% static 'images/icon_cancel_off.png' %}"
+                         data-off="{% static 'images/icon_cancel_off.png' %}"
+                         data-on="{% static 'images/icon_cancel_on.png' %}"
+                         id="button_cancel_footer"
+                         class="icon-btn"
+                         title="Cancelar"
+                         style="display:none;">
+
+                    <img src="{% static 'images/icon_save_off.png' %}"
+                         data-off="{% static 'images/icon_save_off.png' %}"
+                         data-on="{% static 'images/icon_save_on.png' %}"
+                         id="button_update_footer"
+                         class="icon-btn"
+                         title="Salvar"
+                         style="display:none;">
+                </div>
+                <div class="text" id="footer_text" style="display: block;">Caso pretenda pode adicionar aqui um rodapé...</div>
+                <div class="input">
+                    <textarea name="footer" id="footer" cols="90" rows="4" style="display: none; width:100%" maxlength="200"></textarea>
+                </div>
+            </div>
+            <div class="loadblock">
+                <div class="loaddata">
+                    <div class="item">
+                        <div class="name">Local de Carga:</div>
+                        <div class="text" id="loadplace_text" style="display: block;">
+                                    N/ Morada
+                        </div>
+                        <div class="input">
+                            <input type="text" name="loadplace" id="loadplace" maxlength="100" value="" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="name">Local de Descarga:</div>
+                        <div class="text" id="unloadplace_text" style="display: block;">
+                            V/ Morada						</div>
+                        <div class="input">
+                            <input type="text" name="unloadplace" id="unloadplace" maxlength="100" value="" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="item" style="clear: left;">
+                        <div class="name">Data de Carga:</div>
+                        <div class="text" id="loaddate_text" style="display: block;"></div>
+                        <div class="input">
+                            <input type="text" name="loaddate" id="loaddate" maxlength="30" value="" autocomplete="off" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="name">Data de Descarga:</div>
+                        <div class="text" id="unloaddate_text" style="display: block;"></div>
+                        <div class="input">
+                            <input type="text" name="unloaddate" id="unloaddate" maxlength="30" value="" autocomplete="off" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="name">Modo de Expedição:</div>
+                        <div class="text" id="expedition_text" style="display: block;"></div>
+                        <div class="input">
+                            <input type="text" name="expedition" id="expedition" maxlength="30" value="" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="name">Matrícula:</div>
+                        <div class="text" id="registration_text" style="display:block;"></div>
+                        <div class="input">
+                            <select id="registration_select" name="registration" style="display:none;">
+                                <option value="">-- Escolha a viatura --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="loadedit product_edit">
+                    <span class="buttons">
+                        <img src="{% static 'images/icon_edit_off.png' %}"
+                             data-off="{% static 'images/icon_edit_off.png' %}"
+                             data-on="{% static 'images/icon_edit_on.png' %}"
+                             id="button_edit_load"
+                             class="icon-btn"
+                             title="Editar">
+
+                        <img src="{% static 'images/icon_cancel_off.png' %}"
+                             data-off="{% static 'images/icon_cancel_off.png' %}"
+                             data-on="{% static 'images/icon_cancel_on.png' %}"
+                             id="button_cancel_load"
+                             class="icon-btn"
+                             title="Cancelar"
+                             style="display:none;">
+
+                        <img src="{% static 'images/icon_save_off.png' %}"
+                             data-off="{% static 'images/icon_save_off.png' %}"
+                             data-on="{% static 'images/icon_save_on.png' %}"
+                             id="button_update_load"
+                             class="icon-btn"
+                             title="Salvar"
+                             style="display:none;">
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div id="tools">
+            <div class="tools_top"></div>
+                <div class="tools_bottom">
+                        <a id="tools_close">
+                                <img src="{% static 'images/close.png' %}" width="40" height="40" alt="">
+                            <div class="tool_name">Fechar</div>
+                        </a>
+                        <a id="tools_save">
+                                <img src="{% static 'images/save.png' %}" width="40" height="40" alt="">
+                            <div class="tool_name">Salvar</div>
+                        </a>
+                        <a id="tools_delete">
+                                <img src="{% static 'images/delete.png' %}" width="40" height="40" alt="">
+                            <div class="tool_name">Apagar</div>
+                        </a>
+
+                    <br class="clearfloat">
+                </div>
+        </div>
+    </div>
+<div id="box-artigo" title="Escolher Artigo" style="display:none;">
+    <input type="text" id="search-artigo" placeholder="Pesquisar artigo..." style="width:100%; padding:5px; margin-bottom:10px;">
+    <ul>
+        {% for artigo_novo in artigos_novos %}
+            <li>
+                <a href="#"
+                   class="select-artigo"
+                   data-id="{{ artigo_novo.id_artigo }}"
+                   data-nome="{{ artigo_novo.nome }}"
+                   data-descricao="{{ artigo_novo.descricao }}"
+                   data-tipo="{{ artigo_novo.tipo }}"
+                   data-preco="{{ artigo_novo.preco }}">
+                    {{ artigo_novo.nome }}
+                    {% if artigo_novo.descricao %} | {{ artigo_novo.descricao }}{% endif %}
+                    ({{ artigo_novo.preco }} €)
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+<div id="box-preco" title="Adicionar Preço" style="display:none;">
+    <span>Deverá introduzir a taxa de IVA e só depois o preço com IVA</span>
+    <div id="preco-container" style="display:none; margin-top:10px;">
+        <label for="preco_com_iva">Preço com IVA:</label>
+        <input type="number" id="preco_com_iva" min="0" placeholder="0,00">
+    </div>
+</div>
+<div id="box-desconto" title="Adicionar Desconto (%)" style="display:none;">
+    Introduza a percentagem de desconto:<br><br>
+
+    <div style="text-align: center">
+        <input type="text" id="discount_percent" value="">
+    </div>
+    <p style="text-align:center; margin-top:10px;">
+        Valor do desconto: <span id="desconto_valor">0,00</span>
+    </p>
+</div>
+<div id="box-erro" title="Erro ao adicionar artigo" style="display:none;"></div>
+
+<div id="modal-iva0" title="Validação do Formulário" style="display:none;">
+    Está a introduzir um artigo sem IVA.<br>
+    Qual o motivo previsto no Código do IVA (CIVA)?<br><br>
+
+    <select id="taxfreereason" style="width:300px">
+        <option value=""></option>
+    </select>
+
+    <br><br>
+    Deseja continuar?
+</div>
+<div id="modal-erro-validacao" title="Erro de Validação" style="display:none;">
+    <div id="modal-erro-mensagem"></div>
+</div>
+<div id="modal-sucesso" title="Documento Salvo" style="display:none;">
+    <p>O documento foi salvo com sucesso!</p>
+</div>
+<div id="modal-apagar" title="Confirmação" style="display:none;">
+    Tem certeza que deseja apagar este documento/artigo?
+</div>
+<div id="modal-confirmar-fecho" title="Confirmar Fecho" style="display:none;">
+    <p>Tem a certeza que pretende fechar e finalizar este documento?</p>
+</div>
+<script src="{% static 'js/validate_item.js' %}"></script>
+<script>
+function parseNumero(valor) {
+    if (!valor) return 0;
+    return parseFloat(valor.toString().replace(',', '.')) || 0;
+}
+
+function formatNumero(valor) {
+    return valor.toFixed(2).replace('.', ',');
+}
+
+
+function getParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+}
+
+const tempId = getParam("temp_id");
+
+const nomesTipo = {
+    "FT": "Fatura",
+    "FR": "Fatura-Recibo",
+    "FS": "Fatura-Simplificada",
+    "NC": "Nota de Crédito"
+};
+
+$.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
+    window.doc = doc;
+    window.impostoCliente = doc.cliente?.impostos || "IVA";
+
+    if (doc.tipo === "FS") {
+        $(".loadblock").remove();
+    }
+
+    const nomeTipo = nomesTipo[doc.tipo] || doc.tipo;
+    const numeroFormatado = `${nomeTipo} ${doc.serie} ${doc.ano}/${doc.numero}`;
+
+    $(".document-number").text(numeroFormatado);
+    $("#doc_numero").text(numeroFormatado);
+
+    // 🔹 Datas
+    $("#date_text").text(formatDate(doc.data_emissao));
+    $("#date_input").val(formatInputDate(doc.data_emissao));
+    $("#data_emissao").val(doc.data_emissao);
+
+    $("#payment_date_text").text(formatDate(doc.data_vencimento));
+    $("#payment_date_input").val(formatInputDate(doc.data_vencimento));
+    $("#data_vencimento").val(doc.data_vencimento);
+
+    // 🔹 Método de Pagamento (se for Fatura-Recibo)
+    if (doc.tipo === "FR" && doc.cliente) {
+        const pagamentoHTML = `
+            <tr id="payment_method_row">
+                <td class="field">Método de Pagamento</td>
+            </tr>
+            <tr>
+                <td class="data" style="position: relative;">
+                    <input type="hidden" id="payment_method_value" name="metodo_pagamento" value="${doc.cliente.modalidade ? doc.cliente.modalidade.nome.trim() : ''}">
+                    <div class="data_payment_method" id="payment_method_text">
+                        ${doc.cliente.modalidade ? doc.cliente.modalidade.nome.trim() : ''}
+                    </div>
+                    <div class="payment_method_select" style="display:none;">
+                        <select name="payment_method_select" id="payment_method_select" style="width:80px;">
+                            ${doc.modalidades.map(m => `
+                                <option value="${m.nome.trim()}" ${doc.cliente.modalidade && m.id === doc.cliente.modalidade.id ? 'selected' : ''}>${m.nome.trim()}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div class="icon-group">
+                        <img src="/static/images/icon_edit_off.png" id="payment_method_edit" class="icon-btn" title="Editar">
+                        <img src="/static/images/icon_cancel_off.png" id="payment_method_cancel" class="icon-btn" title="Cancelar" style="display:none;">
+                        <img src="/static/images/icon_save_off.png" id="payment_method_update" class="icon-btn" title="Salvar" style="display:none;">
+                    </div>
+                </td>
+            </tr>`;
+
+        // Adiciona ao DOM
+        $("#payment_date_text").closest("tr").after(pagamentoHTML);
+
+        // Setup dos ícones para editar / cancelar / salvar
+        setupPaymentMethodIcons(
+            'payment_method_edit',
+            'payment_method_cancel',
+            'payment_method_update',
+            'payment_method_text',
+            'payment_method_select',
+            'payment_method_value'
+        );
+    }
+
+    const selectMoeda = $("#currency_input");
+    const currencyText = $("#currency_text");
+    const currencyHidden = $("#currency_value");
+
+    // Limpa o select
+    selectMoeda.empty();
+
+    let moedaAtual = doc.moeda || doc.moedas[0]; // moeda do documento ou default (primeira da lista)
+
+    // Preenche o select com todas as moedas
+    doc.moedas.forEach((m, index) => {
+        const isSelected = moedaAtual && m.id === moedaAtual.id;
+        selectMoeda.append($("<option>", {
+            value: m.id,
+            text: `${m.simbolo}`,
+            selected: isSelected
+        }));
+    });
+    currencyHidden.val(moedaAtual.id);
+    atualizarResumoFatura(moedaAtual.simbolo);
+
+    // Setup ícones (editar / cancelar / salvar) – reaproveitando sua função
+    setupCurrencyIconsExisting(
+        'currency_edit',
+        'currency_cancel',
+        'currency_update',
+        'currency_text',
+        'currency_select',
+        'currency_value',
+        doc.moedas,
+        moedaAtual
+    );
+
+    $('#currency_edit').on('click', function() {
+        // Esconde o texto visível
+        $('#currency_text').hide();
+
+        // Mostra o select (que está dentro da div)
+        $('.currency_input').show(); // ou $('#currency_input').parent()
+
+        // Esconde botão de editar, mostra cancelar e salvar
+        $(this).hide();
+        $('#currency_cancel, #currency_update').show();
+    });
+
+    $('#currency_update').on('click', function() {
+        const selectedOption = selectMoeda.find("option:selected");
+        const idSelecionado = selectedOption.val();
+        const nomeSimbolo = selectedOption.text();
+
+        currencyText.text(nomeSimbolo);
+        currencyHidden.val(idSelecionado);
+
+        $('.currency_input').hide();
+        $('#currency_edit').show();
+        $('#currency_cancel, #currency_update').hide();
+
+        atualizarResumoFatura(nomeSimbolo);
+    });
+
+    $('#currency_cancel').on('click', function() {
+        $('#currency_text').show();
+        $('.currency_input').hide();
+        $('#currency_edit').show();
+        $('#currency_cancel, #currency_update').hide();
+    });
+
+    // Atualiza resumo da fatura ao alterar valores dos produtos
+    $("body").on("input change", "tr.product_edit input", function() {
+        const simboloAtual = currencyText.text();
+        atualizarResumoFatura(simboloAtual);
+    });
+
+
+
+    // 🔹 Empresa
+    const e = doc.empresa;
+    $("#empresaNome").text(e.nome);
+    $("#empresaMorada").text(e.morada);
+    $("#empresaLocalidade").text(`${e.codigo_postal} ${e.cidade}`);
+    $("#empresaPais").text(e.pais);
+    $("#empresaEmailLink").text(e.email).attr("href", `mailto:${e.email}`);
+    $("#empresaNif").text(e.nif);
+    $("#loadplace_text").text(e.local);
+    $("#loadplace").val(e.local);
+
+
+
+    // 🔹 Cliente — bloco "Para"
+    if (doc.cliente) {
+        const c = doc.cliente;
+        $("#cli_entity").text(c.nome);
+        $("#cli_address").text(c.morada1 + (c.morada2 ? ", " + c.morada2 : ""));
+        $("#cli_postcode").text(c.codigo_postal + " " + c.concelho);
+        $("#cli_country").text(c.pais);
+        $("#cli_email").text(c.email);
+        $("#cli_nif").text(c.contribuinte);
+        let localDescarga = c.morada1 || "V/ Morada";
+
+        // Atualiza o texto visível
+        $("#unloadplace_text").text(localDescarga);
+
+        // Atualiza o input para edição
+        $("#unloadplace").val(localDescarga);
+    }
+    const taxfreereasonSelect = $("#taxfreereason");
+
+    // Limpar as opções existentes antes de adicionar novas
+    taxfreereasonSelect.empty();
+
+    // Adicionar a opção padrão
+    taxfreereasonSelect.append('<option value="">Selecione o motivo</option>');
+
+    // Adicionar os motivos de IVA ao select
+    doc.tax_reasons.forEach(tax => {
+        const option = $("<option>", {
+            value: tax.code, // O código é o value
+            text: `${tax.code} - ${tax.description}` // Exibição do código seguido da descrição
+        });
+        taxfreereasonSelect.append(option);
+    });
+
+    document.getElementById('purchaseorder').value = doc.ordem_compra || '';
+    document.getElementById('tcustom2').value = doc.numero_compromisso || '';
+
+    verificarMoreFields();
+
+    const defaultText = "Caso pretenda pode adicionar aqui uma descrição...";
+
+    let descricao = doc.descricao?.trim() || "";
+
+    $('#description_text').text(
+        descricao === "" ? defaultText : descricao
+    );
+
+    $('#description').val(descricao);
+
+    const defaultFooterText = "Caso pretenda pode adicionar aqui um rodapé...";
+
+    let rodape = doc.rodape?.trim() || "";
+
+    $('#footer_text').text(
+        rodape === "" ? defaultFooterText : rodape
+    );
+
+    $('#footer').val(rodape);
+
+    const expedicao = doc.expedicao?.trim() || "";
+    $('#expedition_text').text(expedicao);
+    $('#expedition').val(expedicao);
+
+    const matricula = doc.matricula?.trim() || "";
+    $('#registration_text').text(matricula);
+    $('#registration_select').val(matricula);
+
+    console.log("Artigos:", doc.artigos);
+
+    if (doc.artigos && doc.artigos.length) {
+        doc.artigos.forEach(a => {
+            criarLinhaNaTabela(
+                a.tipo,
+                a.id,
+                a.descricao,
+                a.quantidade,
+                a.preco,
+                a.desconto,
+                a.taxa,
+                a.motivo
+            );
+        });
+    }
+
+}).fail(function() {
+    alert("Erro ao carregar documento.");
+});
+
+function formatInputDate(dateStr) {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const dia = date.getDate().toString().padStart(2, "0");
+    const mes = (date.getMonth() + 1).toString().padStart(2, "0"); // 01-12
+    const ano = date.getFullYear();
+    return `${dia}/${mes}/${ano}`; // formato dd/mm/yyyy
+}
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const date = new Date(dateStr);
+    const dia = date.getDate().toString().padStart(2, "0");
+    const mes = meses[date.getMonth()];
+    const ano = date.getFullYear();
+    return `${dia} ${mes} ${ano}`;
+}
+
+function setupPaymentMethodIcons(editId, cancelId, saveId, textId, selectId, hiddenId) {
+    const editBtn = $('#' + editId);
+    const cancelBtn = $('#' + cancelId);
+    const saveBtn = $('#' + saveId);
+    const textDiv = $('#' + textId);
+    const select = $('#' + selectId);
+    const hidden = $('#' + hiddenId);
+
+    // Hover nos ícones
+    editBtn.hover(
+        () => editBtn.attr('src', '/static/images/icon_edit_on.png'),
+        () => editBtn.attr('src', '/static/images/icon_edit_off.png')
+    );
+    cancelBtn.hover(
+        () => cancelBtn.attr('src', '/static/images/icon_cancel_on.png'),
+        () => cancelBtn.attr('src', '/static/images/icon_cancel_off.png')
+    );
+    saveBtn.hover(
+        () => saveBtn.attr('src', '/static/images/icon_save_on.png'),
+        () => saveBtn.attr('src', '/static/images/icon_save_off.png')
+    );
+
+    // Editar
+    editBtn.on('click', () => {
+        textDiv.hide();
+        select.parent().show();
+        editBtn.hide();
+        cancelBtn.show();
+        saveBtn.show();
+    });
+
+    // Cancelar
+    cancelBtn.on('click', () => {
+        textDiv.show();
+        select.parent().hide();
+        editBtn.show();
+        cancelBtn.hide();
+        saveBtn.hide();
+    });
+
+    // Salvar
+    saveBtn.on('click', () => {
+        const selectedOption = select.find('option:selected');
+        const nome = selectedOption.text().trim();
+
+        // Atualiza o texto visível
+        textDiv.text(nome).show();
+
+        // Atualiza o campo hidden com o valor real
+        hidden.val(nome);
+
+        select.parent().hide();
+        editBtn.show();
+        cancelBtn.hide();
+        saveBtn.hide();
+    });
+}
+
+// Inicializa os ícones
+setupPaymentMethodIcons(
+    'payment_method_edit',
+    'payment_method_cancel',
+    'payment_method_update',
+    'payment_method_text',
+    'payment_method_select',
+    'payment_method_value'
+);
+
+// Função para setup da moeda existente
+function setupCurrencyIconsExisting(editId, cancelId, saveId, textId, selectId, hiddenId, moedas, moedaSelecionada) {
+    const editBtn = $('#' + editId);
+    const cancelBtn = $('#' + cancelId);
+    const saveBtn = $('#' + saveId);
+    const textDiv = $('#' + textId);
+    const select = $('#' + selectId);
+    const hidden = $('#' + hiddenId);
+
+    // Preenche o select com moedas
+    select.empty();
+    moedas.forEach((m, index) => {
+        const isSelected = moedaSelecionada ? m.codigo === moedaSelecionada.codigo : index === 0;
+        select.append(`<option value="${m.codigo}" ${isSelected ? 'selected' : ''}>${m.simbolo}</option>`);
+    });
+
+    // Atualiza texto visível e hidden com a moeda selecionada ou default
+    const moedaAtual = moedaSelecionada || moedas[0];
+    textDiv.text(`${moedaAtual.simbolo}`);
+    hidden.val(moedaAtual.id);
+
+    // Hover nos ícones
+    editBtn.hover(
+        () => editBtn.attr('src', '/static/images/icon_edit_on.png'),
+        () => editBtn.attr('src', '/static/images/icon_edit_off.png')
+    );
+    cancelBtn.hover(
+        () => cancelBtn.attr('src', '/static/images/icon_cancel_on.png'),
+        () => cancelBtn.attr('src', '/static/images/icon_cancel_off.png')
+    );
+    saveBtn.hover(
+        () => saveBtn.attr('src', '/static/images/icon_save_on.png'),
+        () => saveBtn.attr('src', '/static/images/icon_save_off.png')
+    );
+
+    // Editar
+    editBtn.on('click', () => {
+        textDiv.hide();
+        select.parent().show();
+        editBtn.hide();
+        cancelBtn.show();
+        saveBtn.show();
+    });
+
+    // Cancelar
+    cancelBtn.on('click', () => {
+        textDiv.show();
+        select.parent().hide();
+        editBtn.show();
+        cancelBtn.hide();
+        saveBtn.hide();
+    });
+
+    // Salvar
+    saveBtn.on('click', () => {
+        const selectedOption = select.find('option:selected');
+        const nome = selectedOption.text().trim();
+        const codigo = selectedOption.val();
+
+        textDiv.text(nome).show();
+        hidden.val(codigo);
+
+        select.parent().hide();
+        editBtn.show();
+        cancelBtn.hide();
+        saveBtn.hide();
+    });
+}
+function atualizarResumoFatura(simboloMoeda) {
+    let subtotal = 0;
+    let total = 0;
+    let ivaIncidencias = {}; // {taxa: valor}
+
+    // Itera sobre cada linha de produto adicionada
+    $("tr.product_edit").each(function() {
+        let preco = parseNumero($(this).find("input.price").val());
+        let quantidade = parseNumero($(this).find("input.quantity").val());
+        let desconto = parseNumero($(this).find("input.discount").val());
+        let taxa = parseNumero($(this).find("input.tax").val());
+
+        let subtotalLinha = preco * quantidade - desconto;
+        subtotal += subtotalLinha;
+
+        if (!ivaIncidencias[taxa]) ivaIncidencias[taxa] = 0;
+        ivaIncidencias[taxa] += subtotalLinha * (taxa / 100);
+    });
+
+    total = subtotal + Object.values(ivaIncidencias).reduce((a,b) => a + b, 0);
+
+    // Atualiza subtotal e total com símbolo dinâmico
+    $("#subtotal_value").text(formatNumero(subtotal) + " " + simboloMoeda);
+    $("#total_value").text(formatNumero(total) + " " + simboloMoeda);
+
+    // Limpa linhas de IVA
+    $("#iva_lines").empty();
+
+    // Adiciona linhas de IVA
+    for (let taxa in ivaIncidencias) {
+        if (ivaIncidencias[taxa] > 0) {
+            let base = ivaIncidencias[taxa] / (parseFloat(taxa)/100); // valor base aproximado
+            let linhaIva = `
+                <tr class="resume tax">
+                    <td colspan="3">IVA ${parseFloat(taxa).toFixed(2)}% (Incidência: ${formatNumero(base)})</td>
+                    <td colspan="100" class="value">${formatNumero(ivaIncidencias[taxa])} ${simboloMoeda}</td>
+                </tr>`;
+            $("#iva_lines").append(linhaIva);
+        }
+    }
+}
+
+</script>
+
+<script type="text/javascript">
+    var editIconOff = "{% static 'images/icon_edit_off.png' %}";
+    var editIconOn = "{% static 'images/icon_edit_on.png' %}";
+    var cancelIconOff = "{% static 'images/icon_cancel_off.png' %}";
+    var cancelIconOn = "{% static 'images/icon_cancel_on.png' %}";
+    var saveIconOff = "{% static 'images/icon_save_off.png' %}";
+    var saveIconOn = "{% static 'images/icon_save_on.png' %}";
+    var iconTypeServiceOn = "{% static 'images/icon_type_service_on.png' %}";
+    var iconTypeProductOn = "{% static 'images/icon_type_product_on.png' %}";
+    var iconTypeServiceOff = "{% static 'images/icon_type_service_off.png' %}";
+    var iconTypeProductOff = "{% static 'images/icon_type_product_off.png' %}";
+</script>
+<script src="{% static 'js/validate_item.js' %}"></script>
+</body>
+
+</html>

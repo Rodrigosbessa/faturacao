@@ -1,0 +1,503 @@
+@import "//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css";
+
+html {
+    position: relative;
+    min-height: 100%;
+    overflow-y: scroll;
+}
+body {
+    margin: 0 0 60px;
+}
+
+.navbar-fixed-top {
+    background-color: #F0F0F0 !important;
+    border: none !important;
+}
+
+.navbar-brand {
+    height: 80px;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    font-family: 'Geologica' , sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    margin-right: 20px;
+}
+
+.navbar-brand .logo {
+    max-height: 80px;
+    width: auto;
+    display: block;
+}
+
+.container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.nav-item {
+    border-radius: 20px 20px 0 0;
+    transition: all 0.3s ease;
+    background-color: #D9D9D9;
+    font-family: 'Geologica', sans-serif;
+}
+
+.nav-item.redondo {
+    color: red;
+    overflow: hidden;
+    --s: 62px; /* control the size*/
+    --c1: #1d1d1d;
+    --c2: #4e4f51;
+    --c3: #3c3c3c;
+
+    background:
+      repeating-conic-gradient(from 30deg,#0000 0 120deg,var(--c3) 0 50%)
+      calc(var(--s)/2) calc(var(--s)*tan(30deg)/2),
+      repeating-conic-gradient(from 30deg,var(--c1) 0 60deg,var(--c2) 0 120deg,var(--c3) 0 50%);
+    background-size: var(--s) calc(var(--s)*tan(30deg));}
+
+.nav-item.redondo a {
+    display: block;
+    color: white;
+}
+
+.pad_top {
+    padding-top: 30px;
+    color: black;
+}
+
+.nav-item a {
+    line-height: normal;
+    padding-right: 20px;
+}
+
+
+.navbar-nav .nav-item {
+    width: 120px;
+    text-align: center;
+    margin-right: 40px;
+}
+
+.second-topbar {
+    background-color: white !important;
+    border-top: 2px solid white !important;
+}
+
+.second-topbar .nav > li > a {
+    color: #333 !important;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+}
+.nav-item > a {
+    color: black !important;
+}
+
+.icon-nav {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.second-topbar .nav > li.active-second > a {
+    background-color: #1b35db;
+    color: black !important;
+    font-weight: 500;
+    border-radius: 5px;
+}
+
+h2 {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.table-bordered {
+  border: 1px solid #ddd !important;
+}
+
+table caption {
+	padding: .5em 0;
+}
+
+@media screen and (max-width: 767px) {
+  table caption {
+    display: none;
+  }
+}
+
+.p {
+  text-align: center;
+  padding-top: 140px;
+  font-size: 14px;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table th {
+  background-color: #4c6ef5;  /* Azul suave */
+  color: #fff;
+  text-align: center;
+}
+.table tbody {
+    font-family: 'Geologica', sans-serif;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #f2f6ff;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.table tbody tr:hover {
+  background-color: #dce7ff;
+}
+
+.table-bordered {
+  border: 1px solid #ccc;
+}
+
+.table-bordered td,
+.table-bordered th {
+  border: 1px solid #ccc;
+}
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  padding: 10px 0;
+}
+
+.table-controls .left-controls p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.table-controls .right-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-controls .btn {
+    border-radius: 50px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-family: 'Geologica', sans-serif;
+}
+
+.table-controls .search-input {
+  width: 200px;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .table-controls .right-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-controls .search-input {
+    width: 100%;
+  }
+}
+
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+    padding: 10px 0;
+}
+
+.table-controls .left-controls p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.table-controls .right-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-controls .search-input {
+  width: 200px;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 14px;
+}
+
+.table thead th {
+  background-color: #1B01FF;
+  color: white;
+  text-align: center;
+  font-family: 'Geologica', sans-serif;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.table tbody tr:hover {
+  background-color: #eaf3ff;
+}
+
+@media (max-width: 768px) {
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .table-controls .right-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+.table-controls .search-input {
+    width: 100%;
+  }
+}
+
+.btn-group .btn {
+    margin-right: 5px;
+    font-family: 'Geologica', sans-serif;
+    color: black;
+    background-color: #01F301;
+}
+.btn-group .btn:hover {
+    background-color: #57FF57;
+}
+.btn[data-pg] {
+    margin-right: 5px;
+}
+
+.table tbody tr.tr-pago {
+  background-color: #45ef70 !important;
+}
+
+.table tbody tr.tr-vencida {
+  background-color: #ff485f !important;
+}
+
+.table tbody tr.tr-parcial {
+  background-color: #f4e05a !important;
+}
+
+.table tbody tr.tr-emitida {
+  background-color: #6a94dd !important;
+}
+
+.table tbody tr.tr-temporario {
+  background-color: #f9f9f9 !important;
+}
+
+#tabelaClientes tbody tr {
+    cursor: pointer;
+}
+
+.ui-dialog {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.ui-dialog-titlebar {
+    background: #f8fafc !important;
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 15px 20px !important;
+}
+
+.ui-dialog-title {
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+/* Estilos do Formulário Interno */
+.modern-modal {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    padding: 20px !important;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control {
+    width: 100%;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #334155;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.flex-1 { flex: 1; }
+
+/* Botão de Submissão */
+.btn-submit {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s ease, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-submit:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-submit:active {
+    transform: scale(0.98);
+}
+
+/* Estilo do Container do Modal */
+.custom-modal {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    max-width: 450px;
+    text-align: center;
+}
+
+.custom-modal h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.4rem;
+}
+
+.custom-modal p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* Grupo de Botões */
+.button-group {
+    display: flex;
+    flex-direction: column; /* Empilhados em mobile, mude para 'row' se preferir lado a lado */
+    gap: 12px;
+}
+
+/* Botão Base */
+.btn-via {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.btn-via:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-via:active {
+    transform: translateY(0);
+}
+
+.original { background-color: #2563eb; } /* Azul Moderno */
+.duplicado { background-color: #f59e0b; } /* Amarelo/Laranja */
+.triplicado { background-color: #0891b2; } /* Ciano/Info */
+
+.icon { font-size: 1.2rem; }
+
+/* 1. Limpa o container interno do jQuery UI */
+#modal-impressao {
+    padding: 20px !important; /* Espaçamento interno controlado */
+    background: white !important;
+}
+
+/* 2. Ajusta a barra de título para combinar com o teu estilo moderno */
+.ui-dialog-titlebar {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 12px 20px !important;
+}
+
+/* 3. Garante que os botões ocupam a largura toda dentro do modal */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+/* 4. Remove a borda azul feia que aparece ao clicar nos botões do jQuery UI */
+.ui-dialog :focus {
+    outline: none !important;
+}
+
+
+
