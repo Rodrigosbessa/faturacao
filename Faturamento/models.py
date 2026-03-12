@@ -27,6 +27,7 @@ class Zona(models.Model):
 class Transporte(models.Model):
     id_transporte = models.AutoField(primary_key=True)
     descricao = models.CharField(max_length=40)
+    empresa = models.ForeignKey('Empresa', on_delete=models.CASCADE, related_name='transportes', default=1)
 
     class Meta:
         db_table = 'transporte'
@@ -121,41 +122,59 @@ class Cliente1(models.Model):
     distrito = models.CharField(max_length=40)
     concelho = models.CharField(max_length=40)
     email = models.EmailField(max_length=254, blank=True, null=True)
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        related_name='clientes',
+        default=1,
+    )
 
     vendedor = models.ForeignKey(
         Vendedor,
         on_delete=models.PROTECT,
         db_column='vendedor'
     )
-    zona = models.ForeignKey(
-        Zona,
-        on_delete=models.PROTECT,
-        db_column='zona'
-    )
-    transporte = models.ForeignKey(
-        Transporte,
-        on_delete=models.PROTECT,
-        db_column='transporte'
-    )
     impostos = models.ForeignKey(
         Impostos,
         on_delete=models.PROTECT,
         db_column='impostos'
     )
+
+    # PODEM SER NULL (Adicionado null=True, blank=True)
+    zona = models.ForeignKey(
+        Zona,
+        on_delete=models.SET_NULL,  # Recomendado mudar para SET_NULL se for opcional
+        db_column='zona',
+        null=True,
+        blank=True
+    )
+    transporte = models.ForeignKey(
+        Transporte,
+        on_delete=models.SET_NULL,
+        db_column='transporte',
+        null=True,
+        blank=True
+    )
     pagamento = models.ForeignKey(
         Pagamento,
-        on_delete=models.PROTECT,
-        db_column='pagamento'
+        on_delete=models.SET_NULL,
+        db_column='pagamento',
+        null=True,
+        blank=True
     )
     modalidade = models.ForeignKey(
         Modalidade,
-        on_delete=models.PROTECT,
-        db_column='modalidade'
+        on_delete=models.SET_NULL,
+        db_column='modalidade',
+        null=True,
+        blank=True
     )
     precos = models.ForeignKey(
         Precos,
-        on_delete=models.PROTECT,
-        db_column='precos'
+        on_delete=models.SET_NULL,
+        db_column='precos',
+        null=True,
+        blank=True
     )
 
     data_criacao = models.DateTimeField(auto_now_add=True)
@@ -170,21 +189,27 @@ class Artigo(models.Model):
     id_artigo = models.BigAutoField(primary_key=True)
     nome = models.CharField(max_length=40)
     descricao = models.CharField(max_length=255, blank=True, null=True)
-    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0.00,null=False,    # Garante que o banco nunca aceite NULL
+    blank=True)
     taxa = models.DecimalField(max_digits=10, decimal_places=2)
     tipo = models.CharField(max_length=20, default='Produto')
 
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        db_column='empresa_id'
+    )
 
     class Meta:
+        managed = True
         db_table = 'artigo'
 
     def __str__(self):
-        # Mostra nome e preco quando o objeto é impresso
         return f"{self.nome} ({self.preco})"
 
 from django.db import models
 
-# Tabela Documento Contador
 class DocumentoContador(models.Model):
     TIPOS_SUPORTADOS = [
         ('FT', 'Fatura'),
@@ -200,12 +225,51 @@ class DocumentoContador(models.Model):
     ano = models.IntegerField()
     ultimo_numero = models.IntegerField(default=0)
 
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='contadores'
+    )
     class Meta:
         db_table = "documento_contador"
-        unique_together = ('tipo', 'serie', 'ano')
+        unique_together = ('tipo', 'serie', 'ano', 'empresa')
 
     def __str__(self):
         return f"Contador {self.tipo} - {self.serie}/{self.ano}: {self.ultimo_numero}"
+
+class DocumentoFinalizadoContador(models.Model):
+    TIPOS_SUPORTADOS = [
+        ('FT', 'Fatura'),
+        ('FR', 'Fatura-Recibo'),
+        ('FS', 'Fatura Simplificada'),
+        ('NC', 'Nota de Crédito'),
+        ('GT', 'Guia de Transporte'),
+    ]
+
+    id = models.BigAutoField(primary_key=True)
+
+    tipo = models.CharField(max_length=2, choices=TIPOS_SUPORTADOS)
+    serie = models.CharField(max_length=10, default='A')
+    ano = models.IntegerField()
+    ultimo_numero = models.IntegerField(default=0)
+
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='contadores_finais_documentos'
+    )
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "documento_contador_final"
+        unique_together = ('tipo', 'serie', 'ano', 'empresa')
+
+    def __str__(self):
+        return f"Contador Finalizado {self.tipo} - {self.serie}/{self.ano}: {self.ultimo_numero}"
 
 class Moeda(models.Model):
     codigo = models.CharField(max_length=10)
@@ -262,11 +326,20 @@ class DocumentoTemp(models.Model):
     # Estado
     estado = models.CharField(max_length=20, choices=ESTADOS, default='Rascunho')
 
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='contadores_temporarios'
+    )
+
     # Snapshot comercial
     transporte = models.ForeignKey(
         'Transporte',
         on_delete=models.PROTECT,
-        db_column='transporte_id'
+        db_column='transporte_id',
+        null=True,
+        blank=True
     )
 
     pagamento = models.ForeignKey(
@@ -316,13 +389,16 @@ class DocumentoTemp(models.Model):
     )
     class Meta:
         db_table = 'documento_temp'
-        unique_together = ('tipo', 'serie', 'numero', 'ano')
+        unique_together = ('tipo', 'serie', 'numero', 'ano', 'empresa')
         ordering = ['-criado_em']
 
     def __str__(self):
         return f"{self.tipo} {self.serie}-{self.numero}/{self.ano}"
 
+from django.conf import settings
+
 class Empresa(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='empresa')
     nome = models.CharField(max_length=150)
     morada = models.CharField(max_length=255)
     codigo_postal = models.CharField(max_length=20)
@@ -384,6 +460,12 @@ class TempArtigos(models.Model):
     desconto = models.DecimalField(max_digits=10, decimal_places=2)
     taxa = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='contadores_artigos_temporarios'
+    )
 
     motivo = models.ForeignKey(
         'TaxReason',  # Nome da tabela de motivos
@@ -397,6 +479,7 @@ class TempArtigos(models.Model):
         db_table = 'temp_artigos'
 
 
+
 class DocumentoFinalizado(models.Model):
     TIPOS = [
         ('FT', 'Fatura'),
@@ -408,6 +491,7 @@ class DocumentoFinalizado(models.Model):
 
     ESTADOS = [
         ('Finalizado', 'Finalizado'),
+        ('Anulado', 'Anulado'),
     ]
 
     id = models.BigAutoField(primary_key=True)
@@ -482,10 +566,16 @@ class DocumentoFinalizado(models.Model):
         related_name='documentos_retificativos',
         db_column='documento_origem_id'
     )
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='documentos_finalizados'
+    )
 
     class Meta:
         db_table = 'documento_finalizado'
-        unique_together = ('tipo', 'serie', 'numero', 'ano')
+        unique_together = ('tipo', 'serie', 'numero', 'ano', 'empresa')
         ordering = ['-criado_em']
 
     def __str__(self):
@@ -511,6 +601,7 @@ class FinArtigos(models.Model):
     id_final = models.ForeignKey(
         DocumentoFinalizado,
         on_delete=models.CASCADE,
+        related_name='artigos',
         db_column='id_temp',
     )
 
@@ -536,9 +627,16 @@ class FinArtigos(models.Model):
         blank=True,
         db_column='motivo_id'
     )
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='fin_artigos'
+    )
 
     class Meta:
         db_table = 'final_artigos'
+
 
 
 class Recibo(models.Model):
@@ -549,13 +647,13 @@ class Recibo(models.Model):
     id = models.BigAutoField(primary_key=True)
 
     tipo = models.CharField(max_length=2, choices=TIPOS, default='RE')
-    serie = models.CharField(max_length=10)
-    numero = models.IntegerField()
-    ano = models.IntegerField()
+    serie = models.CharField(max_length=10, default="NC")
+    numero = models.IntegerField(default=5000)
+    ano = models.IntegerField(default=2026)
 
-    cliente_id = models.BigIntegerField()
+    cliente_id = models.BigIntegerField(default=1)
 
-    data_emissao = models.DateField()
+    data_emissao = models.DateField(default=timezone.now)
     modalidade_nome = models.CharField(max_length=40, null=True, blank=True, help_text="Ex: Transferência, Numerário")
 
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -567,12 +665,18 @@ class Recibo(models.Model):
     estado = models.CharField(max_length=10, choices=ESTADOS_RECIBO, default='Normal')
     data_anulacao = models.DateTimeField(null=True, blank=True)
     motivo_anulacao = models.TextField(null=True, blank=True)
-    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_em = models.DateTimeField(default=timezone.now)
 
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='recibos'
+    )
 
     class Meta:
         db_table = 'recibo'
-        unique_together = ('tipo', 'serie', 'numero', 'ano')
+        unique_together = ('tipo', 'serie', 'numero', 'ano', 'empresa')
         ordering = ['-criado_em']
 
     def __str__(self):
@@ -602,6 +706,37 @@ class ReciboLinhas(models.Model):
     valor_documento = models.DecimalField(max_digits=10, decimal_places=2)
     valor_recebido = models.DecimalField(max_digits=10, decimal_places=2)
     valor_em_divida = models.DecimalField(max_digits=10, decimal_places=2)
+    empresa = models.ForeignKey(
+        'Empresa',
+        on_delete=models.CASCADE,
+        default=1,
+        related_name='recibo_linhas'
+    )
 
     class Meta:
         db_table = 'recibo_linhas'
+
+from django.dispatch import receiver
+from allauth.account.signals import user_logged_in  # Importante para detetar login
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+
+from allauth.socialaccount.models import SocialAccount
+@receiver(user_logged_in)
+def trigger_mfa_flow(sender, request, user, **kwargs):
+    if SocialAccount.objects.filter(user=user).exists() or not user.email:
+        return
+
+    if user.email and request.COOKIES.get('trusted_device') != 'true':
+        code = get_random_string(6, allowed_chars='0123456789')
+        request.session['mfa_code'] = code
+        request.session['mfa_verified'] = False  # Bloqueia o acesso inicial
+
+        # Envia o e-mail
+        send_mail(
+            'Seu código de verificação',
+            f'O seu código é: {code}',
+            'do-not-reply@teusite.com',
+            [user.email],
+            fail_silently=False,
+        )

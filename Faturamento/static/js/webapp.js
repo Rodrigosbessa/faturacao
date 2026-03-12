@@ -8,11 +8,23 @@ let tables = {
 };
 itens.forEach(item => {
     item.addEventListener("click", () => {
-        itens.forEach(i => i.classList.remove("redondo"));
-        item.classList.add("redondo");
-        const bodyStyle = document.body.style;
+        itens.forEach(i => {
+            i.classList.remove("redondo");
+            const link = i.querySelector("a");
+            if (link) link.style.color = ""; // Reseta para a cor original
+        });
 
-        // Definindo as variáveis CSS e o background
+        // 2. Aplicar classe ao item clicado
+        item.classList.add("redondo");
+
+        // 3. Mudar a cor do link interno para branco
+        const linkAtivo = item.querySelector("a");
+        if (linkAtivo) {
+            linkAtivo.style.setProperty("color", "white", "important");
+        }
+
+        // --- O teu código de background ---
+        const bodyStyle = document.body.style;
         bodyStyle.setProperty('--s', '62px');
         bodyStyle.setProperty('--c1', '#1d1d1d');
         bodyStyle.setProperty('--c2', '#4e4f51');
@@ -131,7 +143,7 @@ function initDataTable(type) {
                     render: d => parseFloat(d).toLocaleString('pt-PT', {style: 'currency', currency: 'EUR'})
                 },
                 {
-                    data: 'estado',       // Index 6
+                    data: 'estado_pagamento',       // Index 6
                     render: function(data) {
                         let badgeClass = 'bg-secondary';
                         if (data === 'Pago') badgeClass = 'bg-success';
@@ -143,14 +155,26 @@ function initDataTable(type) {
                     }
                 },
                 {
-                    data: null,
-                    orderable: false,
-                    className: 'text-center',
-                    render: function(row) {
-                        let btn = row.temporario ?
-                            `<button class="btn btn-sm btn-primary"><i class="fa fa-play"></i></button>` :
-                            `<button class="btn btn-sm btn-default"><i class="fa fa-print"></i></button>`;
-                        return `<div class="btn-group">${btn}</div>`;
+                    data: 'estado',  // Index para o estado (Finalizado/Anulado)
+                    render: function(data, type, row) {
+                        let estadoClass = '';
+                        let estadoText = '';
+
+                        // Se o documento for temporário, exibe "Rascunho"
+                        if (row.temporario) {
+                            estadoClass = 'text-info';  // Cor azul para Rascunho
+                            estadoText = 'Rascunho';
+                        } else {
+                            if (data === 'Anulado') {
+                                estadoClass = 'text-success'; // Cor verde para "Anulado"
+                                estadoText = 'Anulado';
+                            } else {
+                                estadoClass = 'text-muted';  // Cor padrão para "Finalizado"
+                                estadoText = 'Finalizado';
+                            }
+                        }
+
+                        return `<span class="${estadoClass}">${estadoText}</span>`;  // Exibe o estado com a cor apropriada
                     }
                 },
                 {
@@ -158,6 +182,7 @@ function initDataTable(type) {
                     orderable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
+                        // Para documentos temporários (rascunho)
                         if (row.temporario) {
                             return `
                                 <div class="btn-group">
@@ -168,7 +193,23 @@ function initDataTable(type) {
                                         <i class="fa fa-trash"></i>
                                     </button>
                                 </div>`;
-                        } else {
+                        }
+
+                        // Para notas de crédito (NC) - se o estado não for 'Anulado'
+                        else if (row.tipo.startsWith('Nota de Crédito') && row.estado !== 'Anulado') {
+                            return `
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-default btn-print" data-id="${row.id_documento}">
+                                        <i class="fa fa-print"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger btn-delete-nc" data-id="${row.id_documento}">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>`;
+                        }
+
+                        // Para faturas finalizadas ou outros tipos de documentos
+                        else {
                             return `
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-default btn-print" data-id="${row.id_documento}">
@@ -181,7 +222,7 @@ function initDataTable(type) {
             ],
             rowClickUrl: function(data) {
                 if (data.temporario) {
-                    return `/faturas/novo/?temp_id=${data.id_documento}`;
+                    return `/faturas/editar/?temp_id=${data.id_documento}&numero=${data.numero_doc}&cliente=${data.cliente_id}`;
                 }
                 return `/faturas/ver/${data.id_documento}/`;
             }
@@ -189,16 +230,16 @@ function initDataTable(type) {
     }
     else if (type === 'guias') {
         config = {
-            url: window.guiasUrl, // URL da View acima
+            url: window.guiasUrl,
             dataSrc: "",
             columns: [
-                { data: 'tipo' },           // 0
-                { data: 'numero' },         // 1
-                { data: 'cliente_nome' },   // 2
-                { data: 'data_emissao' },   // 3
-                { data: 'local_descarga' },  // 4
+                { data: 'tipo' },
+                { data: 'numero' },
+                { data: 'cliente_nome' },
+                { data: 'data_emissao' },
+                { data: 'local_descarga' },
                 {
-                    data: null,             // 5 - Estado Fixo
+                    data: null,
                     render: () => `<span class="badge bg-success">Emitida</span>`
                 },
                 {
@@ -480,7 +521,24 @@ $(document).ready(function () {
     });
 });
 
+let dashboardCarregado = false;
+$('.nav-item[data-target="dashboard"]').on('click', function() {
+    $('#dashboard').show();
 
+    if (!dashboardCarregado) {
+        $.ajax({
+            url: "/api/dashboard/dados/", // A URL que acabámos de criar
+            method: "GET",
+            success: function(data) {
+                $('#dash-total-faturado').text(data.total_faturado.toFixed(2) + '€');
+                dashboardCarregado = true; // Marca como carregado
+            },
+            error: function() {
+                alert("Erro ao carregar dados do dashboard.");
+            }
+        });
+    }
+});
 
 
 

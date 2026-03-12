@@ -30,7 +30,7 @@
                     <option value="Fatura">Fatura</option>
                     <option value="Simplificada">Simplificada</option>
                     <option value="Fatura-Recibo">Fatura-Recibo</option>
-                    <option value="Nota-Credito">Nota-Crédito</option>
+                    <option value="Nota de Crédito">Nota-Crédito</option>
                 </select>
             </div>
         </div>
@@ -151,21 +151,24 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('click', '#faturasTabelaBody .btn-delete-fatura-temp', function (e) {
-        e.preventDefault();
+    $(document).on('click', '#faturasTabelaBody .btn-delete-fatura-temp, #faturasTabelaBody .btn-delete-nc', function (e) {        e.preventDefault();
 
         const idDocumento = $(this).data('id');
+        const tipoBotao = $(this).hasClass('btn-delete-nc') ? 'NC' : 'TEMP';
 
         if ($('#id_documento_apagar').length === 0) {
             $('body').append('<input type="hidden" id="id_documento_apagar">');
         }
         $('#id_documento_apagar').val(idDocumento);
+        $('#id_documento_apagar').data('tipo', tipoBotao);
 
         $("#modal-apagar-documento").dialog("open");
     });
 
     $(document).on('click', '#btnConfirmarEliminarDocumento', function (e) {
         e.preventDefault();
+
+        const tipoBotao = $('#id_documento_apagar').data('tipo');  // <-- pega o tipo correto
 
         const idDocumento = $('#id_documento_apagar').val();
 
@@ -183,7 +186,8 @@ $(document).ready(function () {
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify({
-                "id": idDocumento
+                "id": idDocumento,
+                "tipo": tipoBotao
             }),
             success: function(resp) {
                 if (resp.success) {

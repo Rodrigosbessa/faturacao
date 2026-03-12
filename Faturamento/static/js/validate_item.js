@@ -1,3 +1,4 @@
+let linhaEmEdicao = null;
 function parseNumero(valor) {
     if (!valor) return 0;
     return parseFloat(valor.toString().replace(',', '.')) || 0;
@@ -38,8 +39,6 @@ function atualizarResumoComDelay(delay = 200) {
 
     }, delay);
 }
-
-let linhaEmEdicao = null;
 
 function validarNumericoInput(input, tipo) {
     let campo = campos.find(c => c.id.includes(tipo));
@@ -253,11 +252,8 @@ Isento de IVA de acordo com artigo 9º do Código do IVA (CIVA)
     }
 
     motivos.forEach((motivo) => {
-
-        // Buscar a descrição do motivo com base no código
         const motivoData = taxReasons.find(t => t.code === motivo); // Encontra o motivo na lista da API
 
-        // Se encontrar o motivo e tiver descrição, construa o texto
         if (motivoData) {
             const descricao = motivoData.description || ""; // Descrição do motivo
 
@@ -329,95 +325,101 @@ $(function() {
     }
 
     window.criarLinhaNaTabela = function(tipo, code, item, quantity, price, discount, tax, motivoIVA0 = null) {
-
         let total = calcularTotal(quantity, price, discount);
         let itemId = gerarItemId();
 
         let novaLinha = `
-    <tr class="product product_edit item${itemId}" id="item${itemId}">
-        <td nowrap class="buttons type view_type" style="text-align: center;">
-            ${getTipoIcon(tipo)}
-        </td>
+        <tr class="product product_edit item${itemId}" id="item${itemId}">
+            <td nowrap class="buttons type view_type" style="text-align: center;">
+                ${getTipoIcon(tipo)}
+            </td>
     
-        <td style="text-align: center; vertical-align: middle;">
-            <span class="edit_input">
-                <input type="text" class="code" value="${code}" style="width:45px; display: none" disabled="">
-            </span>
-            <span class="view_input">${code}</span>
-        </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <span class="edit_input">
+                    <input type="text" class="code" value="${code}" style="width:45px; display: none" disabled>
+                </span>
+                <span class="view_input">${code}</span>
+            </td>
     
-        <td class="item-column">
-            <span class="edit_input">
-                <input type="text" class="item" value="${item}" style="width:175px ; display: none">
-            </span>
-            <span class="view_input">${item}</span>
-        </td>
+            <td class="item-column">
+                <span class="edit_input">
+                    <input type="text" class="item" value="${item}" style="width:175px ; display: none">
+                </span>
+                <span class="view_input">${item}</span>
+            </td>
     
-        <td class="centered">
-            <span class="edit_input">
-                <input type="text" class="quantity" value="${quantity}" name="quantity[]" style="display: none">
-            </span>
-            <span class="view_input">${quantity}</span>
-        </td>
+            <td class="centered">
+                <span class="edit_input">
+                    <input type="text" class="quantity" value="${quantity}" name="quantity[]" style="display: none">
+                </span>
+                <span class="view_input">${quantity}</span>
+            </td>
     
-        <td class="money">
-            <span class="edit_input">
-                <input type="text" class="price" value="${price}" name="price[]" style="display: none">
-            </span>
-            <span class="view_input">${formatNumero(price)}</span>
-        </td>
+            <td class="money">
+                <span class="edit_input">
+                    <input type="text" class="price" value="${price}" name="price[]" style="display: none">
+                </span>
+                <span class="view_input">${formatNumero(price)}</span>
+            </td>
     
-        <td class="money">
-            <span class="edit_input">
-                <input type="text" class="discount" value="${discount}" name="discount[]" style="display: none">
-            </span>
-            <span class="view_input">${formatNumero(discount)}</span>
-        </td>
+            <td class="money">
+                <span class="edit_input">
+                    <input type="text" class="discount" value="${discount}" name="discount[]" style="display: none">
+                </span>
+                <span class="view_input">${formatNumero(discount)}</span>
+            </td>
     
-        <td class="centered">
-            <input class="motivo_tax" type="hidden" value="${motivoIVA0 ? motivoIVA0 : ''}">
-            <span class="edit_input">
-                <input type="text" class="tax" value="${tax}" name="tax[]" style="display: none">
-            </span>
-            <span class="view_input">${tax}</span>
-        </td>
+            <td class="centered">
+                <input class="motivo_tax" type="hidden" value="${motivoIVA0 ? motivoIVA0 : ''}">
+                <span class="edit_input">
+                    <input type="text" class="tax" value="${tax}" name="tax[]" style="display: none">
+                </span>
+                <span class="view_input">${tax}</span>
+            </td>
     
-        <td class="money">
-            <span class="edit_input">
-                <input type="text" class="total" value="${formatNumero(total)}" disabled name="total[]" style="display: none">
-            </span>
-            <span class="view_input">${formatNumero(total)}</span>
-        </td>
+            <td class="money">
+                <span class="edit_input">
+                    <input type="text" class="total" value="${formatNumero(total)}" disabled name="total[]" style="display: none">
+                </span>
+                <span class="view_input">${formatNumero(total)}</span>
+            </td>
     
-        <td class="buttons">
-            <a class="edit item_edit" title="Editar"></a>
-            <a class="save item_save" title="Salvar" style="display:none;">
-                <i class="fa fa-check"></i>
-            </a>
-            <a class="delete item_delete" data-id="${itemId}" title="Apagar"></a>
-        </td>
-    </tr>`;
+            <td class="buttons">
+                <a class="edit item_edit" title="Editar"></a>
+                <a class="save item_save" title="Salvar" style="display:none;">
+                    <i class="fa fa-check"></i>
+                </a>
+                <a class="delete item_delete" data-id="${itemId}" title="Apagar"></a>
+            </td>
+        </tr>
+        `;
 
-        $("tr.input").before(novaLinha);
+        $("tr.input-anchor").before(novaLinha);
 
         let $linhaNova = $(`#item${itemId}`);
+
+        // Armazena motivo IVA0 se houver
         if (motivoIVA0) {
             $linhaNova.data("motivoIVA0", motivoIVA0);
+        }
+
+        if (window.tipoDocumentoAtual === "NC") {
+            $linhaNova.find("input").prop("disabled", true);
+
+            $linhaNova.find(".quantity").prop("disabled", false);
         }
 
         atualizarResumoComDelay();
 
         linhaEmEdicao = null;
 
+        // Limpa os inputs do formulário
         $("#code, #item").val("");
         $("#quantity").val("1");
         $("#price, #discount, #total").val("0,00");
         $("#tax").val("23");
-
-
-    }
+    };
     function inserirLinha() {
-        // 🔹 valores da linha de inserção
         let tipo      = getTipoFromInput();
         let code      = $("#code").val();
         let item      = $("#item").val();
@@ -539,7 +541,6 @@ $(document).on('click', '.item_edit', function() {
 
     linhaEmEdicao = $linha;
 
-    // Mostrar inputs
     $linha.find('.edit_input input').show();
     $linha.find('.view_input').hide();
 
@@ -593,7 +594,6 @@ $(document).on('click', '.item_save', function() {
         return;
     }
 
-    // IVA diferente de 0 → remover motivo
     if (data.tax !== 0) {
         $linha.removeData("motivoIVA0");
         $linha.find('.motivo_tax').val('');
@@ -629,7 +629,6 @@ $(document).on('click', '.item_save', function() {
 $(document).on('click', '.item_delete', function() {
     const $linha = $(this).closest('tr');
 
-    // Se estiver em edição, limpa referência
     if (linhaEmEdicao && linhaEmEdicao.$linha && linhaEmEdicao.$linha[0] === $linha[0]) {
         linhaEmEdicao = null;
     }
@@ -1401,10 +1400,8 @@ $(function () {
         $(this).hide();
     });
 
-    // ❌ CANCELAR (AGORA CORRETO)
     $('#button_cancel_footer').on('click', function () {
 
-        // 🔥 Restaurar valor real do textarea
         let restoreVal =
             originalFooterText === defaultFooterText
                 ? ""

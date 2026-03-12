@@ -627,7 +627,6 @@ table.items {
     gap: 12px;
 }
 
-/* Botão Base */
 .btn-via {
     display: flex;
     align-items: center;
@@ -779,3 +778,27 @@ table.items {
     transform: translateY(-2px); /* Pequeno efeito de elevação */
 }
 
+.btn-via2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.btn-via2:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-via2:active {
+    transform: translateY(0);
+}

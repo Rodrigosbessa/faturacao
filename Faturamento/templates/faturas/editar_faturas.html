@@ -179,6 +179,8 @@
                         <th nowrap="">TOTAL</th>
                         <th class="buttons"></th>
                     </tr>
+                    <tr class="input-anchor" style="display:none;"></tr>
+                    {% if documento.tipo != "NC" %}
                     <tr class="input">
                             <td nowrap="" class="buttons type">
                                 <a id="item_type_service">
@@ -237,6 +239,7 @@
                                 <a class="update" id="item_update" title="Adicionar"></a>
                             </td>
                         </tr>
+                    {% endif %}
                     <tr class="blank">
                         <td>
 
@@ -487,7 +490,7 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
     window.doc = doc;
     window.impostoCliente = doc.cliente?.impostos || "IVA";
 
-    if (doc.tipo === "FS") {
+    if (doc.tipo === "FS" || doc.tipo === "NC") {
         $(".loadblock").remove();
     }
 
@@ -702,7 +705,6 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
     $('#registration_text').text(matricula);
     $('#registration_select').val(matricula);
 
-    console.log("Artigos:", doc.artigos);
 
     if (doc.artigos && doc.artigos.length) {
         doc.artigos.forEach(a => {
@@ -933,6 +935,7 @@ function atualizarResumoFatura(simboloMoeda) {
     var iconTypeProductOn = "{% static 'images/icon_type_product_on.png' %}";
     var iconTypeServiceOff = "{% static 'images/icon_type_service_off.png' %}";
     var iconTypeProductOff = "{% static 'images/icon_type_product_off.png' %}";
+    window.tipoDocumentoAtual = "{{ documento.tipo }}";
 </script>
 <script src="{% static 'js/validate_item.js' %}"></script>
 </body>

@@ -467,26 +467,23 @@ table caption {
     transform: translateY(0);
 }
 
-.original { background-color: #2563eb; } /* Azul Moderno */
-.duplicado { background-color: #f59e0b; } /* Amarelo/Laranja */
-.triplicado { background-color: #0891b2; } /* Ciano/Info */
+.original { background-color: #2563eb; }
+.duplicado { background-color: #f59e0b; }
+.triplicado { background-color: #0891b2; }
 
 .icon { font-size: 1.2rem; }
 
-/* 1. Limpa o container interno do jQuery UI */
 #modal-impressao {
-    padding: 20px !important; /* Espaçamento interno controlado */
+    padding: 20px !important;
     background: white !important;
 }
 
-/* 2. Ajusta a barra de título para combinar com o teu estilo moderno */
 .ui-dialog-titlebar {
     background-color: #f8fafc !important;
     border-bottom: 1px solid #e2e8f0 !important;
     padding: 12px 20px !important;
 }
 
-/* 3. Garante que os botões ocupam a largura toda dentro do modal */
 .button-group {
     display: flex;
     flex-direction: column;
@@ -494,9 +491,62 @@ table caption {
     width: 100%;
 }
 
-/* 4. Remove a borda azul feia que aparece ao clicar nos botões do jQuery UI */
 .ui-dialog :focus {
     outline: none !important;
+}
+
+/* CSS Essencial para Small Boxes do AdminLTE */
+.small-box {
+    border-radius: 0.25rem;
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    display: block;
+    margin-bottom: 20px;
+    position: relative;
+    color: #fff;
+}
+.small-box > .inner { padding: 10px; }
+.small-box h3 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    white-space: nowrap;
+    padding: 0;
+}
+.small-box p { font-size: 1rem; }
+.small-box .icon {
+    color: rgba(0,0,0,.15);
+    z-index: 0;
+}
+.small-box .icon > i {
+    font-size: 70px;
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    transition: transform .3s linear;
+}
+.small-box:hover .icon > i { transform: scale(1.1); }
+.small-box > .small-box-footer {
+    background-color: rgba(0,0,0,.1);
+    color: rgba(255,255,255,.8);
+    display: block;
+    padding: 3px 0;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    z-index: 10;
+}
+.small-box > .small-box-footer:hover { background-color: rgba(0,0,0,.15); color: #fff; }
+.bg-info { background-color: #17a2b8 !important; }
+.bg-danger { background-color: #dc3545 !important; }
+.bg-success { background-color: #28a745 !important; }
+
+#dashboard .row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+body {
+    overflow-x: hidden !important;
 }
 
 

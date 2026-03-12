@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'css/webapp.css' %}">
 </head>
 <body>
-    <!-- Topbar principal -->
+<a href="{% url 'mfa_activate_totp' %}">Configurar Autenticação em 2 Passos</a>
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -28,26 +28,23 @@
                 </button>
 
                 <a class="navbar-brand" href="#" style=" color: black;">
-                    <img src="{% static 'images/logo.jpg' %}" alt="Logo" class="logo" style="margin-right: 20px;">
-                    Feitios e Tamanhos
+                    <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo" style="margin-right: 20px; margin-left: 10px">
+                    {{ empresa }}
                 </a>
             </div>
 
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav pad_top">
                     <li class="nav-item" data-target="vendas"><a href="#">Vendas</a></li>
-                    <li class="nav-item" data-target="tesouraria"><a href="#">Tesouraria</a></li>
                     <li class="nav-item" data-target="dashboard"><a href="#">Dashboard</a></li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <!-- Conteúdo -->
     <div class="container" style="margin-top:120px;">
       <div id="conteudo">
 
-        <!-- Submenu de Vendas -->
         <div class="conteudo-item" id="vendas" style="display: none;">
           <div class="navbar second-topbar">
             <div class="container center-vertical">
@@ -95,8 +92,30 @@
           {% include "subconteudos/recibos.html" %}
       </div>
     </div>
-    <div class="conteudo-item" id="tesouraria" style="display:none;">
-        <h3>Bem-vindo à Tesouraria</h3>
+    <div class="conteudo-item" id="dashboard" style="display:none;">
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 id="dash-total-faturado"><i class="fas fa-sync fa-spin"></i></h3>
+                        <p>Total Faturado</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <a href="#" class="small-box-footer">Ver Faturas <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3 id="dash-saldo-pendente"><i class="fas fa-sync fa-spin"></i></h3>
+                        <p>Saldo em Dívida</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <a href="#" class="small-box-footer">Cobranças <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+        </div>
     </div>
 <script>
     window.clientesUrl = "{% url 'clientes_json' %}";

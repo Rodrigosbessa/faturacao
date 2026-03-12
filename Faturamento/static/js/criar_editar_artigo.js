@@ -33,7 +33,6 @@ document.getElementById("btn-guardar-cliente").addEventListener("click", functio
     let pathParts = window.location.pathname.split('/');
     let id_artigo = pathParts[pathParts.indexOf('artigo') + 1];
 
-    // monta os dados para enviar
     let formData = new FormData();
     formData.append('nome', nome);
     formData.append('descricao', descricao);
@@ -41,8 +40,13 @@ document.getElementById("btn-guardar-cliente").addEventListener("click", functio
     formData.append('taxa', taxa);
     formData.append('preco', preco);
 
-    // envia via fetch POST
-    fetch(`/artigo/${id_artigo}/editar/`, {
+    let url;
+    if (idArtigo && idArtigo !== "") {
+        url = `/artigo/${idArtigo}/editar/`; // Caso de Edição
+    } else {
+        url = '/artigo/adicionar/'; // Caso de Criação
+    }
+    fetch(url, {
         method: 'POST',
         body: formData,
         headers: {

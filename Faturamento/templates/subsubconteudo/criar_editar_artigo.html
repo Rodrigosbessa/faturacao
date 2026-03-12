@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="{% static 'css/cliente_detalhes.css' %}">
 </head>
 <body>
+<script>
+    const idArtigo = "{{ artigo.id_artigo|default:'' }}";
+</script>
 <a href="/" class="btn-voltar-fixo">
     <i class="fa fa-home"></i> Voltar
 </a>

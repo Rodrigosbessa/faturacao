@@ -173,7 +173,17 @@
                             0,00
                         </td>
                     </tr>
-                        {% if tipo_documento != 'GT' %}
+                    {% if valor_nota_credito < 0 %}
+                    <tr class="resume total credit-note">
+                        <td colspan="3">
+                            Valor da Nota de Crédito (Desconto)
+                        </td>
+                        <td colspan="100" class="value" id="credit_value">
+                            {{ valor_nota_credito|floatformat:2 }} {{ moeda_tipo }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                        {% if tipo_documento != 'GT' and tipo_documento != 'NC' %}
                     <tr class="resume total paid">
                         <td colspan="3">
                             Já pago pelo cliente
@@ -308,8 +318,8 @@
         <p><small>Esta ação é irreversível e irá regularizar o valor do IVA na sua contabilidade.</small></p>
 
         <div class="button-group" style="margin-top: 20px;">
-            <button class="btn-via" id="btn-cancelar-credito" style="background-color: #ccc;">Cancelar</button>
-            <button class="btn-via" id="btn-confirmar-credito" style="background-color: #d9534f; color: white;">Confirmar Emissão</button>
+            <button class="btn-via2" id="btn-cancelar-credito" style="background-color: #ccc;">Cancelar</button>
+            <button class="btn-via2" id="btn-confirmar-credito" style="background-color: #d9534f; color: white;">Confirmar Emissão</button>
         </div>
     </div>
 </div>
@@ -544,11 +554,13 @@ const nomesTipo = {
     "GT": "Guia de transporte"
 };
 
+const valorNotaCredito = parseFloat("{{ valor_nota_credito }}") || 0;
+
 $.getJSON(`/api/documento-finalizado/${docId}/`, function(doc) {
     window.doc = doc;
     window.impostoCliente = doc.cliente?.impostos || "IVA";
 
-    if (doc.tipo === "FS") {
+    if (doc.tipo === "FS" || doc.tipo === "NC") {
         $(".loadblock").remove();
     }
 
@@ -646,28 +658,32 @@ $.getJSON(`/api/documento-finalizado/${docId}/`, function(doc) {
         $('#description_text').text(descricao);
         $('.description_block').show(); // Garante que o bloco está visível
     } else {
-        // Se não houver descrição, esconde o bloco para não ficar um espaço em branco
         $('.description_block').hide();
     }
 
-    // Opcional: Se ainda precisar do input hidden para algum POST futuro
     $('#description').val(descricao);
 
-    const totalFatura = parseFloat(doc.total_fatura || 0);
-    const totalPago = parseFloat(doc.total_pago) || 0;
-    const simboloMoeda = doc.moeda?.simbolo || '€';
+    const totalFatura = parseFloat(doc.total_fatura || 0); // Valor total da fatura
+    const totalPago = parseFloat(doc.total_pago) || 0;    // Valor já pago
+    const simboloMoeda = doc.moeda?.simbolo || '€';  // Símbolo da moeda
+
+    let saldoComDesconto = totalFatura + valorNotaCredito;
+
+    if (saldoComDesconto < 0) {
+        saldoComDesconto = 0;
+    }
 
     $('#paid_value').text(formatNumero(totalPago) + ' ' + simboloMoeda);
-
     $('#paid_value').removeClass('red orange green');
 
     if (totalPago <= 0) {
         $('#paid_value').addClass('red');
-    } else if (totalPago > 0 && totalPago < totalFatura) {
+    } else if (totalPago > 0 && totalPago < saldoComDesconto) {
         $('#paid_value').addClass('orange');
-    } else if (totalPago >= totalFatura) {
+    } else if (totalPago >= saldoComDesconto) {
         $('#paid_value').addClass('green');
     }
+
 
     let rodape = doc.rodape?.trim() || "";
 
@@ -799,18 +815,27 @@ $(document).ready(function() {
 
     $('#tools_pay').on('click', function(e) {
         e.preventDefault();
-        var saldoTexto = "{{ valor_em_divida }}";
 
-        // Agora o replace funcionará sem erros
+        var saldoTexto = "{{ valor_em_divida }}";
+        var valorNotaCredito = "{{ valor_nota_credito }}";
+
         var saldoNumerico = parseFloat(saldoTexto.toString().replace(',', '.'));
+        var notaCreditoNumerica = parseFloat(valorNotaCredito.toString().replace(',', '.'));
 
         if (isNaN(saldoNumerico) || saldoNumerico <= 0) {
             alert("Este cliente não tem valores em dívida.");
             return;
         }
 
-        $('#display-total-acumulado').text(saldoTexto);
-        $('#valor_recibo').val(saldoNumerico.toFixed(2));
+        var saldoComDesconto = saldoNumerico + notaCreditoNumerica;
+
+        if (saldoComDesconto <= 0) {
+            saldoComDesconto = 0;
+        }
+
+        $('#display-total-acumulado').text(saldoComDesconto.toFixed(2));
+
+        $('#valor_recibo').val(saldoComDesconto.toFixed(2));
 
         $('#modal-emitir-recibo').dialog('open');
     });
@@ -887,15 +912,23 @@ $(document).ready(function() {
         $('#modal-confirm-credito').dialog('close');
     });
 
+    const idcliente = "{{ id_cliente }}";
     $('#btn-confirmar-credito').click(function() {
-            const faturaId = "{{ doc_id }}";
-            $.post("{% url 'emitir_nota_credito' 0 %}".replace('0', faturaId), {
-                csrfmiddlewaretoken: '{{ csrf_token }}'
-            }, function(response){
-                window.location.href = `/faturas/novo/?temp_id=${response.id}&numero=${response.numero}&cliente=${clienteId}`;
-            }).fail(function(xhr){
-                let errorMsg = JSON.parse(xhr.responseText).erro || "Erro ao emitir Nota de Crédito.";
-                    alert(errorMsg);
+        const faturaId = "{{ doc_id }}";
+        $.post("{% url 'emitir_nota_credito' 0 %}".replace('0', faturaId), {
+            cliente: idcliente,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(response){
+            if(response.id){
+                window.location.href = `/faturas/editar/?temp_id=${response.id}&numero=${response.numero}&cliente=${response.cliente_id}`;
+            } else if(response.erro){
+                alert(response.erro);
+            } else {
+                alert("Erro inesperado ao emitir Nota de Crédito.");
+            }
+        }).fail(function(xhr) {
+            let errorMsg = JSON.parse(xhr.responseText).erro || "Erro ao emitir Nota de Crédito.";
+            alert(errorMsg);
         });
     });
 });

@@ -4,46 +4,130 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from .models import Vendedor, Zona, Transporte, Impostos, Pagamento, Modalidade, Precos, Cliente1, Artigo, \
     DocumentoContador, Recibo, DocumentoTemp, Empresa, Moeda, TaxReason, \
-    TempArtigos, DocumentoFinalizado, FinArtigos, ReciboLinhas
-import json
+    TempArtigos, DocumentoFinalizado, FinArtigos, ReciboLinhas, DocumentoFinalizadoContador
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from functools import wraps
 
-def index(request):
-    return render(request, 'webapp.html')
-
-def login_view(request):
-    if request.method == "POST":
-        username = request.POST.get("u")
-        password = request.POST.get("p")
-
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return render(request, "webapp.html", {"user": user})
-        else:
-            #
-            messages.error(request, "Username ou password inválidos.")
-            return render(request, "index.html")
-
-    return render(request, "index.html")
+def mfa_protected(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('account_login')
+        if not request.user.email or request.session.get('mfa_verified') or request.COOKIES.get('trusted_device') == 'true':
+            return view_func(request, *args, **kwargs)
+        return redirect('verify_code_page')
+    return wrapper
 
 
+@mfa_protected
+def webapp_view(request):
+    return render(request, 'webapp.html', {'user': request.user})
+
+
+def verify_code_page(request):
+    if request.method == 'POST':
+        user_code = request.POST.get('code')
+        if user_code == request.session.get('mfa_code'):
+            request.session['mfa_verified'] = True
+
+            response = redirect('check_mfa_status')
+
+            if request.POST.get('remember_device'):
+                response.set_cookie('trusted_device', 'true', max_age=30 * 24 * 60 * 60)
+            return response
+    return render(request, 'account/verify.html')
+
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+def resend_verification_code(request):
+    """Reenvia o código de verificação para o e-mail do utilizador."""
+    user = request.user
+
+    if user.is_authenticated and user.email:
+        # Gera novo código e guarda na sessão
+        code = get_random_string(6, allowed_chars='0123456789')
+        request.session['mfa_code'] = code
+
+        # Envia o e-mail
+        send_mail(
+            'Seu código de verificação',
+            f'O seu novo código é: {code}',
+            'do-not-reply@teusite.com',
+            [user.email],
+            fail_silently=False,
+        )
+
+        messages.success(request, 'Um novo código foi enviado para o seu e-mail.')
+
+    return redirect('verify_code_page')
+
+
+@login_required
+def webapp_view(request):
+    empresa = Empresa.objects.filter(user=request.user).first()
+
+    context = {
+        'user': request.user,
+        'empresa': empresa.nome,
+    }
+
+    return render(request, 'webapp.html', context)
+
+from allauth.socialaccount.models import SocialAccount
+
+
+@login_required
+def check_mfa_status(request):
+    user = request.user
+
+    # 1. VERIFICAÇÃO DE MFA (Prioridade Alta)
+    # Ignora MFA se for Google ou se não tiver email
+    tem_conta_social = SocialAccount.objects.filter(user=user).exists()
+
+    if not tem_conta_social and user.email:
+        # Se tem email e NÃO está verificado E NÃO tem cookie de confiança
+        if not request.session.get('mfa_verified') and request.COOKIES.get('trusted_device') != 'true':
+            return redirect('verify_code_page')  # <--- MFA primeiro!
+
+    # 2. VERIFICAÇÃO DE EMPRESA (Só depois do MFA estar OK)
+    if not hasattr(user, 'empresa'):
+        return redirect('completar_empresa')
+
+    # 3. SE PASSOU TUDO, VAI PARA A WEBAPP
+    return redirect('webapp_home')
+
+from .forms import EmpresaForm
+
+@login_required
+def completar_registo_empresa(request):
+    # Se o user já tem empresa, manda para o webapp (segurança extra)
+    if hasattr(request.user, 'empresa'):
+        return redirect('webapp_home')
+
+    if request.method == 'POST':
+        form = EmpresaForm(request.POST)
+        if form.is_valid():
+            empresa = form.save(commit=False)
+            empresa.user = request.user  # Liga a empresa ao user logado
+            empresa.save()
+            return redirect('webapp_home')
+    else:
+        form = EmpresaForm()
+
+    return render(request, 'account/completar_empresa.html', {'form': form})
+
+from .decorators import empresa_obrigatoria
+@login_required
+@empresa_obrigatoria
 def clientes_json(request):
-    clientes = Cliente1.objects.all()
-    data = []
-    for c in clientes:
-        data.append({
-            "id_cliente": c.id_cliente,
-            "codigo": c.codigo,
-            "nome": c.nome,
-            "contribuinte": c.contribuinte,
-            "morada1": c.morada1,
-            "codigo_postal": c.codigo_postal,
-            "concelho": c.concelho,
-        })
-    # Wrapping it in a dictionary is the standard for DataTables
-    return JsonResponse({'data': data})
+    clientes = Cliente1.objects.filter(empresa=request.empresa).values(
+        "id_cliente", "codigo", "nome", "contribuinte", "morada1", "codigo_postal", "concelho"
+    )
 
+    return JsonResponse({'data': list(clientes)})
+@login_required
+@empresa_obrigatoria
 def faturas_json(request):
     TIPO_EXTENSO = {
         'FT': 'Fatura',
@@ -54,13 +138,13 @@ def faturas_json(request):
 
     documentos = (
         DocumentoFinalizado.objects
-        .filter(tipo__in=TIPO_EXTENSO.keys())
+        .filter(empresa=request.empresa, tipo__in=TIPO_EXTENSO.keys())
         .order_by('-id', '-data_emissao')
     )
 
     documentos_temp = (
         DocumentoTemp.objects
-        .filter(tipo__in=TIPO_EXTENSO.keys())
+        .filter(empresa=request.empresa, tipo__in=TIPO_EXTENSO.keys())
         .select_related('cliente')
         .order_by('-id', '-criado_em')
     )
@@ -75,19 +159,20 @@ def faturas_json(request):
 
         data.append({
             "id_documento": doc.id,
-             "tipo": f"{TIPO_EXTENSO.get(doc.tipo, doc.tipo)} (Temp)",
-             "numero_doc": doc.numero,
-             "numero": numero_completo,
-             "cliente_id": cliente.id_cliente if cliente else None,
-             "cliente_nome": cliente.nome if cliente else "",
-             "data_emissao": doc.data_emissao.strftime('%Y-%m-%d') if doc.data_emissao else "",
-             "vencimento": doc.data_vencimento if doc.data_vencimento else "",
-              "valor_total": valor_total,
-             "total_pago": 0,
-             "restante": valor_total,
-             "estado": doc.estado or 'Rascunho',
-              "temporario": True  # flag para diferenciar
-         })
+            "tipo": f"{TIPO_EXTENSO.get(doc.tipo, doc.tipo)} (Temp)",
+            "numero_doc": doc.numero,
+            "numero": numero_completo,
+            "cliente_id": cliente.id_cliente if cliente else None,
+            "cliente_nome": cliente.nome if cliente else "",
+            "data_emissao": doc.data_emissao.strftime('%Y-%m-%d') if doc.data_emissao else "",
+            "vencimento": doc.data_vencimento if doc.data_vencimento else "",
+            "valor_total": valor_total,
+            "total_pago": 0,
+            "restante": valor_total,
+            "estado_pagamento":'Pendente',
+            "estado": 'Rascunho',
+            "temporario": True
+        })
     for doc in documentos:
         numero_completo = f"{doc.tipo}/{doc.serie}/{doc.ano}/{doc.numero}"
 
@@ -103,7 +188,8 @@ def faturas_json(request):
             "valor_total": float(doc.valor_total),
             "total_pago": float(doc.total_pago),
             "restante": float(doc.valor_total - doc.total_pago),
-            "estado": doc.estado_pagamento,
+            "estado_pagamento": doc.estado_pagamento,
+            "estado": doc.estado,
         })
 
 
@@ -111,26 +197,32 @@ def faturas_json(request):
 
 
 from django.db.models import Max
-
+from django.db.models.functions import Cast, Substr
+from django.db.models import IntegerField
+@login_required
+@empresa_obrigatoria
 def proximo_codigo_cliente(request):
-    ultimo = Cliente1.objects.aggregate(max_codigo=Max('codigo'))['max_codigo']
+    ultimo = Cliente1.objects.filter(empresa=request.empresa).annotate(
+        codigo_num=Cast(Substr('codigo', 2), IntegerField())
+    ).aggregate(max_codigo=Max('codigo_num'))['max_codigo']
 
     if ultimo:
-        # Remove o "C" e converte para número
-        numero = int(ultimo.replace("C", "")) + 1
+        numero = ultimo + 1
     else:
         numero = 1
 
     proximo = f"C{numero:03d}"
     return JsonResponse({"codigo": proximo})
 
+@login_required
+@empresa_obrigatoria
 def proximo_codigo_artigo(request):
-    ultimo = Artigo.objects.aggregate(max_id=Max('id_artigo'))['max_id']
+    # Filtra os artigos APENAS da empresa do utilizador logado
+    ultimo = Artigo.objects.filter(empresa=request.empresa).aggregate(
+        max_codigo=Max('id_artigo')
+    )['max_codigo']
 
-    if ultimo:
-        numero = ultimo + 1
-    else:
-        numero = 1
+    numero = (ultimo or 0) + 1
 
     return JsonResponse({"codigo": numero})
 
@@ -156,7 +248,9 @@ def validar_nif_portugal(nif):
 
 from django.core.validators import validate_email
 from django.core.exceptions import ObjectDoesNotExist
-def validar_dados_cliente(post_data, cliente_id=None, is_edit=False):
+@login_required
+@empresa_obrigatoria
+def validar_dados_cliente(request, post_data, cliente_id=None, is_edit=False):
     """
     Valida os dados do cliente para garantir conformidade com a AT e integridade da BD.
     """
@@ -213,7 +307,7 @@ def validar_dados_cliente(post_data, cliente_id=None, is_edit=False):
         if not nif:
             return False, "O NIF é obrigatório para clientes estrangeiros."
 
-        query_duplicado = Cliente1.objects.filter(contribuinte=nif)
+        query_duplicado = Cliente1.objects.filter(contribuinte=nif, empresa=request.empresa)
         if cliente_id:
             query_duplicado = query_duplicado.exclude(id_cliente=cliente_id)
 
@@ -232,20 +326,29 @@ def validar_dados_cliente(post_data, cliente_id=None, is_edit=False):
     for model, field_name, id_name in modelos_fk:
         val = post_data.get(field_name)
         if field_name in obrigatorios or (val and val != ""):
+
+            # Cria o dicionário de filtros dinamicamente
+            query_params = {id_name: val}
+
+            # Apenas adiciona o filtro de empresa se o modelo realmente o tiver
+            if hasattr(model, 'empresa'):
+                query_params['empresa'] = request.empresa
+
             try:
-                model.objects.get(**{id_name: val})
+                model.objects.get(**query_params)
             except (ObjectDoesNotExist, ValueError):
-                label_fk = field_name.capitalize()
-                return False, f"A opção selecionada para [{label_fk}] é inválida ou não existe."
+                return False, f"A opção selecionada para [{field_name.capitalize()}] é inválida."
 
     return True, "Validado com sucesso"
 
 from django.urls import reverse
+@login_required
+@empresa_obrigatoria
 def adicionar_cliente(request):
     context = {
         "vendedores": Vendedor.objects.all(),
         "zonas": Zona.objects.all(),
-        "transportes": Transporte.objects.all(),
+        "transportes": Transporte.objects.filter(empresa=request.empresa),
         "impostos_list": Impostos.objects.all(),
         "pagamentos": Pagamento.objects.all(),
         "modalidades": Modalidade.objects.all(),
@@ -254,7 +357,7 @@ def adicionar_cliente(request):
 
     if request.method == "POST":
 
-        valido, mensagem = validar_dados_cliente(request.POST, cliente_id=None)
+        valido, mensagem = validar_dados_cliente(request, request.POST, cliente_id=None)
 
         if not valido:
             messages.error(request, mensagem)
@@ -262,7 +365,7 @@ def adicionar_cliente(request):
             return JsonResponse({'status': 'error', 'message': mensagem}, status=400)
         try:
             with transaction.atomic():
-                ultimo = Cliente1.objects.aggregate(max_codigo=Max('codigo'))['max_codigo']
+                ultimo = Cliente1.objects.filter(empresa=request.empresa).aggregate(max_codigo=Max('codigo'))['max_codigo']
                 if ultimo:
                     numero = int(ultimo.replace("C", "")) + 1
                 else:
@@ -271,6 +374,7 @@ def adicionar_cliente(request):
 
                 # ATRIBUIÇÃO À VARIÁVEL 'novo_cliente'
                 novo_cliente = Cliente1.objects.create(
+                    empresa=request.empresa,
                     codigo=novo_codigo,
                     nome=request.POST.get('nome').strip(),
                     contribuinte=request.POST.get('contribuinte') or "999999990",
@@ -292,9 +396,6 @@ def adicionar_cliente(request):
                     precos_id=request.POST.get('precos'),
                 )
 
-                # Agora a variável 'novo_cliente' já existe para o print
-                print(f"--- SUCESSO MYSQL: Gravado ID {novo_cliente.id_cliente} com Código {novo_cliente.codigo} ---")
-
             url_detalhes = reverse('cliente_detalhes', kwargs={'id_cliente': novo_cliente.id_cliente})
 
             # Retorna a URL para o JS redirecionar
@@ -311,43 +412,30 @@ def adicionar_cliente(request):
             return JsonResponse({'status': 'error', 'message': 'Erro ao gravar na base de dados.'}, status=500)
     return render(request, 'subsubconteudo/criar.html',context)
 
-@csrf_exempt
-def adicionar_artigo(request):
-    if request.method != "POST":
-        return JsonResponse({"success": False, "error": "Método inválido"}, status=405)
-
-    try:
-        data = json.loads(request.body)
-        artigo = Artigo.objects.create(
-            nome=data.get("nome"),
-            descricao=data.get("descricao"),
-            preco=data.get("preco"),
-            taxa=data.get("taxa"),
-        )
-        return JsonResponse({"success": True, "id_artigo": artigo.id_artigo})
-    except Exception as e:
-        return JsonResponse({"success": False, "error": str(e)})
-
+@login_required
+@empresa_obrigatoria
 def clientes_view(request):
     vendedores = Vendedor.objects.all().order_by('nome')
-    clientes = Cliente1.objects.all()
+    clientes = Cliente1.objects.filter(empresa=request.empresa),
     return render(request, "webapp.html", {
         "vendedores": vendedores,
         "abrir_modal_cliente": False,
         "clientes": clientes
     })
-
+@login_required
+@empresa_obrigatoria
 def artigos_view(request):
-    artigos = Artigo.objects.all()
+    artigos = Artigo.objects.filter(empresa=request.empresa),
     return render(request, "webapp.html", {
         "abrir_modal_artigo": False,
         "artigos": artigos
     })
-
+@login_required
+@empresa_obrigatoria
 def registar_json(request):
     vendedores = list(Vendedor.objects.values('id_vendedor', 'nome'))
     zona = list(Zona.objects.values('id_zona', 'zona'))
-    transporte = list(Transporte.objects.values('id_transporte', 'descricao'))
+    transporte = list(Transporte.objects.filter(empresa=request.empresa).values('id_transporte', 'descricao'))
     impostos = list(Impostos.objects.values('id_impostos', 'nome'))
     pagamento = list(Pagamento.objects.values('id_pagamento', 'nome'))
     modalidade = list(Modalidade.objects.values('id_modalidade', 'nome'))
@@ -364,14 +452,15 @@ def registar_json(request):
 
 
 from django.http import Http404
-
+@login_required
+@empresa_obrigatoria
 def cliente_dados(request, id_cliente):
     """
     Retorna os dados de um cliente específico em JSON,
     usado para preencher o modal de edição.
     """
     try:
-        cliente = Cliente1.objects.get(id_cliente=id_cliente)
+        cliente = Cliente1.objects.filter(empresa=request.empresa).get(id_cliente=id_cliente)
     except Cliente1.DoesNotExist:
         raise Http404("Cliente não encontrado")
 
@@ -412,14 +501,15 @@ def cliente_dados(request, id_cliente):
     }
 
     return JsonResponse(data)
-
+@login_required
+@empresa_obrigatoria
 def artigo_dados(request, id_artigo):
     """
     Retorna os dados de um cliente específico em JSON,
     usado para preencher o modal de edição.
     """
     try:
-        artigo = Artigo.objects.get(id_artigo=id_artigo)
+        artigo = Artigo.objects.filter(empresa=request.empresa).get(id_artigo=id_artigo)
     except Artigo.DoesNotExist:
         raise Http404("Artigo não encontrado")
 
@@ -433,7 +523,8 @@ def artigo_dados(request, id_artigo):
 
     return JsonResponse(data)
 
-
+@login_required
+@empresa_obrigatoria
 def cliente_editar(request, id_cliente, ):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método não permitido'}, status=405)
@@ -443,13 +534,13 @@ def cliente_editar(request, id_cliente, ):
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'JSON inválido'})
 
-    valido, mensagem = validar_dados_cliente(data, cliente_id=id_cliente, is_edit=True)
+    valido, mensagem = validar_dados_cliente(request, data, cliente_id=id_cliente, is_edit=True)
 
     if not valido:
         print(f"DEBUG: Validação falhou! Motivo: {mensagem}")
         return JsonResponse({'success': False, 'error': mensagem}, status=400)
     try:
-        cliente = Cliente1.objects.get(id_cliente=id_cliente)
+        cliente = Cliente1.objects.filter(empresa=request.empresa).get(id_cliente=id_cliente)
     except Cliente1.DoesNotExist:
         return JsonResponse({'success': False, 'error': "Cliente não encontrado"}, status=404)
 
@@ -479,16 +570,14 @@ def cliente_editar(request, id_cliente, ):
 
     return JsonResponse({'success': True, 'message': 'Cliente atualizado com sucesso'})
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import JsonResponse
 from .models import Artigo
-
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Artigo
-
-def artigo_editar(request, id_artigo):
-    artigo = get_object_or_404(Artigo, id_artigo=id_artigo)
+@login_required
+@empresa_obrigatoria
+def artigo_editar(request, id_artigo=None):
+    if id_artigo:
+        artigo = get_object_or_404(Artigo, id_artigo=id_artigo, empresa=request.empresa)
+    else:
+        artigo = Artigo(empresa=request.empresa)
 
     if request.method == 'POST':
         nome = request.POST.get('nome', '').strip()
@@ -532,30 +621,36 @@ def artigo_editar(request, id_artigo):
         if errors:
             return JsonResponse({'success': False, 'errors': errors}, status=400)
 
-        # atualiza artigo
+        def clean_numeric(value):
+            if not value or value.strip() == "":
+                return 0.00
+            return float(value.replace(',', '.'))
+
         artigo.nome = nome
         artigo.descricao = descricao if descricao else None
         artigo.tipo = tipo
-        artigo.taxa = taxa if taxa else None
-        artigo.preco = preco if preco else None
+        artigo.taxa = clean_numeric(taxa)
+        artigo.preco = clean_numeric(preco)
         artigo.save()
 
         return JsonResponse({'success': True})
 
     return render(request, "subsubconteudo/criar_editar_artigo.html", {"artigo": artigo})
 
-
+@login_required
+@empresa_obrigatoria
 @csrf_exempt
 def cliente_apagar(request, id_cliente):
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Método não permitido"}, status=405)
 
     try:
-        cliente = Cliente1.objects.get(id_cliente=id_cliente)
+        cliente = Cliente1.objects.filter(empresa=request.empresa).get(id_cliente=id_cliente)
 
         # Verifica se existem documentos associados
         existe_documento = DocumentoFinalizado.objects.filter(
-            cliente_id=id_cliente
+            cliente_id=id_cliente,
+            empresa=request.empresa
         ).exists()
 
         if existe_documento:
@@ -573,14 +668,15 @@ def cliente_apagar(request, id_cliente):
 
 from django.db.models import ProtectedError
 
-
+@login_required
+@empresa_obrigatoria
 @csrf_exempt
 def artigo_apagar(request, id_artigo):
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Método não permitido"}, status=405)
 
     try:
-        artigo = Artigo.objects.get(id_artigo=id_artigo)
+        artigo = Artigo.objects.filter(empresa=request.empresa).get(id_artigo=id_artigo)
         artigo.delete()
         return JsonResponse({"success": True})
 
@@ -588,7 +684,6 @@ def artigo_apagar(request, id_artigo):
         return JsonResponse({"success": False, "error": "Artigo não encontrado."})
 
     except ProtectedError:
-        # Este é o erro que o Django lança quando há chaves estrangeiras protegidas
         return JsonResponse({
             "success": False,
             "error": "Não é possível eliminar este artigo porque ele já está associado a documentos ou registos financeiros."
@@ -596,8 +691,11 @@ def artigo_apagar(request, id_artigo):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Erro inesperado: {str(e)}"})
+
+@login_required
+@empresa_obrigatoria
 def artigos_json(request):
-    artigos = Artigo.objects.all()
+    artigos = Artigo.objects.filter(empresa=request.empresa)
     data = []
     for c in artigos:
         data.append({
@@ -609,27 +707,45 @@ def artigos_json(request):
         })
     return JsonResponse(data, safe=False)
 
+
 PRAZO_PAGAMENTO = {
     'Pronto Pagamento': 0,
     '30 DIAS': 30,
     '45 DIAS': 45,
     '60 DIAS': 60,
 }
+
+
+@login_required
+@empresa_obrigatoria
 def get_clientes(request):
-    clientes = Cliente1.objects.select_related('pagamento').all()
+    # Usamos prefetch_related em vez de select_related para evitar o INNER JOIN
+    # que esconde clientes sem pagamento
+    clientes = Cliente1.objects.filter(empresa=request.empresa).prefetch_related('pagamento')
+
     data = []
     for c in clientes:
-        prazo_dias = PRAZO_PAGAMENTO.get(c.pagamento.nome, 0) if c.pagamento else 0
+        prazo_dias = 0
+
+        try:
+            if c.pagamento:
+                nome_pagamento = c.pagamento.nome.strip()
+                prazo_dias = PRAZO_PAGAMENTO.get(nome_pagamento, 0)
+        except:
+            prazo_dias = 0
+
         data.append({
             'id': c.id_cliente,
             'nome': c.nome,
             'prazo': prazo_dias,
         })
+
     return JsonResponse(data, safe=False)
 
-
+@login_required
+@empresa_obrigatoria
 def adicionar_item(request, template_name='faturas/nova_fatura.html'):
-    artigos = Artigo.objects.all().order_by('descricao')
+    artigos = Artigo.objects.filter(empresa=request.empresa).order_by('descricao')
 
     context = {
         'artigos': artigos,
@@ -640,7 +756,8 @@ def adicionar_item(request, template_name='faturas/nova_fatura.html'):
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-
+@login_required
+@empresa_obrigatoria
 @csrf_exempt
 def validar_linha(request):
     if request.method != "POST":
@@ -703,18 +820,39 @@ def validar_linha(request):
 
     return JsonResponse({"ok": True})
 
-from .models import Transporte
-
+@login_required
+@empresa_obrigatoria
 def matriculas_dropdown(request):
-    transportes = Transporte.objects.all().order_by('descricao')  # ou outro filtro
+    transportes = Transporte.objects.filter(empresa=request.empresa).order_by('descricao')  # ou outro filtro
     data = [{"descricao": t.descricao} for t in transportes]
     return JsonResponse(data, safe=False)
 
+@login_required
+@empresa_obrigatoria
+def obter_proximo_numero_final(empresa,tipo, serie, ano):
+    with transaction.atomic():
+        contador, created = DocumentoFinalizadoContador.objects.select_for_update().get_or_create(
+            empresa=empresa,
+            tipo=tipo,
+            serie=serie,
+            ano=ano,
+            defaults={"ultimo_numero": 0}
+        )
+
+        numero = contador.ultimo_numero + 1
+        contador.ultimo_numero = numero
+        contador.save()
+
+        return numero
 
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 
+from datetime import datetime
+
+@login_required
+@empresa_obrigatoria
 @csrf_exempt
 def criar_documento_temp(request):
     if request.method != "POST":
@@ -729,28 +867,38 @@ def criar_documento_temp(request):
         return JsonResponse({"erro": "Campos obrigatórios em falta."}, status=400)
 
     try:
+        # Certifique-se de que os dados do cliente sejam válidos
         cliente = Cliente1.objects.select_related(
-            "transporte",
-            "pagamento",
             "impostos"
-        ).get(id_cliente=cliente_id)
+        ).get(id_cliente=cliente_id,
+              empresa=request.empresa
+              )
     except Cliente1.DoesNotExist:
         return JsonResponse({"erro": "Cliente inválido."}, status=400)
 
-    ano = int(data_emissao[:4])
+    try:
+        # Converte as datas para objetos datetime
+        data_emissao = datetime.strptime(data_emissao, "%Y-%m-%d")  # Supondo que a data seja no formato "YYYY-MM-DD"
+        data_vencimento = datetime.strptime(data_vencimento, "%Y-%m-%d")
+    except ValueError:
+        return JsonResponse({"erro": "Formato de data inválido. Use YYYY-MM-DD."}, status=400)
+
+    ano = data_emissao.year
 
     with transaction.atomic():
         contador, created = DocumentoContador.objects.select_for_update().get_or_create(
+            empresa=request.empresa,
             tipo=documento,
             ano=ano,
             defaults={"serie": "A", "ultimo_numero": 0}
         )
 
-        # Incrementa número
+        # Incrementa o número do documento
         numero = contador.ultimo_numero + 1
         contador.ultimo_numero = numero
         contador.save()
 
+        # Cria o documento temporário
         doc = DocumentoTemp.objects.create(
             tipo=documento,
             serie=contador.serie,
@@ -760,10 +908,11 @@ def criar_documento_temp(request):
             data_emissao=data_emissao,
             data_vencimento=data_vencimento,
             valor_total=0,
-            transporte=cliente.transporte,
+            transporte_id=cliente.transporte_id,
             impostos=cliente.impostos,
-            pagamento=cliente.pagamento if cliente.pagamento else None,
-            moeda_id=15
+            pagamento=cliente.pagamento_id,
+            moeda_id=15,
+            empresa=request.empresa
         )
 
     return JsonResponse({
@@ -774,13 +923,10 @@ def criar_documento_temp(request):
         "ano": doc.ano,
     })
 
-from django.http import JsonResponse
-from .models import DocumentoTemp, Empresa
+from .models import Empresa
 
-
-from django.http import JsonResponse
-from django.utils import timezone
-
+@login_required
+@empresa_obrigatoria
 def obter_documento_temp(request, temp_id):
     try:
         doc = DocumentoTemp.objects.select_related(
@@ -788,13 +934,11 @@ def obter_documento_temp(request, temp_id):
             "cliente__pagamento",
             "cliente__impostos",
             "moeda"
-        ).get(id=temp_id)
+        ).get(id=temp_id,
+              empresa=request.empresa
+        )
     except DocumentoTemp.DoesNotExist:
         return JsonResponse({"erro": "Documento não encontrado"}, status=404)
-
-    empresa = Empresa.objects.first()
-    if not empresa:
-        return JsonResponse({"erro": "Empresa não configurada."}, status=400)
 
     moedas = list(Moeda.objects.values("id", "codigo", "nome", "simbolo"))
 
@@ -815,7 +959,8 @@ def obter_documento_temp(request, temp_id):
             "concelho": doc.cliente.concelho,
             "contribuinte": doc.cliente.contribuinte,
             "email": doc.cliente.email,
-            "transporte": doc.cliente.transporte.descricao,
+            "transporte": doc.cliente.transporte.descricao if (
+                        doc.cliente.transporte and doc.cliente.transporte.descricao) else None,
             "modalidade": {
                 "id": doc.cliente.modalidade.id_modalidade,
                 "nome": doc.cliente.modalidade.nome
@@ -827,7 +972,7 @@ def obter_documento_temp(request, temp_id):
         else:
             cliente_data["local_descarga"] = ""
 
-    artigos_qs = TempArtigos.objects.filter(id_temp=doc).select_related(
+    artigos_qs = TempArtigos.objects.filter(id_temp=doc, empresa=request.empresa).select_related(
         "id_art",
         "motivo"
     )
@@ -848,6 +993,7 @@ def obter_documento_temp(request, temp_id):
             "motivo_descricao": a.motivo.description if a.motivo else None
         })
 
+    empresa = request.empresa
     return JsonResponse({
         # --- DOCUMENTO ---
         "id": doc.id,
@@ -865,8 +1011,7 @@ def obter_documento_temp(request, temp_id):
         "data_carga": doc.data_carga,
         "data_descarga": doc.data_descarga,
         "expedicao": doc.expedicao,
-        "matricula": doc.transporte.descricao,
-
+        "matricula": doc.transporte.descricao if doc.transporte else None,
 
         # --- CLIENTE ---
         "cliente": cliente_data,
@@ -906,36 +1051,52 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         limite = timezone.now() - timedelta(days=7)
         documentos = DocumentoTemp.objects.filter(
-            estado='Rascunho',        # ou qualquer filtro que desejar
-            atualizado_em__lt=limite  # não foram alterados nos últimos 7 dias
+            estado='Rascunho',
+            atualizado_em__lt=limite,
         )
         count = documentos.count()
         documentos.delete()
         self.stdout.write(self.style.SUCCESS(f'Apagados {count} documentos antigos.'))
 
+@login_required
+@empresa_obrigatoria
 def apagar_documento(request):
     if request.method == "POST":
+        import json
+        data = json.loads(request.body)
+        doc_id = data.get("id")
+        doc_tipo = data.get("tipo")
+
+        if not doc_id:
+            return JsonResponse({"success": False, "error": "ID do documento não fornecido."}, status=400)
+
         try:
-            import json
-            data = json.loads(request.body)
-            temp_id = data.get("id")
+            if doc_tipo == "TEMP":
+                documento = DocumentoTemp.objects.filter(id=doc_id, empresa=request.empresa).first()
+                if not documento:
+                    return JsonResponse({"success": False, "error": "Documento temporário não encontrado."}, status=404)
+                documento.delete()
 
-            if not temp_id:
-                return JsonResponse({"success": False, "error": "ID do documento não fornecido."}, status=400)
+            elif doc_tipo == "NC":
+                documento = DocumentoFinalizado.objects.filter(id=doc_id, tipo='NC', empresa=request.empresa).first()
+                if not documento:
+                    return JsonResponse({"success": False, "error": "Nota de Crédito não encontrada."}, status=404)
+                documento.estado = 'Anulado'
+                documento.save()
 
-            documento = DocumentoTemp.objects.filter(id=temp_id).first()
-            if not documento:
-                return JsonResponse({"success": False, "error": "Documento não encontrado."}, status=404)
+            else:
+                return JsonResponse({"success": False, "error": "Tipo de documento não suportado."}, status=400)
 
-            documento.delete()
-            return JsonResponse({"success": True, "message": "Documento apagado com sucesso."})
+            return JsonResponse({"success": True, "message": "Documento processado com sucesso."})
 
         except Exception as e:
-            return JsonResponse({"success": False, "error": f"Erro ao apagar documento: {str(e)}"}, status=400)
+            return JsonResponse({"success": False, "error": f"Erro ao processar documento: {str(e)}"}, status=400)
 
     return JsonResponse({"success": False, "error": "Método inválido."}, status=405)
 
 import re
+@login_required
+@empresa_obrigatoria
 def validar_ordem_compra(ordem_compra):
     """ Valida se a ordem de compra segue o formato esperado (ex: 'PO12345'). """
     if ordem_compra:
@@ -943,6 +1104,8 @@ def validar_ordem_compra(ordem_compra):
             raise ValidationError("Ordem de compra inválida. O formato esperado é 'PO12345'.")
     return ordem_compra
 
+@login_required
+@empresa_obrigatoria
 def validar_numero_compromisso(numero_compromisso):
     """ Valida se o número de compromisso é um número válido e dentro do limite esperado. """
     if numero_compromisso:
@@ -952,6 +1115,8 @@ def validar_numero_compromisso(numero_compromisso):
             raise ValidationError("Número de compromisso inválido. O comprimento deve ser entre 6 e 12 caracteres.")
     return numero_compromisso
 
+@login_required
+@empresa_obrigatoria
 def validar_texto_longo(campo_texto, limite=500):
     """ Verifica se o texto ultrapassa o limite de caracteres e o corta se necessário. """
     if campo_texto:
@@ -962,11 +1127,12 @@ def validar_texto_longo(campo_texto, limite=500):
 
 import logging
 
-# Configurar o logger
 logger = logging.getLogger(__name__)
 from django.core.exceptions import ValidationError
 from decimal import Decimal, ROUND_HALF_UP
 
+@login_required
+@empresa_obrigatoria
 def atualizar_documento(request):
     if request.method == "POST":
         try:
@@ -975,7 +1141,7 @@ def atualizar_documento(request):
             if not temp_id:
                 return JsonResponse({"success": False, "error": "temp_id não fornecido"}, status=400)
 
-            documento = DocumentoTemp.objects.filter(id=temp_id).first()
+            documento = DocumentoTemp.objects.filter(id=temp_id, empresa=request.empresa).first()
             if not documento:
                 return JsonResponse({"success": False, "error": "Documento não encontrado"}, status=404)
 
@@ -993,7 +1159,6 @@ def atualizar_documento(request):
             if ordem_compra:
                 documento.ordem_compra = validar_ordem_compra(ordem_compra)
 
-            # Validar e atualizar número de compromisso
             numero_compromisso = data.get("numero_comp")
             if numero_compromisso:
                 documento.numero_compromisso = validar_numero_compromisso(numero_compromisso)
@@ -1096,7 +1261,7 @@ def atualizar_documento(request):
                     status=400
                 )
             if cliente_id:
-                cliente_obj = Cliente1.objects.filter(id_cliente=cliente_id).first()
+                cliente_obj = Cliente1.objects.filter(id_cliente=cliente_id, empresa=request.empresa).first()
                 if not cliente_obj:
                     return JsonResponse({"success": False, "error": f"Cliente {cliente_id} não encontrado."}, status=400)
                 documento.cliente_id = cliente_obj.id_cliente
@@ -1118,13 +1283,13 @@ def atualizar_documento(request):
             # Transporte (opcional)
             transporte_descricao = data.get("matricula")
             if transporte_descricao:
-                transporte_obj = Transporte.objects.filter(descricao=transporte_descricao).first()
+                transporte_obj = Transporte.objects.filter(descricao=transporte_descricao, empresa=request.empresa).first()
                 if not transporte_obj:
                     return JsonResponse({"success": False, "error": f"Transporte com matrícula {transporte_descricao} não encontrado."}, status=400)
                 documento.transporte_id = transporte_obj.id_transporte
 
 
-            TempArtigos.objects.filter(id_temp=documento.id).delete()
+            TempArtigos.objects.filter(id_temp=documento.id, empresa=request.empresa).delete()
 
             # Criar novos artigos
             artigos_data = data.get("artigos", [])
@@ -1144,7 +1309,7 @@ def atualizar_documento(request):
                             return JsonResponse({"success": False, "error": "Código do artigo não fornecido"},
                                                 status=400)
 
-                        artigo_obj = Artigo.objects.filter(id_artigo=artigo_codigo).first()
+                        artigo_obj = Artigo.objects.filter(id_artigo=artigo_codigo, empresa=request.empresa).first()
                         if not artigo_obj:
                             logger.error(f"Erro: Artigo com código {artigo_codigo} não encontrado.")
                             return JsonResponse(
@@ -1232,7 +1397,6 @@ def atualizar_documento(request):
                         motivo_tax = artigo_data.get("motivo")
 
                         if iva == 0:
-                            # Motivo obrigatório
                             if not motivo_tax:
                                 return JsonResponse(
                                     {"success": False, "error": "Motivo de IVA obrigatório quando a taxa é 0%."},
@@ -1248,7 +1412,6 @@ def atualizar_documento(request):
                                 )
 
                         else:
-                            # Não deve haver motivo quando IVA ≠ 0
                             if motivo_tax:
                                 return JsonResponse(
                                     {"success": False, "error": "Motivo de IVA só é permitido quando a taxa é 0%."},
@@ -1288,7 +1451,8 @@ def atualizar_documento(request):
                             desconto=desconto,
                             taxa=iva,
                             total=subtotal,
-                            motivo_id=tax_reason.id if tax_reason else None
+                            motivo_id=tax_reason.id if tax_reason else None,
+                            empresa=request.empresa
                         )
 
                     except Exception as e:
@@ -1296,8 +1460,11 @@ def atualizar_documento(request):
                         logger.error(f"Erro ao processar artigo {artigo_data}: {str(e)}")
                         return JsonResponse({"success": False, "error": f"Erro ao processar artigo: {str(e)}"},
                                             status=400)
+            if documento.tipo == 'NC':
+                valor_total = -abs(valor_total)
 
             documento.valor_total = valor_total
+            documento.empresa = request.empresa
             documento.save()
 
             return JsonResponse({
@@ -1313,6 +1480,8 @@ def atualizar_documento(request):
 
 from .models import DocumentoTemp, TempArtigos
 
+@login_required
+@empresa_obrigatoria
 def editar_fatura(request):
     """
     View para editar uma fatura temporária.
@@ -1324,13 +1493,11 @@ def editar_fatura(request):
     temp_id = request.GET.get('temp_id')
 
     # Busca o documento temporário
-    documento = get_object_or_404(DocumentoTemp, id=temp_id)
+    documento = get_object_or_404(DocumentoTemp, id=temp_id, empresa=request.empresa)
 
-    # Busca todos os artigos ligados a este documento
-    # select_related para otimizar joins com id_art e motivo
-    artigos = TempArtigos.objects.filter(id_temp=documento).select_related('id_art', 'motivo')
+    artigos = TempArtigos.objects.filter(id_temp=documento, empresa=request.empresa).select_related('id_art', 'motivo')
 
-    artigos_novos = Artigo.objects.all()
+    artigos_novos = Artigo.objects.filter(empresa=request.empresa)
 
     # Renderiza o template, passando documento e artigos
     return render(request, 'faturas/editar_faturas.html', {
@@ -1339,6 +1506,8 @@ def editar_fatura(request):
         'artigos_novos': artigos_novos
     })
 
+@login_required
+@empresa_obrigatoria
 def gerar_codigo_at(documento):
     """
     Gera um código único da AT para o documento.
@@ -1352,7 +1521,6 @@ from django.conf import settings
 from docx.oxml.ns import qn
 
 from docxtpl import DocxTemplate
-from decimal import Decimal
 from collections import defaultdict
 from copy import deepcopy
 from docx.oxml import OxmlElement
@@ -1360,6 +1528,8 @@ import copy
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.text.paragraph import Paragraph
 
+@login_required
+@empresa_obrigatoria
 def remover_bordas(cell):
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()
@@ -1380,6 +1550,8 @@ from docx.shared import Mm
 from docxtpl import InlineImage
 
 
+@login_required
+@empresa_obrigatoria
 def gerar_qr(documento: DocumentoFinalizado, docx_obj):
     """
     Gera o QR Code oficial da fatura e retorna como InlineImage para inserir no docx.
@@ -1421,6 +1593,8 @@ from docx.shared import Pt, RGBColor
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 
+@login_required
+@empresa_obrigatoria
 def encontrar_tabela_por_conteudo(doc, fragmento_texto):
     fragmento = fragmento_texto.lower().strip()
     for i, tabela in enumerate(doc.tables):
@@ -1430,13 +1604,15 @@ def encontrar_tabela_por_conteudo(doc, fragmento_texto):
                     return tabela
     return None
 
-def gerar_word_fatura(documento_final, via="original"):
+@login_required
+@empresa_obrigatoria
+def gerar_word_fatura(request, documento_final, via="original"):
 
     modelo_path = os.path.join(
         settings.BASE_DIR,
         "Faturamento/docs/Documento.docx"
     )
-    artigos = FinArtigos.objects.filter(id_final=documento_final)
+    artigos = FinArtigos.objects.filter(id_final=documento_final, empresa=request.empresa)
 
     mapa_iva = defaultdict(lambda: {"base": Decimal("0.00"), "valor": Decimal("0.00")})
     subtotal = Decimal("0.00")
@@ -1507,7 +1683,7 @@ def gerar_word_fatura(documento_final, via="original"):
     # ARTIGOS
     # =============================
 
-    artigos = FinArtigos.objects.filter(id_final=documento_final)
+    artigos = FinArtigos.objects.filter(id_final=documento_final, empresa=request.empresa)
 
     vias_nomes = {
         "original": ["Original"],
@@ -1715,7 +1891,8 @@ import os
 import tempfile
 import shutil
 
-
+@login_required
+@empresa_obrigatoria
 def converter_word_para_pdf(word_buffer):
     temp_dir = tempfile.mkdtemp()
     word_path = os.path.join(temp_dir, "input.docx")
@@ -1748,9 +1925,11 @@ def converter_word_para_pdf(word_buffer):
     finally:
         shutil.rmtree(temp_dir)
 
+@login_required
+@empresa_obrigatoria
 def gerar_pdf_fatura(request, documento_id):
     # Pega o documento
-    documento = DocumentoFinalizado.objects.get(id=documento_id)
+    documento = DocumentoFinalizado.objects.get(id=documento_id, empresa=request.empresa)
 
     via = request.GET.get("via", "original")
 
@@ -1763,6 +1942,8 @@ def gerar_pdf_fatura(request, documento_id):
     return response
 
 from django.http import HttpResponse
+@login_required
+@empresa_obrigatoria
 def finalizar_documento(request):
     if request.method == "POST":
         try:
@@ -1771,7 +1952,7 @@ def finalizar_documento(request):
             if not temp_id:
                 return JsonResponse({"success": False, "error": "temp_id não fornecido"}, status=400)
 
-            documento = DocumentoTemp.objects.filter(id=temp_id).first()
+            documento = DocumentoTemp.objects.filter(id=temp_id, empresa=request.empresa).first()
             if not documento:
                 return JsonResponse({"success": False, "error": "Documento não encontrado"}, status=404)
 
@@ -1902,7 +2083,7 @@ def finalizar_documento(request):
                     status=400
                 )
             if cliente_id:
-                cliente_obj = Cliente1.objects.filter(id_cliente=cliente_id).first()
+                cliente_obj = Cliente1.objects.filter(id_cliente=cliente_id, empresa=request.empresa).first()
                 if not cliente_obj:
                     return JsonResponse({"success": False, "error": f"Cliente {cliente_id} não encontrado."}, status=400)
                 documento.cliente_id = cliente_obj.id_cliente
@@ -1928,7 +2109,8 @@ def finalizar_documento(request):
 
             if transporte_descricao:
                 transporte_obj = Transporte.objects.filter(
-                    descricao=transporte_descricao
+                    descricao=transporte_descricao,
+                    empresa=request.empresa
                 ).first()
 
                 if not transporte_obj:
@@ -1939,6 +2121,21 @@ def finalizar_documento(request):
                     )
 
                 documento.transporte_id = transporte_obj.id_transporte
+
+            mapa_fatura = {}
+
+            if documento.tipo == 'NC':
+
+                if not documento.documento_origem:
+                    return JsonResponse(
+                        {"success": False, "error": "Nota de crédito deve ter documento de origem."},
+                        status=400
+                    )
+
+                artigos_fatura = FinArtigos.objects.filter(id_final=documento.documento_origem, empresa=request.empresa)
+
+                for art in artigos_fatura:
+                    mapa_fatura[art.id_art_id] = art
 
             artigos_data = data.get("artigos", [])
             artigos_validos = []
@@ -1951,7 +2148,7 @@ def finalizar_documento(request):
                             return JsonResponse({"success": False, "error": "Código do artigo não fornecido"},
                                                 status=400)
 
-                        artigo_obj = Artigo.objects.filter(id_artigo=artigo_codigo).first()
+                        artigo_obj = Artigo.objects.filter(id_artigo=artigo_codigo, empresa=request.empresa).first()
                         if not artigo_obj:
                             logger.error(f"Erro: Artigo com código {artigo_codigo} não encontrado.")
                             return JsonResponse(
@@ -2052,7 +2249,6 @@ def finalizar_documento(request):
                                 )
 
                         else:
-                            # Não deve haver motivo quando IVA ≠ 0
                             if motivo_tax:
                                 return JsonResponse(
                                     {"success": False, "error": "Motivo de IVA só é permitido quando a taxa é 0%."},
@@ -2060,6 +2256,38 @@ def finalizar_documento(request):
                                 )
 
                             tax_reason = None
+
+                        if documento.tipo == 'NC':
+
+                            artigo_fatura = mapa_fatura.get(artigo_obj.id_artigo)
+
+                            if not artigo_fatura:
+                                return JsonResponse(
+                                    {"success": False,
+                                     "error": f"O artigo {artigo_codigo} não existe na fatura original."},
+                                    status=400
+                                )
+
+                            if (
+                                    artigo_fatura.preco != preco or
+                                    artigo_fatura.desconto != desconto or
+                                    artigo_fatura.taxa != iva or
+                                    artigo_fatura.descricao != descricao_artigo
+                            ):
+                                return JsonResponse(
+                                    {"success": False,
+                                     "error": f"O artigo {artigo_codigo} não corresponde ao da fatura original."},
+                                    status=400
+                                )
+
+                            if quantidade > artigo_fatura.quantidade:
+                                return JsonResponse(
+                                    {
+                                        "success": False,
+                                        "error": f"A quantidade do artigo {artigo_codigo} excede a da fatura original."
+                                    },
+                                    status=400
+                                )
 
                         artigos_validos.append({
                             "id_art": artigo_obj,
@@ -2071,6 +2299,7 @@ def finalizar_documento(request):
                             "taxa": iva,
                             "total": subtotal,
                             "motivo": tax_reason,
+                            "empresa": request.empresa
                         })
 
                     except Exception as e:
@@ -2103,6 +2332,10 @@ def finalizar_documento(request):
                 total_com_iva = (subtotal * (1 + iva / 100)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                 valor_total += total_com_iva
 
+
+            if documento.tipo == 'NC':
+                    valor_total = -abs(valor_total)
+
             if documento.tipo in ['FR', 'FS']:
                 total_pago = valor_total
             else:
@@ -2128,14 +2361,20 @@ def finalizar_documento(request):
                         "error": f"Fatura Simplificada não pode exceder {limite_consumidor_final}€. Use Fatura (FT)."
                     }, status=400)
 
+            ano = documento.data_emissao.year
+            serie = documento.serie
+            tipo = documento.tipo
+
+            numero_final = obter_proximo_numero_final(tipo, serie, ano)
+
             empr = Empresa.objects.first()
             codigo_at_tributaria = gerar_codigo_at(documento)
             documento.valor_total = valor_total
             documento_final = DocumentoFinalizado.objects.create(
-                tipo=documento.tipo,
-                serie=documento.serie,
-                numero=documento.numero,
-                ano=documento.ano,
+                tipo=tipo,
+                serie=serie,
+                numero=numero_final,
+                ano=ano,
 
                 cliente_id=documento.cliente.id_cliente if documento.cliente else None,
                 cliente_nome=documento.cliente.nome if documento.cliente else "",
@@ -2172,6 +2411,8 @@ def finalizar_documento(request):
                 expedicao=expedicao,
                 transporte_descricao=documento.transporte.descricao,
                 codigo_at_tributaria=codigo_at_tributaria,
+                documento_origem=documento.documento_origem if documento.documento_origem else None,
+                empresa=request.empresa,
 
                 estado='Finalizado'
             )
@@ -2179,7 +2420,7 @@ def finalizar_documento(request):
             if documento_final.tipo in ['FR', 'FS']:
                 try:
                     ano_atual = timezone.now().year
-                    ultimo_re = Recibo.objects.filter(ano=ano_atual).order_by('-numero').first()
+                    ultimo_re = Recibo.objects.filter(ano=ano_atual, empresa=request.empresa).order_by('-numero').first()
                     novo_num_re = (ultimo_re.numero + 1) if ultimo_re else 1
 
                     novo_recibo = Recibo.objects.create(
@@ -2191,7 +2432,8 @@ def finalizar_documento(request):
                         data_emissao=documento_final.data_emissao,
                         modalidade_nome=documento_final.modalidade_nome.nome if documento_final.modalidade_nome else "Numerário",
                         valor_total=documento_final.valor_total,
-                        estado='Normal'
+                        estado='Normal',
+                        empresa=request.empresa
                     )
 
                     ReciboLinhas.objects.create(
@@ -2202,7 +2444,8 @@ def finalizar_documento(request):
                         data_emissao=documento_final.data_emissao,
                         valor_documento=documento_final.valor_total,
                         valor_recebido=documento_final.valor_total,
-                        valor_em_divida=0
+                        valor_em_divida=0,
+                        empresa=request.empresa
                     )
 
                     logger.info(f"Recibo {novo_recibo.numero} gerado automaticamente para {documento_final.tipo}")
@@ -2221,7 +2464,8 @@ def finalizar_documento(request):
                     desconto=artigo["desconto"],
                     taxa=artigo["taxa"],
                     total=artigo["total"],
-                    motivo_id=artigo["motivo"].id if artigo["motivo"] else None
+                    motivo_id=artigo["motivo"].id if artigo["motivo"] else None,
+                    empresa=artigo["empresa"]
                 )
 
             documento.delete()
@@ -2249,8 +2493,18 @@ def finalizar_documento(request):
         )
 
 
+@login_required
+@empresa_obrigatoria
 def ver_fatura(request, id):
-    documento = get_object_or_404(DocumentoFinalizado, id=id)
+    documento = get_object_or_404(DocumentoFinalizado, id=id, empresa=request.empresa)
+
+    nota_credito = DocumentoFinalizado.objects.filter(documento_origem=documento, empresa=request.empresa).exclude(estado='Anulado').first()
+
+    if nota_credito:
+        valor_nota_credito = nota_credito.valor_total
+    else:
+        valor_nota_credito = 0
+
     return render(
         request,
         "faturas/ver_faturas.html",
@@ -2259,17 +2513,17 @@ def ver_fatura(request, id):
             'id_cliente': documento.cliente_id,
             'tipo_documento': documento.tipo,
             'valor_em_divida': documento.valor_total - documento.total_pago,
-            'modalidades': Modalidade.objects.all()
+            'modalidades': Modalidade.objects.all(),
+            'valor_nota_credito': valor_nota_credito,
+            'moeda_tipo': documento.moeda_simbolo
         }
     )
 
-
-from django.http import JsonResponse
-
-
+@login_required
+@empresa_obrigatoria
 def api_documento_completo(request, doc_id):
-    doc = get_object_or_404(DocumentoFinalizado, id=doc_id)
-    artigos = FinArtigos.objects.filter(id_final=doc)
+    doc = get_object_or_404(DocumentoFinalizado, id=doc_id, empresa=request.empresa)
+    artigos = FinArtigos.objects.filter(id_final=doc, empresa=request.empresa)
 
     lista_artigos = [{
         "tipo": a.tipo,
@@ -2332,41 +2586,54 @@ def api_documento_completo(request, doc_id):
     }
     return JsonResponse(data)
 
+from django.shortcuts import render
+
 from django.db.models import Sum
-from django.shortcuts import render, get_object_or_404
+from .models import Cliente1, Vendedor, Zona, Transporte, Impostos, Pagamento, Modalidade, Precos
 
+@login_required
+@empresa_obrigatoria
 def cliente_detalhes(request, id_cliente):
-    cliente = get_object_or_404(Cliente1, id_cliente=id_cliente)
+    cliente = get_object_or_404(Cliente1, id_cliente=id_cliente, empresa=request.empresa)
 
-    todos_docs = DocumentoFinalizado.objects.filter(cliente_id=id_cliente)
+    todos_docs = DocumentoFinalizado.objects.filter(cliente_id=id_cliente, empresa=request.empresa)
 
-    faturas_financeiras = todos_docs.exclude(tipo='GT')
+    faturas_faturadas = todos_docs.exclude(tipo__in=['GT', 'NC'])
+    faturas_financeiras = todos_docs.exclude(tipo__in=['GT'])
     guias_transporte = todos_docs.filter(tipo='GT')
-    recibos = Recibo.objects.filter(cliente_id=id_cliente).order_by('-criado_em')
-    total_faturado = faturas_financeiras.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+
+    recibos = Recibo.objects.filter(cliente_id=id_cliente, empresa=request.empresa).order_by('-criado_em')
+
+    total_faturado = faturas_faturadas.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+
+    total_nota_credito = 0
+    for fatura in faturas_financeiras:
+        notas_credito = DocumentoFinalizado.objects.filter(documento_origem=fatura, empresa=request.empresa).exclude(estado='Anulado')
+
+        total_nota_credito += sum(nota_credito.valor_total for nota_credito in notas_credito)
+
+    total_faturado_com_desconto = total_faturado + total_nota_credito
 
     total_via_recibos = Recibo.objects.filter(
         cliente_id=id_cliente,
-        estado='Normal'
+        estado='Normal',
+        empresa=request.empresa
     ).aggregate(Sum('valor_total'))['valor_total__sum'] or 0
 
-    total_pago_no_ato = faturas_financeiras.filter(
-        tipo__in=['FR']
-    ).aggregate(Sum('total_pago'))['total_pago__sum'] or 0
+    total_recebido = total_via_recibos
 
-    total_recebido = total_via_recibos + total_pago_no_ato
-    saldo_pendente = total_faturado - total_recebido
+    saldo_pendente = total_faturado_com_desconto - total_recebido
 
     context = {
         "cliente": cliente,
         "faturas_financeiras": faturas_financeiras,
         "guias_transporte": guias_transporte,
-        'total_acumulado': total_faturado,
+        "total_faturado": total_faturado,
         'total_recebido': total_recebido,
         'saldo_pendente': saldo_pendente,
         "vendedores": Vendedor.objects.all(),
         "zonas": Zona.objects.all(),
-        "transportes": Transporte.objects.all(),
+        "transportes": Transporte.objects.filter(empresa=request.empresa),
         "impostos_list": Impostos.objects.all(),
         "pagamentos": Pagamento.objects.all(),
         "modalidades": Modalidade.objects.all(),
@@ -2377,10 +2644,11 @@ def cliente_detalhes(request, id_cliente):
     return render(request, "subsubconteudo/cliente_detalhes.html", context)
 
 import csv
+@login_required
+@empresa_obrigatoria
 def exportar_cliente_csv(request, id_cliente):
-    # 1. Buscar os dados
-    cliente = Cliente1.objects.get(id_cliente=id_cliente)
-    facturas = DocumentoFinalizado.objects.filter(cliente_id=id_cliente)
+    cliente = Cliente1.objects.get(id_cliente=id_cliente, empresa=request.empresa)
+    facturas = DocumentoFinalizado.objects.filter(cliente_id=id_cliente, empresa=request.empresa)
 
     NOMES_TIPOS = {
         'FT': 'Fatura',
@@ -2431,14 +2699,16 @@ def exportar_cliente_csv(request, id_cliente):
 
     return response
 
-
+@login_required
+@empresa_obrigatoria
 def guias_json(request):
     TIPO_EXTENSO = {
         'GT': 'Guia de Transporte',
     }
     documentos = (
         DocumentoFinalizado.objects
-        .filter(tipo__in=TIPO_EXTENSO.keys())
+        .filter(tipo__in=TIPO_EXTENSO.keys(),
+                empresa=request.empresa)
         .order_by('-id', '-data_emissao')
     )
 
@@ -2458,6 +2728,8 @@ def guias_json(request):
 
     return JsonResponse(data, safe=False)
 
+@login_required
+@empresa_obrigatoria
 @csrf_exempt
 def reservar_numero_guia(request):
     if request.method != "POST":
@@ -2475,6 +2747,7 @@ def reservar_numero_guia(request):
     try:
         with transaction.atomic():
             contador, created = DocumentoContador.objects.select_for_update().get_or_create(
+                empresa=request.empresa,
                 tipo=documento,
                 ano=ano,
                 defaults={"serie": "G", "ultimo_numero": 0}
@@ -2496,6 +2769,8 @@ def reservar_numero_guia(request):
     except Exception as e:
         return JsonResponse({"erro": str(e)}, status=500)
 
+@login_required
+@empresa_obrigatoria
 def guia_documento(request):
     cliente_id = request.GET.get('cliente')
     tipo = request.GET.get('tipo', 'GT')
@@ -2505,7 +2780,7 @@ def guia_documento(request):
     data_emissao = request.GET.get('data')
 
     # Busca o cliente para mostrar o nome/NIF no topo da página
-    cliente = get_object_or_404(Cliente1, id_cliente=cliente_id)
+    cliente = get_object_or_404(Cliente1, id_cliente=cliente_id, empresa=request.empresa)
 
     context = {
         'cliente': cliente,
@@ -2519,18 +2794,17 @@ def guia_documento(request):
 
     return render(request, 'guias/nova_guia.html', context)
 
+@login_required
+@empresa_obrigatoria
 def api_guia_preparar(request):
     cliente_id = request.GET.get('cliente')
     moeda_id = request.GET.get('moeda', 1)
 
-    empresa = Empresa.objects.first()
-    if not empresa:
-        return JsonResponse({"erro": "Empresa não configurada."}, status=400)
-
     cliente_data = None
     if cliente_id:
         c = get_object_or_404(Cliente1.objects.select_related("transporte", "modalidade", "impostos"),
-                              id_cliente=cliente_id)
+                              id_cliente=cliente_id,
+                              empresa=request.empresa)
         cliente_data = {
             "id": c.id_cliente,
             "codigo": c.codigo,
@@ -2553,6 +2827,7 @@ def api_guia_preparar(request):
 
     moeda_sel = Moeda.objects.filter(id=moeda_id).first() or Moeda.objects.first()
 
+    empresa=request.empresa
     return JsonResponse({
         # --- DOCUMENTO (Rascunho vindo da URL) ---
         "id": None,  # Não existe ID temp ainda
@@ -2595,6 +2870,8 @@ def api_guia_preparar(request):
         "artigos": []
     })
 
+@login_required
+@empresa_obrigatoria
 def finalizar_documento_guia(request):
     if request.method == "POST":
         try:
@@ -2668,7 +2945,6 @@ def finalizar_documento_guia(request):
                             status=400
                         )
 
-                    # Só comparar se existir data_carga
                     if data_carga_str and data_descarga < data_carga:
                         return JsonResponse(
                             {"success": False, "error": "A data de descarga não pode ser anterior à data de carga."},
@@ -2687,7 +2963,7 @@ def finalizar_documento_guia(request):
                     )
             expedicao = data.get("expedicao")
             if expedicao:
-                if len(expedicao) > 255:  # Limite de 255 caracteres para local de descarga
+                if len(expedicao) > 255:
                     raise ValidationError("O modo de expedição não pode ter mais que 255 caracteres.")
 
             cliente_id = data.get("cliente_id")
@@ -2697,7 +2973,7 @@ def finalizar_documento_guia(request):
                     status=400
                 )
             if cliente_id:
-                cliente_obj = Cliente1.objects.filter(id_cliente=cliente_id).first()
+                cliente_obj = Cliente1.objects.filter(id_cliente=cliente_id, empresa=request.empresa).first()
                 if not cliente_obj:
                     return JsonResponse({"success": False, "error": f"Cliente {cliente_id} não encontrado."}, status=400)
                 cliente_id = cliente_obj.id_cliente
@@ -2715,7 +2991,8 @@ def finalizar_documento_guia(request):
 
             if transporte_descricao:
                 transporte_obj = Transporte.objects.filter(
-                    descricao=transporte_descricao
+                    descricao=transporte_descricao,
+                    empresa=request.empresa
                 ).first()
 
                 if not transporte_obj:
@@ -2750,7 +3027,7 @@ def finalizar_documento_guia(request):
                             return JsonResponse({"success": False, "error": "Código do artigo não fornecido"},
                                                 status=400)
 
-                        artigo_obj = Artigo.objects.filter(id_artigo=artigo_codigo).first()
+                        artigo_obj = Artigo.objects.filter(id_artigo=artigo_codigo, empresa=request.empresa).first()
                         if not artigo_obj:
                             logger.error(f"Erro: Artigo com código {artigo_codigo} não encontrado.")
                             return JsonResponse(
@@ -2903,13 +3180,12 @@ def finalizar_documento_guia(request):
 
 
             id_cliente = data.get("cliente_id")
-            cliente = Cliente1.objects.filter(id_cliente=id_cliente).first()
+            cliente = Cliente1.objects.filter(id_cliente=id_cliente, empresa=request.empresa).first()
 
             if not cliente:
                 raise ValueError("Cliente não encontrado")
 
             serie = data.get("serie")
-            ano = data.get("ano")
             numero_raw = data.get("numero")
 
             if not numero_raw:
@@ -2925,12 +3201,18 @@ def finalizar_documento_guia(request):
                     {"success": False, "error": "Número do documento inválido."},
                     status=400
                 )
-            empr = Empresa.objects.first()
+
+            ano = data_emissao.year
+            serie = data.get("serie")
+
+            numero_final = obter_proximo_numero_final(tipo, serie, ano)
+
+            empr = request.empresa
             with transaction.atomic():
                 documento_final = DocumentoFinalizado.objects.create(
                     tipo=tipo,
                     serie=serie,
-                    numero=numero,
+                    numero=numero_final,
                     ano=ano,
 
                     cliente_id=id_cliente,
@@ -2967,6 +3249,7 @@ def finalizar_documento_guia(request):
                     expedicao=expedicao,
                     transporte_descricao=transporte_descricao,
                     codigo_at_tributaria= "",
+                    empresa=request.empresa,
 
                     estado='Finalizado'
                 )
@@ -2982,7 +3265,8 @@ def finalizar_documento_guia(request):
                         desconto=artigo["desconto"],
                         taxa=artigo["taxa"],
                         total=artigo["total"],
-                        motivo_id=artigo["motivo"].id if artigo["motivo"] else None
+                        motivo_id=artigo["motivo"].id if artigo["motivo"] else None,
+                        empresa=request.empresa
                     )
 
                 codigo_at = gerar_codigo_at(documento_final)
@@ -3010,19 +3294,22 @@ def finalizar_documento_guia(request):
             {"success": False, "error": "Método não permitido. Use POST."},
             status=405
         )
-from django.db import IntegrityError
 from django.db.models import F
+
+@login_required
+@empresa_obrigatoria
 @transaction.atomic
 def criar_recibo_cliente(request, id):
     if request.method != "POST":
         return JsonResponse({"error": "Método não permitido. Utilize POST."}, status=405)
+
     metodo_nome = request.POST.get('metodo')
 
     # 1. Verifica se o campo foi preenchido
     if not metodo_nome:
         return JsonResponse({"error": "O método de pagamento é obrigatório."}, status=400)
 
-    # 2. Verifica se o método existe na tua base de dados
+    # 2. Verifica se o método existe na base de dados
     modalidade_valida = Modalidade.objects.filter(nome=metodo_nome).exists()
     if not modalidade_valida:
         return JsonResponse({"error": "Método de pagamento inválido ou não autorizado."}, status=400)
@@ -3030,29 +3317,56 @@ def criar_recibo_cliente(request, id):
     try:
         valor_str = request.POST.get('valor', '0').replace(',', '.')
         valor_disponivel = Decimal(valor_str)
-        metodo = request.POST.get('metodo')
 
         if valor_disponivel <= 0:
             return JsonResponse({"error": "O valor do recibo deve ser superior a zero."}, status=400)
 
+        # Buscar faturas pendentes
         faturas_pendentes = DocumentoFinalizado.objects.filter(
             cliente_id=id,
-            estado='Finalizado'
-        ).exclude(
-            tipo__in=['GT', 'FR']
-        ).filter(
+            estado='Finalizado',
+            empresa=request.empresa
+        ).exclude(tipo__in=['GT', 'FR']).filter(
             total_pago__lt=F('valor_total')
         ).order_by('data_emissao', 'id')
 
         if not faturas_pendentes.exists():
             return JsonResponse({"error": "Este cliente não possui faturas pendentes de pagamento."}, status=400)
 
-        # 4. Gerar Numeração Sequencial
+        # Calcular o total da dívida restante antes de criar o recibo
+        total_divida_restante = 0
+        for fatura in faturas_pendentes:
+            # Buscar notas de crédito para a fatura
+            notas_credito = DocumentoFinalizado.objects.filter(documento_origem=fatura, empresa=request.empresa).exclude(estado='Anulado')
+
+            # Calcular o valor total das notas de crédito
+            valor_nota_credito = sum(nota_credito.valor_total for nota_credito in notas_credito)
+
+            if valor_nota_credito > 0:
+                valor_nota_credito = 0
+
+            # Calcular a dívida atual, considerando as notas de crédito
+            divida_atual = fatura.valor_total - fatura.total_pago + valor_nota_credito
+
+            # Garantir que a dívida não seja negativa
+            if divida_atual < 0:
+                divida_atual = 0
+
+            # Atualizar o total de dívida restante
+            total_divida_restante += divida_atual
+
+        # Verificar se o valor do recibo não excede a dívida total
+        if valor_disponivel > total_divida_restante:
+            return JsonResponse(
+                {"error": f"O valor do recibo ({valor_disponivel}) excede a dívida total ({total_divida_restante})."},
+                status=400)
+
+        # Gerar numeração sequencial do recibo
         ano_atual = timezone.now().year
-        ultimo = Recibo.objects.filter(ano=ano_atual).order_by('-numero').first()
+        ultimo = Recibo.objects.filter(ano=ano_atual, empresa=request.empresa).order_by('-numero').first()
         novo_numero = (ultimo.numero + 1) if ultimo else 1
 
-        # 5. Criar o Cabeçalho do Recibo
+        # Criar o cabeçalho do recibo
         recibo = Recibo.objects.create(
             tipo='RE',
             serie=str(ano_atual),
@@ -3060,21 +3374,35 @@ def criar_recibo_cliente(request, id):
             ano=ano_atual,
             cliente_id=id,
             data_emissao=timezone.now().date(),
-            modalidade_nome=metodo,
+            modalidade_nome=metodo_nome,
             valor_total=valor_disponivel,
-            estado='Normal'
+            estado='Normal',
+            empresa=request.empresa
         )
 
-        # 6. Distribuir o valor (Lógica FIFO)
-        temp_valor = valor_disponivel
+        temp_valor = valor_disponivel  # Valor total disponível para abatimento
+
         for fatura in faturas_pendentes:
             if temp_valor <= 0:
                 break
 
-            divida_atual = fatura.valor_total - fatura.total_pago
+            # Buscar notas de crédito para a fatura
+            notas_credito = DocumentoFinalizado.objects.filter(documento_origem=fatura, empresa=request.empresa).exclude(estado='Anulado')
+
+            # Calcular o valor total das notas de crédito
+            valor_nota_credito = sum(nota_credito.valor_total for nota_credito in notas_credito)
+
+            # Calcular a dívida atual, considerando as notas de crédito
+            divida_atual = fatura.valor_total - fatura.total_pago + valor_nota_credito
+
+            # Garantir que a dívida não seja negativa
+            if divida_atual < 0:
+                divida_atual = 0
+
+            # Calcular o valor a ser abatido
             valor_a_abater = min(temp_valor, divida_atual)
 
-            # Criar Linha do Recibo
+            # Criar a linha do recibo
             ReciboLinhas.objects.create(
                 id_recibo_final=recibo,
                 id_doc_final=fatura,
@@ -3083,15 +3411,18 @@ def criar_recibo_cliente(request, id):
                 data_emissao=fatura.data_emissao,
                 valor_documento=fatura.valor_total,
                 valor_recebido=valor_a_abater,
-                valor_em_divida=divida_atual - valor_a_abater
+                valor_em_divida=divida_atual - valor_a_abater,
+                empresa=request.empresa
             )
 
-            # Atualizar Fatura
+            # Atualizar o total pago da fatura
             fatura.total_pago += valor_a_abater
             fatura.save()
 
+            # Subtrair o valor abatido do valor disponível para pagamento
             temp_valor -= valor_a_abater
 
+        # Retorno com sucesso
         return JsonResponse({
             "success": True,
             "message": "Recibo emitido e faturas liquidadas.",
@@ -3104,8 +3435,16 @@ def criar_recibo_cliente(request, id):
         return JsonResponse({"error": f"Erro interno: {str(e)}"}, status=500)
 
 
+from decimal import Decimal
+from django.db import IntegrityError, transaction
+from django.http import JsonResponse
+from .models import DocumentoFinalizado, Recibo, ReciboLinhas, Modalidade
+from django.utils import timezone
+
+@login_required
+@empresa_obrigatoria
 @transaction.atomic
-def criar_recibo_fatura(request, id_cliente, id_fatura):  # Recebe os dois IDs da URL
+def criar_recibo_fatura(request, id_cliente, id_fatura):
     if request.method != "POST":
         return JsonResponse({"error": "Método não permitido."}, status=405)
 
@@ -3113,7 +3452,6 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):  # Recebe os dois IDs d
     if not metodo_nome:
         return JsonResponse({"error": "O método de pagamento é obrigatório."}, status=400)
 
-    # Verifica modalidade
     if not Modalidade.objects.filter(nome=metodo_nome).exists():
         return JsonResponse({"error": "Método de pagamento inválido."}, status=400)
 
@@ -3124,22 +3462,23 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):  # Recebe os dois IDs d
         if valor_pago <= 0:
             return JsonResponse({"error": "O valor deve ser superior a zero."}, status=400)
 
-        # --- MUDANÇA AQUI: Busca apenas A fatura específica ---
-        fatura = get_object_or_404(DocumentoFinalizado, id=id_fatura, cliente_id=id_cliente)
+        fatura = get_object_or_404(DocumentoFinalizado, id=id_fatura, cliente_id=id_cliente, empresa=request.empresa)
 
-        divida_atual = fatura.valor_total - fatura.total_pago
+        nota_credito = DocumentoFinalizado.objects.filter(documento_origem=fatura, empresa=request.empresa).exclude(estado='Anulado').first()
 
-        if divida_atual <= 0:
+        valor_nota_credito = nota_credito.valor_total if nota_credito else Decimal(0)
+
+        divida_atual_com_desconto = fatura.valor_total - fatura.total_pago + valor_nota_credito
+
+        if divida_atual_com_desconto <= 0:
             return JsonResponse({"error": "Esta fatura já se encontra liquidada."}, status=400)
 
-        # Validar se o utilizador não está a pagar mais do que deve nesta fatura
-        if valor_pago > divida_atual:
+        if valor_pago > divida_atual_com_desconto:
             return JsonResponse(
-                {"error": f"O valor inserido ({valor_pago}) excede a dívida da fatura ({divida_atual})."}, status=400)
+                {"error": f"O valor inserido ({valor_pago}) excede a dívida da fatura ({divida_atual_com_desconto})."}, status=400)
 
-        # 1. Gerar Numeração Sequencial do Recibo
         ano_atual = timezone.now().year
-        ultimo = Recibo.objects.filter(ano=ano_atual).order_by('-numero').first()
+        ultimo = Recibo.objects.filter(ano=ano_atual, empresa=request.empresa).order_by('-numero').first()
         novo_numero = (ultimo.numero + 1) if ultimo else 1
 
         # 2. Criar o Cabeçalho do Recibo
@@ -3152,7 +3491,8 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):  # Recebe os dois IDs d
             data_emissao=timezone.now().date(),
             modalidade_nome=metodo_nome,
             valor_total=valor_pago,
-            estado='Normal'
+            estado='Normal',
+            empresa=request.empresa
         )
 
         # 3. Criar a Linha do Recibo para esta fatura única
@@ -3164,7 +3504,9 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):  # Recebe os dois IDs d
             data_emissao=fatura.data_emissao,
             valor_documento=fatura.valor_total,
             valor_recebido=valor_pago,
-            valor_em_divida=divida_atual - valor_pago
+            valor_em_divida=divida_atual_com_desconto - valor_pago,
+            empresa=request.empresa
+
         )
 
         # 4. Atualizar a Fatura
@@ -3183,12 +3525,14 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):  # Recebe os dois IDs d
         return JsonResponse({"error": f"Erro interno: {str(e)}"}, status=500)
 
 
+@login_required
+@empresa_obrigatoria
 def recibos_json(request):
-    recibos = Recibo.objects.all()
+    recibos = Recibo.objects.filter(empresa=request.empresa)
 
     ids_clientes = recibos.values_list('cliente_id', flat=True).distinct()
 
-    clientes_map = dict(Cliente1.objects.filter(id_cliente__in=ids_clientes).values_list('id_cliente', 'nome'))
+    clientes_map = dict(Cliente1.objects.filter(id_cliente__in=ids_clientes, empresa=request.empresa).values_list('id_cliente', 'nome'))
 
     data = []
     for r in recibos:
@@ -3202,7 +3546,8 @@ def recibos_json(request):
         })
     return JsonResponse(data, safe=False)
 
-
+@login_required
+@empresa_obrigatoria
 def anular_recibo(request, id_recibo):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Método inválido.'}, status=405)
@@ -3213,7 +3558,7 @@ def anular_recibo(request, id_recibo):
 
     try:
         with transaction.atomic():
-            recibo = Recibo.objects.select_for_update().filter(id=id_recibo).first()
+            recibo = Recibo.objects.select_for_update().filter(id=id_recibo, empresa=request.empresa).first()
 
             if not recibo:
                 return JsonResponse({'success': False, 'message': 'Recibo não encontrado.'}, status=404)
@@ -3223,7 +3568,7 @@ def anular_recibo(request, id_recibo):
                                     status=400)
 
             # 2. Reverter os valores nos documentos finalizados
-            linhas = ReciboLinhas.objects.filter(id_recibo_final=recibo)
+            linhas = ReciboLinhas.objects.filter(id_recibo_final=recibo, empresa=request.empresa)
 
             for linha in linhas:
                 doc = linha.id_doc_final
@@ -3252,34 +3597,53 @@ def anular_recibo(request, id_recibo):
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 
-
+@login_required
+@empresa_obrigatoria
 def emitir_nota_credito(request, fatura_id):
-    fatura_original = get_object_or_404(DocumentoFinalizado, id=fatura_id)
+    fatura_original = get_object_or_404(DocumentoFinalizado, id=fatura_id, empresa=request.empresa)
 
     if fatura_original.tipo == 'NC':
-        messages.error(request, "Não é possível emitir uma Nota de Crédito de outra Nota de Crédito.")
-        return redirect('detalhe_fatura', fatura_id=fatura_id)
+        return JsonResponse({"erro": "Não é possível emitir uma Nota de Crédito de outra Nota de Crédito."}, status=400)
 
-    if DocumentoFinalizado.objects.filter(documento_origem=fatura_original, tipo='NC').exists():
-        messages.error(request, "Já existe uma Nota de Crédito emitida para esta fatura.")
-        return redirect('detalhe_fatura', fatura_id=fatura_id)
+    if DocumentoFinalizado.objects.filter(documento_origem=fatura_original, tipo='NC', empresa=request.empresa).exclude(
+            estado='Anulado').exists():
+        return JsonResponse({"erro": "Já existe uma Nota de Crédito emitida para esta fatura."}, status=400)
 
-    if DocumentoTemp.objects.filter(documento_origem=fatura_original, tipo='NC').exists():
-        messages.error(request, "Já existe uma Nota de Crédito em rascunho para esta fatura.")
-        return redirect('detalhe_fatura', fatura_id=fatura_id)
+    if DocumentoTemp.objects.filter(documento_origem=fatura_original, tipo='NC', empresa=request.empresa).exists():
+        return JsonResponse({"erro": "Já existe uma Nota de Crédito em rascunho para esta fatura."}, status=400)
+
+    recibos_ativos = ReciboLinhas.objects.filter(
+        id_doc_final=fatura_original,
+        id_recibo_final__estado='Normal',
+        empresa=request.empresa
+    )
+    if recibos_ativos.exists():
+        return JsonResponse({"erro": "Esta fatura possui recibos ativos. Deve anular os recibos antes de emitir uma Nota de Crédito."}, status=400)
 
     with transaction.atomic():
         ano = timezone.now().year
         contador, created = DocumentoContador.objects.select_for_update().get_or_create(
             tipo='NC',
             ano=ano,
-            defaults={"serie": "A", "ultimo_numero": 0}
+            defaults={"serie": "NC", "ultimo_numero": 0},
+            empresa = request.empresa
         )
 
         numero = contador.ultimo_numero + 1
         contador.ultimo_numero = numero
         contador.save()
-        artigos_originais = FinArtigos.objects.filter(id_final=fatura_original)
+
+        artigos_originais = FinArtigos.objects.filter(id_final=fatura_original, empresa=request.empresa)
+        cliente_id = request.POST.get("cliente")
+        try:
+            cliente = Cliente1.objects.select_related(
+                "transporte",
+                "pagamento",
+                "impostos"
+            ).get(id_cliente=cliente_id,
+                  empresa=request.empresa)
+        except Cliente1.DoesNotExist:
+            return JsonResponse({"erro": "Cliente inválido."}, status=400)
 
         try:
             nova_nc = DocumentoTemp.objects.create(
@@ -3293,7 +3657,10 @@ def emitir_nota_credito(request, fatura_id):
                 moeda_id=15,
                 data_emissao=timezone.now(),
                 data_vencimento=timezone.now(),
-                estado='Rascunho'
+                transporte=cliente.transporte,
+                impostos=cliente.impostos,
+                estado='Rascunho',
+                empresa=request.empresa
             )
 
             for art in artigos_originais:
@@ -3307,17 +3674,26 @@ def emitir_nota_credito(request, fatura_id):
                     desconto=art.desconto,
                     taxa=art.taxa,
                     total=-abs(art.total),
-                    motivo=art.motivo
+                    motivo=art.motivo,
+                    empresa = request.empresa
                 )
 
             return JsonResponse({
-                "id": nova_nc,
-                "tipo": nova_nc.tipo,
-                "serie": nova_nc.serie,
+                "id": nova_nc.id,
                 "numero": nova_nc.numero,
-                "ano": nova_nc.ano,
+                "cliente_id": nova_nc.cliente_id
             }, status=201)
 
         except Exception as e:
             return JsonResponse({"erro": str(e)}, status=400)
 
+@login_required
+@empresa_obrigatoria
+def dados_dashboard_ajax(request):
+    todos_docs = DocumentoFinalizado.objects.filter(empresa=request.empresa)
+    total_faturado = todos_docs.exclude(tipo__in=['GT', 'NC']).aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+
+
+    return JsonResponse({
+        "total_faturado": float(total_faturado),
+    })

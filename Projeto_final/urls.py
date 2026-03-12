@@ -15,15 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from Faturamento.views import index, login_view
+from django.urls import path, include
 from Faturamento import views
+from allauth.account.views import LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index, name='index'),
+    path('accounts/login/', LoginView.as_view(template_name='account/login.html'), name='account_login'),
+    path('accounts/', include('allauth.urls')),
+    path('', views.webapp_view, name='home'),
+    path('webapp/', views.webapp_view, name='webapp_home'),
+    path('accounts/check-mfa/', views.check_mfa_status, name='check_mfa_status'),
     path('registar/json/', views.registar_json, name='registar_json'),
-    path("webapp/", login_view, name="webapp"),
+    path('accounts/verify/', views.verify_code_page, name='verify_code_page'),
+    path('accounts/resend/', views.resend_verification_code, name='resend_code'),
+    path('completar-registo/', views.completar_registo_empresa, name='completar_empresa'),
     path('clientes/json/', views.clientes_json, name='clientes_json'),
     path("clientes/proximo-codigo/", views.proximo_codigo_cliente, name="proximo_codigo_cliente"),
     path('cliente/adicionar/', views.adicionar_cliente, name='adicionar_cliente'),
@@ -31,8 +37,7 @@ urlpatterns = [
     path('cliente/<int:id_cliente>/editar/', views.cliente_editar, name='cliente_editar'),
     path('cliente/<int:id_cliente>/apagar/', views.cliente_apagar, name='cliente_apagar'),
     path('artigos/json/', views.artigos_json, name='artigos_json'),
-    path("artigos/proximo-codigo/", views.proximo_codigo_artigo, name="proximo_codigo_artigo"),
-    path('artigo/adicionar/', views.adicionar_artigo, name='adicionar_artigo'),
+    path('artigo/adicionar/', views.artigo_editar, name='adicionar_artigo'),
     path('artigos/<int:id_artigo>/dados/', views.artigo_dados, name='artigo_dados'),
     path('artigo/<int:id_artigo>/editar/', views.artigo_editar, name='artigo_editar'),
     path('artigo/<int:id_artigo>/apagar/', views.artigo_apagar, name='artigo_apagar'),
@@ -65,4 +70,5 @@ urlpatterns = [
     path('recibos/json/', views.recibos_json, name='recibos_json'),
     path('recibos/anular/<int:id_recibo>/', views.anular_recibo, name='anular_recibo'),
     path('fatura/<int:fatura_id>/emitir-credito/', views.emitir_nota_credito, name='emitir_nota_credito'),
+    path('api/dashboard/dados/', views.dados_dashboard_ajax, name='dados_dashboard_ajax'),
 ]
