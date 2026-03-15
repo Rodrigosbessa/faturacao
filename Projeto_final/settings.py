@@ -150,10 +150,9 @@ SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_FORMS = {
     'signup': 'Faturamento.forms.MyCustomSocialSignupForm',
 }
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER') # O e-mail que verificaste no SendGrid
 
 import os
 from pathlib import Path
@@ -188,3 +187,7 @@ SOCIALACCOUNT_ADAPTER = 'Faturamento.adapter.MySocialAccountAdapter'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
