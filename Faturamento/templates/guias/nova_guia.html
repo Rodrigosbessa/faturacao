@@ -160,6 +160,7 @@
                         <th nowrap="">TOTAL</th>
                         <th class="buttons"></th>
                     </tr>
+                    <tr class="input-anchor" style="display:none;"></tr>
                     <tr class="input">
                             <td nowrap="" class="buttons type">
                                 <a id="item_type_service">
@@ -322,6 +323,7 @@
                     <div class="item">
                         <div class="name">Matrícula:</div>
                         <div class="text" id="registration_text" style="display:block;"></div>
+
                         <div class="input">
                             <select id="registration_select" name="registration" style="display:none;">
                                 <option value="">-- Escolha a viatura --</option>
@@ -363,10 +365,6 @@
                         <a id="tools_close_guia">
                                 <img src="{% static 'images/close.png' %}" width="40" height="40" alt="">
                             <div class="tool_name">Fechar</div>
-                        </a>
-                        <a id="tools_delete">
-                                <img src="{% static 'images/delete.png' %}" width="40" height="40" alt="">
-                            <div class="tool_name">Apagar</div>
                         </a>
                     <br class="clearfloat">
                 </div>
@@ -777,6 +775,19 @@ function atualizarResumoFatura(simboloMoeda) {
         }
     }
 }
+
+$(function() {
+    $.ajax({
+        url: "/matriculas-dropdown/",
+        method: "GET",
+        success: function(data) {
+            const select = $("#registration_select");
+            data.forEach(function(item) {
+                select.append($("<option></option>").val(item.descricao).text(item.descricao));
+            });
+        }
+    });
+});
 
 </script>
 

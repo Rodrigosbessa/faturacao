@@ -333,14 +333,7 @@ class DocumentoTemp(models.Model):
         related_name='contadores_temporarios'
     )
 
-    # Snapshot comercial
-    transporte = models.ForeignKey(
-        'Transporte',
-        on_delete=models.PROTECT,
-        db_column='transporte_id',
-        null=True,
-        blank=True
-    )
+    transporte = models.CharField(max_length=255, null=True, blank=True)
 
     pagamento = models.ForeignKey(
         'Pagamento',
@@ -393,7 +386,7 @@ class DocumentoTemp(models.Model):
         ordering = ['-criado_em']
 
     def __str__(self):
-        return f"{self.tipo} {self.serie}-{self.numero}/{self.ano}"
+        return f"{self.tipo} {self.serie}-{self.numero}/{self.ano}/{self.empresa}"
 
 from django.conf import settings
 

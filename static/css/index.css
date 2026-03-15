@@ -153,3 +153,7 @@ a:hover {
     .form-grid { grid-template-columns: 1fr; }
     .full-width { grid-column: span 1; }
 }
+.form-grid select {
+    margin-top:10px;
+    margin-bottom:10px;
+}

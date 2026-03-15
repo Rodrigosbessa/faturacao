@@ -71,4 +71,8 @@ urlpatterns = [
     path('recibos/anular/<int:id_recibo>/', views.anular_recibo, name='anular_recibo'),
     path('fatura/<int:fatura_id>/emitir-credito/', views.emitir_nota_credito, name='emitir_nota_credito'),
     path('api/dashboard/dados/', views.dados_dashboard_ajax, name='dados_dashboard_ajax'),
+    path('empresa/<int:pk>/editar/', views.editar_empresa_ajax, name='editar_empresa_ajax'),
+    path('transporte/adicionar/', views.adicionar_transporte_ajax, name='adicionar_transporte'),
+    path('api/obter-periodos/', views.obter_periodos_disponiveis, name='obter_periodos'),
+    path('gerar-saft/', views.gerar_saft, name='gerar_saft'),
 ]

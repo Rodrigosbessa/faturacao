@@ -453,14 +453,20 @@ $(function() {
             data: JSON.stringify(dadosLinha),
             success: function(response) {
                 if (!response.ok) {
-                    // mostrar erros do backend
                     $("#box-erro").html("<ul><li>" + response.erros.join("</li><li>") + "</li></ul>");
                     $("#box-erro").dialog("open");
                     return;
                 }
 
-                if (tax === 0 && window.impostoCliente !== "Autoliquidação") {
+                // --- NOVA LÓGICA DE AUTOLIQUIDAÇÃO AUTOMÁTICA ---
+                if (tax === 0) {
+                    // Se for Autoliquidação, define M30 automaticamente e ignora o modal
+                    if (window.impostoCliente === "Autoliquidação") {
+                        criarLinhaNaTabela(tipo, code, item, quantity, price, discount, tax, "M30");
+                        return;
+                    }
 
+                    // Se NÃO for autoliquidação (mas for IVA 0), abre o modal para escolha manual
                     linhaEmEdicao = {
                         $linha: null,
                         tipo: tipo,
@@ -470,14 +476,12 @@ $(function() {
                         price: price,
                         discount: discount,
                         tax: tax
-
                     };
-
-
                     $("#modal-iva0").dialog("open");
                     return;
                 }
 
+                // Se a taxa for superior a 0, cria a linha normalmente
                 criarLinhaNaTabela(tipo, code, item, quantity, price, discount, tax);
             }
         });
@@ -570,7 +574,6 @@ function finalizarSave($linha) {
     linhaEmEdicao = null;
 }
 $(document).on('click', '.item_save', function() {
-
     let $linha = $(this).closest('tr');
 
     let data = {
@@ -582,22 +585,29 @@ $(document).on('click', '.item_save', function() {
         tax: parseNumero($linha.find('.tax').val())
     };
 
-    // IVA 0 → abrir modal
-    if (data.tax === 0 && window.impostoCliente !== "Autoliquidação") {
-
-        linhaEmEdicao = {
-            data: data,
-            $linha: $linha
-        };
-
-        $("#modal-iva0").dialog("open");
-        return;
+    // --- NOVA LÓGICA DE AUTOLIQUIDAÇÃO NA EDIÇÃO ---
+    if (data.tax === 0) {
+        if (window.impostoCliente === "Autoliquidação") {
+            // Define M30 automaticamente na linha e nos campos ocultos
+            $linha.data("motivoIVA0", "M30");
+            $linha.find('.motivo_tax').val("M30");
+        } else {
+            // Se não for autoliquidação, abre o modal para escolha manual
+            linhaEmEdicao = {
+                data: data,
+                $linha: $linha
+            };
+            $("#modal-iva0").dialog("open");
+            return; // Interrompe para esperar o modal
+        }
     }
 
+    // Se a taxa for alterada de 0 para outro valor, limpamos o motivo
     if (data.tax !== 0) {
         $linha.removeData("motivoIVA0");
         $linha.find('.motivo_tax').val('');
     }
+
     const csrftoken = getCookie('csrftoken');
 
     $.ajax({
@@ -606,21 +616,15 @@ $(document).on('click', '.item_save', function() {
         headers: {'X-CSRFToken': csrftoken},
         contentType: 'application/json',
         data: JSON.stringify(data),
-
         success: function(response) {
-
             if (!response.ok) {
-                let errosHTML = "<ul><li>" +
-                    response.erros.join("</li><li>") +
-                    "</li></ul>";
-
+                let errosHTML = "<ul><li>" + response.erros.join("</li><li>") + "</li></ul>";
                 $("#box-erro").html(errosHTML).dialog("open");
                 return;
             }
 
             finalizarSave($linha);
             atualizarResumoComDelay();
-
             atualizarResumoMotivos();
         }
     });
@@ -992,23 +996,6 @@ $(function() {
 
 });
 
-$(function() {
-    // Carrega dados via Ajax
-    $.ajax({
-        url: "/matriculas-dropdown/",
-        method: "GET",
-        success: function(data) {
-            const select = $("#registration_select");
-            data.forEach(function(item) {
-                select.append(
-                    $("<option></option>")
-                        .val(item.descricao)
-                        .text(item.descricao)
-                );
-            });
-        }
-    });
-});
 function getQueryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
 }
@@ -1080,12 +1067,13 @@ function apagarDocumento() {
     const temp_id = urlParams.get("temp_id"); // pega temp_id da URL
     const csrftoken = getCookie('csrftoken'); // função que pega CSRF
 
+    const tipo_doc = "TEMP";
     $.ajax({
         url: "/apagar-documento/",
         method: "POST",
         headers: {"X-CSRFToken": csrftoken},
         contentType: "application/json",
-        data: JSON.stringify({id: temp_id}),
+        data: JSON.stringify({id: temp_id, tipo: tipo_doc}),
         success: function(response) {
             if (response.success) {
                 alert(response.message);

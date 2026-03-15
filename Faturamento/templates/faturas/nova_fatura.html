@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/fatura.css' %}">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <!-- jQuery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.6.3/jquery-ui-timepicker-addon.min.css">
@@ -342,10 +341,9 @@
                     <div class="item">
                         <div class="name">Matrícula:</div>
                         <div class="text" id="registration_text" style="display:block;"></div>
+
                         <div class="input">
-                            <select id="registration_select" name="registration" style="display:none;">
-                                <option value="">-- Escolha a viatura --</option>
-                            </select>
+                            <input type="text" id="registration_input" name="registration" maxlength="10" value="" style="display:none;">
                         </div>
                     </div>
                 </div>

@@ -35,4 +35,15 @@
         <p>Esqueceu a senha? <a href="{% url 'account_reset_password' %}">Clique aqui</a></p>
     </div>
 </body>
+<script>
+    if (window.innerWidth < 1024) {
+        document.body.innerHTML = `
+            <div style="text-align:center; padding: 50px; font-family: sans-serif;">
+                <h1>Acesso não permitido</h1>
+                <p>Este sistema de faturação foi desenhado exclusivamente para uso em computador.</p>
+                <p>Por favor, aceda através de um ecrã maior.</p>
+            </div>
+        `;
+    }
+</script>
 </html>
