@@ -22,8 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['faturix-kya9.onrender.com', 'localhost', '127.0.0.1']
 
 # Application definition
 
@@ -185,3 +184,4 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_ADAPTER = 'Faturamento.adapter.MySocialAccountAdapter'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
