@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificação</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+    <div class="login-container" style="max-width: 400px; text-align: center; margin: 50px auto;">
+        <h2>Código de Segurança</h2>
+        <p>Enviámos um código para o seu e-mail.</p>
+
+        <form method="post" action="{% url 'verify_code_page' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="code" placeholder="000000" maxlength="6" required
+                       style="width: 100%; padding: 10px; text-align: center; font-size: 20px;">
+            </div>
+
+            <div style="margin: 15px 0;">
+                <input type="checkbox" name="remember_device" id="remember">
+                <label for="remember">Lembrar neste dispositivo</label>
+            </div>
+
+            <button type="submit" class="btn-login" style="width: 100%;">Validar Acesso</button>
+        </form>
+
+        {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+    </div>
+</body>
+</html>
