@@ -150,7 +150,7 @@ SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_FORMS = {
     'signup': 'Faturamento.forms.MyCustomSocialSignupForm',
 }
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+EMAIL_BACKEND = 'sendgrid_django.mail.SendgridBackend'
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER') # O e-mail que verificaste no SendGrid
 
