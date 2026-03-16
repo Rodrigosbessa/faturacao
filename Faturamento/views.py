@@ -34,13 +34,16 @@ def verify_code_page(request):
 
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
 from django.conf import settings
-def resend_verification_code(request):
-    """Reenvia o código de verificação para o e-mail do utilizador."""
-    user = request.user
+import logging
 
+logger = logging.getLogger(__name__)
+
+
+def resend_verification_code(request):
+    user = request.user
     if user.is_authenticated and user.email:
-        # Gera novo código e guarda na sessão
         code = get_random_string(6, allowed_chars='0123456789')
         request.session['mfa_code'] = code
 
@@ -52,10 +55,10 @@ def resend_verification_code(request):
                 [user.email],
                 fail_silently=False,
             )
+            messages.success(request, 'Um novo código foi enviado.')
         except Exception as e:
-            print(f"ERRO AO ENVIAR EMAIL: {e}")
-
-        messages.success(request, 'Um novo código foi enviado para o seu e-mail.')
+            logger.error(f"Erro ao enviar email: {e}")
+            messages.error(request, f"Erro ao enviar email: {e}")
 
     return redirect('verify_code_page')
 
