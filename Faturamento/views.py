@@ -19,50 +19,6 @@ def mfa_protected(view_func):
         return redirect('verify_code_page')
     return wrapper
 
-def verify_code_page(request):
-    if request.method == 'POST':
-        user_code = request.POST.get('code')
-        if user_code == request.session.get('mfa_code'):
-            request.session['mfa_verified'] = True
-
-            response = redirect('check_mfa_status')
-
-            if request.POST.get('remember_device'):
-                response.set_cookie('trusted_device', 'true', max_age=30 * 24 * 60 * 60)
-            return response
-    return render(request, 'account/verify.html')
-
-from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
-from django.core.mail import send_mail
-from django.conf import settings
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-def resend_verification_code(request):
-    user = request.user
-    if user.is_authenticated and user.email:
-        code = get_random_string(6, allowed_chars='0123456789')
-        request.session['mfa_code'] = code
-
-        try:
-            send_mail(
-                'Seu código de verificação',
-                f'O seu novo código é: {code}',
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
-            messages.success(request, 'Um novo código foi enviado.')
-        except Exception as e:
-            logger.error(f"Erro ao enviar email: {e}")
-            messages.error(request, f"Erro ao enviar email: {e}")
-
-    return redirect('verify_code_page')
-
-
 @login_required
 def webapp_view(request):
     empresa = Empresa.objects.filter(user=request.user).first()
@@ -79,23 +35,27 @@ def webapp_view(request):
 
 from allauth.socialaccount.models import SocialAccount
 
+from allauth.mfa.utils import is_mfa_enabled
+
 
 @login_required
 def check_mfa_status(request):
     user = request.user
 
-    tem_conta_social = SocialAccount.objects.filter(user=user).exists()
+    # 1. Verifica se o usuário já configurou o Google Authenticator
+    if is_mfa_enabled(user):
+        # Se habilitado mas ainda não autenticado nesta sessão
+        if not request.session.get('mfa_authenticated'):
+            return redirect('mfa_authenticate')  # URL padrão do Allauth MFA
+    else:
+        # Se você quiser OBRIGAR o usuário a ativar, mande para a página de ativação
+        # Caso contrário, deixe passar.
+        pass
 
-    if not tem_conta_social and user.email:
-        # Se tem email e NÃO está verificado E NÃO tem cookie de confiança
-        if not request.session.get('mfa_verified') and request.COOKIES.get('trusted_device') != 'true':
-            return redirect('verify_code_page')  # <--- MFA primeiro!
-
-    # 2. VERIFICAÇÃO DE EMPRESA (Só depois do MFA estar OK)
+    # 2. VERIFICAÇÃO DE EMPRESA
     if not hasattr(user, 'empresa'):
         return redirect('completar_empresa')
 
-    # 3. SE PASSOU TUDO, VAI PARA A WEBAPP
     return redirect('webapp_home')
 
 from .forms import EmpresaForm

@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', LoginView.as_view(template_name='account/login.html'), name='account_login'),
     path('accounts/', include('allauth.urls')),
+    path('accounts/mfa/', include('allauth.mfa.urls')),
     path('', views.webapp_view, name='home'),
     path('webapp/', views.webapp_view, name='webapp_home'),
     path('accounts/check-mfa/', views.check_mfa_status, name='check_mfa_status'),
