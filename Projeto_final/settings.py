@@ -55,8 +55,6 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = 'check_mfa_status' # Nome da função/rota que decide o destino
-LOGOUT_REDIRECT_URL = '/'
 ROOT_URLCONF = 'Projeto_final.urls'
 
 AUTHENTICATION_BACKENDS = (
@@ -186,3 +184,16 @@ SOCIALACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 SOCIALACCOUNT_ADAPTER = 'Faturamento.adapter.MySocialAccountAdapter'
+
+# --- SEGURANÇA (Crucial para evitar loops no Render) ---
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False # Deixe o Render gerir o HTTPS
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# --- REDIRECIONAMENTOS ---
+# Use strings com os nomes das rotas definidos no urls.py
+LOGIN_REDIRECT_URL = 'check_mfa_status'
+LOGOUT_REDIRECT_URL = 'account_login'
+
+MFA_ADAPTER = 'allauth.mfa.adapter.DefaultMFAAdapter'
