@@ -9,16 +9,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from functools import wraps
 
-def mfa_protected(view_func):
-    @wraps(view_func)
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect('account_login')
-        if not request.user.email or request.session.get('mfa_verified') or request.COOKIES.get('trusted_device') == 'true':
-            return view_func(request, *args, **kwargs)
-        return redirect('verify_code_page')
-    return wrapper
-
 @login_required
 def webapp_view(request):
     empresa = Empresa.objects.filter(user=request.user).first()
@@ -33,18 +23,22 @@ def webapp_view(request):
 
     return render(request, 'webapp.html', context)
 
-from allauth.socialaccount.models import SocialAccount
-
-from allauth.mfa.utils import is_mfa_enabled
-
-
 @login_required
 def check_mfa_status(request):
-    # Remova a lógica de MFA por um momento para ver se o site entra
-    if not hasattr(request.user, 'empresa'):
-        return redirect('completar_empresa')
+    user = request.user
 
-    return redirect('webapp_view')  # Certifique-se que o nome da URL está correto
+    # 1. Se o Allauth MFA estiver ativo, ele lida com o código sozinho.
+    # Vamos apenas verificar a parte da Empresa que é o seu negócio:
+
+    try:
+        # Verifica se a relação com empresa existe
+        if not hasattr(user, 'empresa') or user.empresa is None:
+            return redirect('completar_empresa')  # Nome da rota do formulário
+
+        return redirect('webapp_view')  # Nome da rota da sua dashboard
+    except Exception as e:
+        print(f"Erro no redirecionamento: {e}")
+        return redirect('account_login')
 
 from .forms import EmpresaForm
 

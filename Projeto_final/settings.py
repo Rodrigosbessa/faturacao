@@ -55,7 +55,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/webapp/'
+LOGIN_REDIRECT_URL = 'check_mfa_status' # Nome da função/rota que decide o destino
 LOGOUT_REDIRECT_URL = '/'
 ROOT_URLCONF = 'Projeto_final.urls'
 
