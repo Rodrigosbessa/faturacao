@@ -13,32 +13,27 @@ from functools import wraps
 def webapp_view(request):
     empresa = Empresa.objects.filter(user=request.user).first()
 
-    print(request.user)
-    print(empresa)
+    if not empresa:
+        return redirect('completar_empresa')
+
     context = {
         'user': request.user,
         'empresa': empresa.nome,
     }
-
-
     return render(request, 'webapp.html', context)
+
 
 @login_required
 def check_mfa_status(request):
     user = request.user
 
-    # 1. Se o Allauth MFA estiver ativo, ele lida com o código sozinho.
-    # Vamos apenas verificar a parte da Empresa que é o seu negócio:
+    # 1. Verificação de Empresa
+    # Use filter().exists() para ser mais rápido e gastar menos RAM
+    if not Empresa.objects.filter(user=user).exists():
+        return redirect('completar_empresa')
 
-    try:
-        # Verifica se a relação com empresa existe
-        if not hasattr(user, 'empresa') or user.empresa is None:
-            return redirect('completar_empresa')  # Nome da rota do formulário
-
-        return redirect('webapp_view')  # Nome da rota da sua dashboard
-    except Exception as e:
-        print(f"Erro no redirecionamento: {e}")
-        return redirect('account_login')
+    # 2. Se tudo estiver ok, vai para a página principal
+    return redirect('webapp_home')  # Deve ser o NAME definido no urls.py
 
 from .forms import EmpresaForm
 
