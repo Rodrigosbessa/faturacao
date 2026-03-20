@@ -40,23 +40,11 @@ from allauth.mfa.utils import is_mfa_enabled
 
 @login_required
 def check_mfa_status(request):
-    user = request.user
-
-    # 1. Verifica se o usuário já configurou o Google Authenticator
-    if is_mfa_enabled(user):
-        # Se habilitado mas ainda não autenticado nesta sessão
-        if not request.session.get('mfa_authenticated'):
-            return redirect('mfa_authenticate')  # URL padrão do Allauth MFA
-    else:
-        # Se você quiser OBRIGAR o usuário a ativar, mande para a página de ativação
-        # Caso contrário, deixe passar.
-        pass
-
-    # 2. VERIFICAÇÃO DE EMPRESA
-    if not hasattr(user, 'empresa'):
+    # Remova a lógica de MFA por um momento para ver se o site entra
+    if not hasattr(request.user, 'empresa'):
         return redirect('completar_empresa')
 
-    return redirect('webapp_home')
+    return redirect('webapp_view')  # Certifique-se que o nome da URL está correto
 
 from .forms import EmpresaForm
 
