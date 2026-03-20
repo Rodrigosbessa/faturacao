@@ -154,9 +154,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'apikey'  # A palavra 'apikey' literal
-EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY') # A tua chave SG...
-DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER') # O e-mail que verificaste no SendGrid
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 import os
 from pathlib import Path
@@ -186,12 +186,3 @@ SOCIALACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 SOCIALACCOUNT_ADAPTER = 'Faturamento.adapter.MySocialAccountAdapter'
-
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-
-EMAIL_TIMEOUT = 10
