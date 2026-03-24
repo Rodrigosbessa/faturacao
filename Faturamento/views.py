@@ -30,17 +30,13 @@ from django_otp.plugins.otp_email.models import EmailDevice
 def check_mfa_status(request):
     user = request.user
 
-    # 1. Verifica se a empresa existe (o que já tinhas)
+    # 1. Verifica Empresa
     if not Empresa.objects.filter(user=user).exists():
         return redirect('completar_empresa')
 
-
+    # 2. Apenas decide para onde ir
     if not request.user.is_verified():
-        device, created = EmailDevice.objects.get_or_create(user=user, name="default")
-
-        device.generate_challenge()
-
-        return redirect('otp_verify_view')
+        return redirect('otp_verify_view') # Vai para lá sem enviar ainda
 
     return redirect('webapp_home')
 
@@ -54,33 +50,25 @@ from django.contrib import messages
 
 @login_required
 def otp_verify_view(request):
-    # 1. Tenta obter o dispositivo de e-mail do utilizador
     device = EmailDevice.objects.filter(user=request.user, name="default").first()
-
-    # Se por algum motivo o dispositivo não existe, cria um
     if not device:
         device = EmailDevice.objects.create(user=request.user, name="default", email=request.user.email)
 
     if request.method == "POST":
         token = request.POST.get("otp_token")
-
-        # 2. Verifica se o código introduzido é válido
         if verify_token(request.user, device, token):
-            # IMPORTANTE: Isto marca a sessão como verificada pelo MFA
             return redirect('webapp_home')
         else:
-            messages.error(request, "Código inválido ou expirado. Tente novamente.")
+            messages.error(request, "Código inválido. Tente novamente.")
 
-    # 3. No caso de GET (quando a página abre), gera e envia o e-mail
-    else:
+    else:  # GET
+        # Verificamos se já existe um código ativo para não sobrecarregar o SendGrid
         try:
-            # Tenta enviar o código via SendGrid
             device.generate_challenge()
-            messages.success(request, f"Enviámos um código para {request.user.email}")
+            messages.success(request, f"Código enviado para {request.user.email}")
         except Exception as e:
-            # Se o SendGrid falhar ou der timeout (comum em 512MB)
-            messages.error(request, "Erro ao enviar e-mail. Por favor, tente mais tarde.")
-            print(f"Erro MFA: {e}")  # Log para veres no Render
+            messages.error(request, "Erro ao contactar servidor de e-mail.")
+            print(f"Erro SendGrid: {e}")
 
     return render(request, 'account/verify.html')
 
