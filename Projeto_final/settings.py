@@ -187,12 +187,10 @@ SOCIALACCOUNT_ADAPTER = 'Faturamento.adapter.MySocialAccountAdapter'
 
 # --- SEGURANÇA (Crucial para evitar loops no Render) ---
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False # Deixe o Render gerir o HTTPS
+SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# --- REDIRECIONAMENTOS ---
-# Use strings com os nomes das rotas definidos no urls.py
 LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
