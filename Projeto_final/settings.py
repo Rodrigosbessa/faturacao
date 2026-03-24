@@ -195,3 +195,5 @@ LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
 MFA_ADAPTER = 'allauth.mfa.adapter.DefaultMFAAdapter'
+
+###
