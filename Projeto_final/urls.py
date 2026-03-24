@@ -21,15 +21,10 @@ from allauth.account.views import LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Use as views do Allauth para o login, não a LoginView padrão do Django se estiver a usar Allauth
     path('accounts/', include('allauth.urls')),
     path('accounts/mfa/', include('allauth.mfa.urls')),
-
-    # Mude o nome da rota para bater com o que você usa nos redirects
     path('accounts/check-mfa/', views.check_mfa_status, name='check_mfa_status'),
-    path('completar-empresa/', views.completar_registo_empresa, name='completar_empresa'),
-
-    # Rota principal
+    path('accounts/verify-otp/', views.otp_verify_view, name='otp_verify_view'),
     path('webapp/', views.webapp_view, name='webapp_home'),
     path('', views.webapp_view, name='index'),
     path('registar/json/', views.registar_json, name='registar_json'),
