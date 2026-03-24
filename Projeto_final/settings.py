@@ -112,3 +112,5 @@ TEMPLATES = [
         },
     },
 ]
+
+ROOT_URLCONF = 'Projeto_final.urls'
