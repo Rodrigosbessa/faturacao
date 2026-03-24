@@ -56,9 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_otp.middleware.OTPMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware'
 ]
 LOGIN_URL = '/accounts/login/'
 ROOT_URLCONF = 'Projeto_final.urls'
@@ -202,6 +200,5 @@ CSRF_COOKIE_SECURE = True
 LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
-MFA_ADAPTER = 'allauth.mfa.adapter.DefaultMFAAdapter'
 
 CSRF_TRUSTED_ORIGINS = ['https://faturix-kya9.onrender.com']
