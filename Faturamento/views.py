@@ -11,8 +11,12 @@ from functools import wraps
 
 @login_required
 def webapp_view(request):
-    empresa = Empresa.objects.filter(user=request.user).first()
+    # 1. VERIFICAÇÃO CRUCIAL: O utilizador já passou pelo MFA?
+    if not request.user.is_verified():
+        return redirect('check_mfa_status')
 
+    # 2. Verifica se tem empresa
+    empresa = Empresa.objects.filter(user=request.user).first()
     if not empresa:
         return redirect('completar_empresa')
 
