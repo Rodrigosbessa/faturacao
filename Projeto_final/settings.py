@@ -81,3 +81,19 @@ LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
 # Removemos o MFA_ADAPTER do allauth porque estamos a usar o django-otp manual
+
+# settings.py
+
+# 1. Define o URL base para os ficheiros no browser
+STATIC_URL = '/static/'
+
+# 2. Onde o Django vai buscar os ficheiros durante o desenvolvimento
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# 3. Onde o Django vai "VOMITAR" os ficheiros todos para o Render servir
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# 4. Configuração do WhiteNoise (Garante que isto vem DEPOIS das variáveis acima)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
