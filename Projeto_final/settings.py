@@ -95,7 +95,6 @@ STATICFILES_DIRS = [
 # 3. Onde o Django vai "VOMITAR" os ficheiros todos para o Render servir
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# 4. Configuração do WhiteNoise (Garante que isto vem DEPOIS das variáveis acima)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 TEMPLATES = [
