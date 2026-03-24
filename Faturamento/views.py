@@ -23,17 +23,30 @@ def webapp_view(request):
     return render(request, 'webapp.html', context)
 
 
+from django_otp.plugins.otp_email.models import EmailDevice
+
+
 @login_required
 def check_mfa_status(request):
     user = request.user
 
-    # 1. Verificação de Empresa
-    # Use filter().exists() para ser mais rápido e gastar menos RAM
+    # 1. Verifica se a empresa existe (o que já tinhas)
     if not Empresa.objects.filter(user=user).exists():
         return redirect('completar_empresa')
 
-    # 2. Se tudo estiver ok, vai para a página principal
-    return redirect('webapp_home')  # Deve ser o NAME definido no urls.py
+    # 2. Lógica de E-mail MFA
+    # Verifica se o utilizador já confirmou o segundo fator nesta sessão
+    if not request.user.is_verified():
+        # Procura ou cria um "dispositivo" de e-mail para este user
+        device, created = EmailDevice.objects.get_or_create(user=user, name="default")
+
+        # Envia o código para o e-mail dele via SendGrid
+        device.generate_challenge()
+
+        # Redireciona para uma página onde ele digita o código
+        return redirect('otp_verify_view')  # Precisas de criar esta URL/Template
+
+    return redirect('webapp_home')
 
 from .forms import EmpresaForm
 
