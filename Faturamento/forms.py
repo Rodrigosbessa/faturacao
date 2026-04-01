@@ -79,3 +79,21 @@ class EmpresaForm(forms.ModelForm):
     class Meta:
         model = Empresa
         fields = ['nome', 'morada', 'codigo_postal', 'cidade', 'pais', 'email', 'nif', 'telefone', 'local']
+
+
+from django import forms
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+
+class CustomRegistroForm(forms.ModelForm):
+    email = forms.EmailField(required=True, help_text="Obrigatório para segurança extra.")
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("Este e-mail já está em uso. Escolha outro ou recupere a sua conta.")
+        return email

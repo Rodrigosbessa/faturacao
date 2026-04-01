@@ -153,10 +153,11 @@ SOCIALACCOUNT_FORMS = {
     'signup': 'Faturamento.forms.MyCustomSocialSignupForm',
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = 'suporte@faturix.org'
 
@@ -169,7 +170,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG') == 'True'
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
@@ -191,14 +191,25 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 SOCIALACCOUNT_ADAPTER = 'Faturamento.adapter.MySocialAccountAdapter'
 
-# --- SEGURANÇA (Crucial para evitar loops no Render) ---
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+DEBUG = os.getenv('DEBUG') == 'True'
+
+if DEBUG:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+else:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 
 LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
 
-CSRF_TRUSTED_ORIGINS = ['https://faturix-kya9.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://faturix-kya9.onrender.com',
+    'http://localhost',
+    'http://127.0.0.1',
+]

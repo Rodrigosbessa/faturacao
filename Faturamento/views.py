@@ -11,11 +11,10 @@ from functools import wraps
 
 @login_required
 def webapp_view(request):
-    # 1. VERIFICAÇÃO CRUCIAL: O utilizador já passou pelo MFA?
-    if not request.user.is_verified():
+    # REGRA: Se tem email e não verificou o código, manda para o check_mfa
+    if request.user.email and not request.user.is_verified():
         return redirect('check_mfa_status')
 
-    # 2. Verifica se tem empresa
     empresa = Empresa.objects.filter(user=request.user).first()
     if not empresa:
         return redirect('completar_empresa')
@@ -26,47 +25,55 @@ def webapp_view(request):
     }
     return render(request, 'webapp.html', context)
 
-
-from django_otp.plugins.otp_email.models import EmailDevice
-
-
 @login_required
 def check_mfa_status(request):
     user = request.user
 
-    # 1. Verifica Empresa
-    if not Empresa.objects.filter(user=user).exists():
-        return redirect('completar_empresa')
+    if not user.email:
+        return redirect('webapp_home')
 
-    # 2. Apenas decide para onde ir
-    if not request.user.is_verified():
-        return redirect('otp_verify_view') # Vai para lá sem enviar ainda
+    if not user.is_verified():
+        return redirect('otp_verify_view')
 
     return redirect('webapp_home')
 
 
-from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django_otp.plugins.otp_email.models import EmailDevice
-from django_otp import user_has_device, verify_token
-from django.contrib import messages
 
-
+from django_otp import login as otp_login
 @login_required
 def otp_verify_view(request):
-    device = EmailDevice.objects.filter(user=request.user, name="default").first()
-    if not device:
-        device = EmailDevice.objects.create(user=request.user, name="default", email=request.user.email)
+    from django_otp.plugins.otp_email.models import EmailDevice
 
+    # Pega ou cria o device
+    device, created = EmailDevice.objects.get_or_create(
+        user=request.user,
+        name="default",
+        defaults={'email': request.user.email}
+    )
+
+    if not request.user.email:
+        return redirect('webapp_home')
+
+    if not device.email:
+        device.email = request.user.email
+        device.save()
+
+    if request.user.is_verified():
+        return redirect('webapp_home')
+    print("User email:", request.user.email)
+    print("Device email:", device.email)
     if request.method == "POST":
         token = request.POST.get("otp_token")
-        if verify_token(request.user, device, token):
+
+        if device.verify_token(token):
+            otp_login(request, device)
+
+            messages.success(request, "Verificação concluída com sucesso!")
             return redirect('webapp_home')
         else:
             messages.error(request, "Código inválido. Tente novamente.")
-
-    else:  # GET
-        # Verificamos se já existe um código ativo para não sobrecarregar o SendGrid
+    else:
         try:
             device.generate_challenge()
             messages.success(request, f"Código enviado para {request.user.email}")
