@@ -45,7 +45,6 @@ from django_otp import login as otp_login
 def otp_verify_view(request):
     from django_otp.plugins.otp_email.models import EmailDevice
 
-    # Pega ou cria o device
     device, created = EmailDevice.objects.get_or_create(
         user=request.user,
         name="default",
