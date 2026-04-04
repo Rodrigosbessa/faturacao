@@ -55,6 +55,7 @@ def otp_verify_view(request):
     if not request.user.email:
         return redirect('webapp_home')
 
+    print("SENDGRID_API_KEY:", os.getenv('SENDGRID_API_KEY'))
     if not device.email:
         device.email = request.user.email
         device.save()
