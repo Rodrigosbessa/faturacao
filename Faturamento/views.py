@@ -84,7 +84,8 @@ def otp_verify_view(request):
                 ['rodrigosbessa@gmail.com'],
                 fail_silently=False,
             )
-            device.generate_challenge()
+
+            print("EMAIL TESTE ENVIADO")
             messages.success(request, f"Código enviado para {request.user.email}")
         except Exception as e:
             messages.error(request, "Erro ao contactar servidor de e-mail.")
