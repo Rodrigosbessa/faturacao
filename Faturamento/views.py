@@ -61,6 +61,7 @@ def otp_verify_view(request):
 
     if request.user.is_verified():
         return redirect('webapp_home')
+
     print("User email:", request.user.email)
     print("Device email:", device.email)
     if request.method == "POST":

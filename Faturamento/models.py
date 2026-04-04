@@ -708,28 +708,3 @@ class ReciboLinhas(models.Model):
 
     class Meta:
         db_table = 'recibo_linhas'
-
-from django.dispatch import receiver
-from allauth.account.signals import user_logged_in  # Importante para detetar login
-from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
-
-from allauth.socialaccount.models import SocialAccount
-@receiver(user_logged_in)
-def trigger_mfa_flow(sender, request, user, **kwargs):
-    if SocialAccount.objects.filter(user=user).exists() or not user.email:
-        return
-
-    if user.email and request.COOKIES.get('trusted_device') != 'true':
-        code = get_random_string(6, allowed_chars='0123456789')
-        request.session['mfa_code'] = code
-        request.session['mfa_verified'] = False  # Bloqueia o acesso inicial
-
-        # Envia o e-mail
-        send_mail(
-            'Seu código de verificação',
-            f'O seu código é: {code}',
-            'do-not-reply@teusite.com',
-            [user.email],
-            fail_silently=False,
-        )
