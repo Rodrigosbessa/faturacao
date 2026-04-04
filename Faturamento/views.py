@@ -75,6 +75,15 @@ def otp_verify_view(request):
             messages.error(request, "Código inválido. Tente novamente.")
     else:
         try:
+            from django.core.mail import send_mail
+
+            send_mail(
+                'Teste Render',
+                'Se receberes isto, SMTP funciona',
+                'suporte@faturix.org',
+                ['rodrigosbessa@gmail.com'],
+                fail_silently=False,
+            )
             device.generate_challenge()
             messages.success(request, f"Código enviado para {request.user.email}")
         except Exception as e:
