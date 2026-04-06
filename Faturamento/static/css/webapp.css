@@ -789,46 +789,44 @@ body {
   border-radius: 4px;
 }
 
-/* Container para alinhar o botão verticalmente na navbar */
+/* Container do botão "Sair" */
 .navbar-nav.btn-logout-container {
-    margin-right: 35px;
-    display: flex;
-    align-items: center;
-    height: 50px; /* Altura padrão da navbar do Bootstrap 3 */
+    display: flex !important;       /* sobrescreve display padrão do Bootstrap */
+    align-items: center !important; /* centraliza verticalmente */
+    justify-content: flex-end;      /* força alinhamento à direita */
+    margin-right: 35px !important;  /* distância da borda direita */
+    height: 50px;                   /* altura da navbar */
 }
 
-/* Garante que o <li> não herda estilos indesejados em mobile */
+/* Remove qualquer margem negativa que o Bootstrap aplica */
+.navbar-nav.btn-logout-container.navbar-right:last-child {
+    margin-right: 35px !important;
+}
+
+/* <li> dentro do container */
 .navbar-nav.btn-logout-container > li {
-    display: block;
+    display: flex !important;
+    align-items: center;
 }
 
-/* Estilo do Botão Sair */
+/* Botão Sair */
 .navbar-nav.btn-logout-container .btn-logout {
-    background-color: #ff4d4d; /* Vermelho moderno, menos agressivo */
-    color: white !important; /* Texto branco */
-    padding: 8px 18px !important; /* Espaçamento interno */
-    border-radius: 20px; /* Cantos bem arredondados */
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 13px;
-
-    /* Transição suave para o efeito de hover */
-    -webkit-transition: all 0.3s ease;
-    transition: all 0.3s ease;
-
-    /* Remove sombras padrão do Bootstrap */
-    border: none;
-    margin-top: 0; /* Reset de margens do Bootstrap */
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
+    background-color: #ff4d4d;
+    color: white !important;
+    padding: 8px 18px !important;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    border: none;
+    transition: all 0.3s ease;
 }
 
-/* Espaçamento entre o ícone e o texto */
 .navbar-nav.btn-logout-container .btn-logout i {
     margin-right: 6px;
     font-size: 14px;
-    top: 0; /* Corrige alinhamento vertical do glyphicon */
 }
 
 /* Efeito ao passar o rato (Hover) */
