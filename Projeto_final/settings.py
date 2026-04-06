@@ -155,12 +155,13 @@ SOCIALACCOUNT_FORMS = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_PORT = 465  # Mudança de 587 para 465
+EMAIL_USE_TLS = False  # Desliga o TLS (Porta 587)
+EMAIL_USE_SSL = True   # Liga o SSL (Porta 465)
 EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = 'suporte@faturix.org'
-
+EMAIL_TIMEOUT = 10
 # --- CONFIGURAÇÃO OTP (MFA) ---
 OTP_EMAIL_TOKEN_VALIDITY = 300  # Código válido por 5 minutos
 import os
@@ -212,4 +213,3 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1',
 ]
 
-EMAIL_TIMEOUT = 10
