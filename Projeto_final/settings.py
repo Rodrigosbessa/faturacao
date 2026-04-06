@@ -209,8 +209,8 @@ LOGOUT_REDIRECT_URL = 'account_login'
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'faturix.org',
-    'www.faturix.org',
+    'https://faturix.org',
+    'https://www.faturix.org',
     'https://faturix-kya9.onrender.com',
     'http://localhost',
     'http://127.0.0.1',
