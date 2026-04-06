@@ -207,6 +207,13 @@ else:
 LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
+ALLOWED_HOSTS = [
+    'faturix.org',
+    'www.faturix.org',
+    'faturix-kya9.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://faturix.org',
