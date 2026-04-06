@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/verify-otp/', views.otp_verify_view, name='otp_verify_view'),
     path('webapp/', views.webapp_view, name='webapp_home'),
     path('', views.webapp_view, name='index'),
+    path('logout/', views.logout_view, name='logout_view'),
     path('registar/json/', views.registar_json, name='registar_json'),
     path('completar-registo/', views.completar_registo_empresa, name='completar_empresa'),
     path('clientes/json/', views.clientes_json, name='clientes_json'),

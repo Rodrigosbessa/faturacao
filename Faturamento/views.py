@@ -105,6 +105,12 @@ def completar_registo_empresa(request):
 
     return render(request, 'account/completar_empresa.html', {'form': form})
 
+from django.contrib.auth import logout
+@login_required
+def logout_view(request):
+    logout(request)
+    # Redireciona para a página de login (ajuste o nome da rota conforme o seu urls.py)
+    return redirect('login')
 from .decorators import empresa_obrigatoria
 @login_required
 @empresa_obrigatoria
