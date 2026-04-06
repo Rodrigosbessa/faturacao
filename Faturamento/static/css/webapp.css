@@ -789,4 +789,71 @@ body {
   border-radius: 4px;
 }
 
+/* Container para alinhar o botão verticalmente na navbar */
+.navbar-nav.btn-logout-container {
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    height: 50px; /* Altura padrão da navbar do Bootstrap 3 */
+}
+
+/* Garante que o <li> não herda estilos indesejados em mobile */
+.navbar-nav.btn-logout-container > li {
+    display: block;
+}
+
+/* Estilo do Botão Sair */
+.navbar-nav.btn-logout-container .btn-logout {
+    background-color: #ff4d4d; /* Vermelho moderno, menos agressivo */
+    color: white !important; /* Texto branco */
+    padding: 8px 18px !important; /* Espaçamento interno */
+    border-radius: 20px; /* Cantos bem arredondados */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 13px;
+
+    /* Transição suave para o efeito de hover */
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+
+    /* Remove sombras padrão do Bootstrap */
+    border: none;
+    margin-top: 0; /* Reset de margens do Bootstrap */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Espaçamento entre o ícone e o texto */
+.navbar-nav.btn-logout-container .btn-logout i {
+    margin-right: 6px;
+    font-size: 14px;
+    top: 0; /* Corrige alinhamento vertical do glyphicon */
+}
+
+/* Efeito ao passar o rato (Hover) */
+.navbar-nav.btn-logout-container .btn-logout:hover,
+.navbar-nav.btn-logout-container .btn-logout:focus {
+    background-color: #ff3333 !important; /* Vermelho um pouco mais escuro */
+    color: white !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra leve para dar profundidade */
+    text-decoration: none;
+}
+
+/* Ajuste para ecrãs pequenos (Mobile) */
+@media (max-width: 767px) {
+    .navbar-nav.btn-logout-container {
+        margin-right: 0;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding-left: 15px;
+        height: auto;
+        display: block; /* Volta ao padrão empilhado em mobile */
+    }
+
+    .navbar-nav.btn-logout-container .btn-logout {
+        display: inline-flex; /* Não ocupa a largura toda em mobile */
+    }
+}
+
 
