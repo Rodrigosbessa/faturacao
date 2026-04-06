@@ -791,7 +791,7 @@ body {
 
 /* Container para alinhar o botão verticalmente na navbar */
 .navbar-nav.btn-logout-container {
-    margin-right: 15px;
+    margin-right: 35px;
     display: flex;
     align-items: center;
     height: 50px; /* Altura padrão da navbar do Bootstrap 3 */
