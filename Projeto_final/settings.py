@@ -153,13 +153,10 @@ SOCIALACCOUNT_FORMS = {
     'signup': 'Faturamento.forms.MyCustomSocialSignupForm',
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_PORT = 465  # Mudança de 587 para 465
-EMAIL_USE_TLS = False  # Desliga o TLS (Porta 587)
-EMAIL_USE_SSL = True   # Liga o SSL (Porta 465)
-EMAIL_HOST_USER = 'apikey'
-EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
+# Substitui o backend de SMTP pelo da API
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 DEFAULT_FROM_EMAIL = 'suporte@faturix.org'
 EMAIL_TIMEOUT = 10
 # --- CONFIGURAÇÃO OTP (MFA) ---
