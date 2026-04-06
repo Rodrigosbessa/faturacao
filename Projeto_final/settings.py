@@ -207,6 +207,7 @@ else:
 LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
+# ola
 ALLOWED_HOSTS = [
     'faturix.org',
     'www.faturix.org',
