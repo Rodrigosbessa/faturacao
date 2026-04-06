@@ -41,10 +41,14 @@ def check_mfa_status(request):
 from django.contrib.auth.decorators import login_required
 
 from django_otp import login as otp_login
+
+
 @login_required
 def otp_verify_view(request):
     from django_otp.plugins.otp_email.models import EmailDevice
+    from django_otp.util import random_hex
 
+    # 1. Garante que o utilizador tem um "dispositivo" de e-mail registado
     device, created = EmailDevice.objects.get_or_create(
         user=request.user,
         name="default",
@@ -52,45 +56,33 @@ def otp_verify_view(request):
     )
 
     if not request.user.email:
+        messages.error(request, "O teu utilizador não tem e-mail configurado.")
         return redirect('webapp_home')
 
-    print("SENDGRID_API_KEY:", os.getenv('SENDGRID_API_KEY'))
-    if not device.email:
-        device.email = request.user.email
-        device.save()
-
+    # 2. Se o utilizador já validou o OTP nesta sessão, entra direto
     if request.user.is_verified():
         return redirect('webapp_home')
 
-    print("User email:", request.user.email)
-    print("Device email:", device.email)
     if request.method == "POST":
         token = request.POST.get("otp_token")
-
         if device.verify_token(token):
+            from django_otp import login as otp_login
             otp_login(request, device)
-
-            messages.success(request, "Verificação concluída com sucesso!")
+            messages.success(request, "Bem-vindo! Verificação concluída.")
             return redirect('webapp_home')
         else:
             messages.error(request, "Código inválido. Tente novamente.")
     else:
+        # 3. GERAR E ENVIAR O CÓDIGO REAL
         try:
-            from django.core.mail import send_mail
+            # O django-otp-email tem um método próprio para gerar e enviar
+            device.generate_challenge()
 
-            send_mail(
-                'Teste Render',
-                'Se receberes isto, SMTP funciona',
-                'suporte@faturix.org',
-                ['rodrigosbessa@gmail.com'],
-                fail_silently=False,
-            )
-
-            print("EMAIL TESTE ENVIADO")
-            messages.success(request, f"Código enviado para {request.user.email}")
+            messages.info(request, f"Enviámos um código de 6 dígitos para {request.user.email}")
+            print(f"OTP enviado com sucesso para {request.user.email}")
         except Exception as e:
-            messages.error(request, "Erro ao contactar servidor de e-mail.")
-            print(f"Erro SendGrid: {e}")
+            messages.error(request, "Erro ao enviar o código. Tenta mais tarde.")
+            print(f"Erro ao enviar OTP: {e}")
 
     return render(request, 'account/verify.html')
 
