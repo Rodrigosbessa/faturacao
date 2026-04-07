@@ -159,8 +159,12 @@ SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 DEFAULT_FROM_EMAIL = 'suporte@faturix.org'
 EMAIL_TIMEOUT = 10
+SERVER_EMAIL = 'suporte@faturix.org'
 # --- CONFIGURAÇÃO OTP (MFA) ---
-OTP_EMAIL_TOKEN_VALIDITY = 300  # Código válido por 5 minutos
+OTP_EMAIL_TOKEN_TEMPLATE = 'otp_email/otp_email_token.txt'
+OTP_EMAIL_SUBJECT_TEMPLATE = 'otp_email/otp_email_subject.txt'
+OTP_EMAIL_TOKEN_VALIDITY = 300
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
