@@ -164,7 +164,7 @@ SERVER_EMAIL = 'suporte@faturix.org'
 OTP_EMAIL_TOKEN_TEMPLATE = 'otp_email/otp_email_token.txt'
 OTP_EMAIL_SUBJECT_TEMPLATE = 'otp_email/otp_email_subject.txt'
 OTP_EMAIL_TOKEN_VALIDITY = 300
-
+#ola
 import os
 from pathlib import Path
 from dotenv import load_dotenv
