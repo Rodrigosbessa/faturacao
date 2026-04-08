@@ -40,15 +40,10 @@ def check_mfa_status(request):
 
 from django.contrib.auth.decorators import login_required
 
-from django_otp import login as otp_login
-
-
 @login_required
 def otp_verify_view(request):
     from django_otp.plugins.otp_email.models import EmailDevice
-    from django_otp.util import random_hex
 
-    # 1. Garante que o utilizador tem um "dispositivo" de e-mail registado
     device, created = EmailDevice.objects.get_or_create(
         user=request.user,
         name="default",

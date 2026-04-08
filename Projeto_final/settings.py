@@ -204,9 +204,8 @@ else:
     CSRF_COOKIE_SECURE = True
 
     CSRF_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_SAMESITE = 'None'
-    SESSION_COOKIE_SAMESITE = 'None'
-
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
 LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
@@ -226,6 +225,5 @@ CSRF_TRUSTED_ORIGINS = [
     'https://faturix-kya9.onrender.com',
     'http://localhost',
     'http://127.0.0.1',
-    'https://*.onrender.com',
 ]
 
