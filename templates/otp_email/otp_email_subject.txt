@@ -1,0 +1,1 @@
+{{ token }} é o teu código de verificação Faturix

@@ -1,0 +1,40 @@
+{% load static %}
+<div id="guias" class="subconteudo-item" style="display: none; margin-top: 20px;">
+    <div class="panel panel-default" style="padding: 20px;">
+
+        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-family: 'Geologica', sans-serif; margin: 0; color: #333; font-weight: 600;">Lista de Guias de Transporte</h2>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text"
+                       id="pesquisaGuias"
+                       class="form-control"
+                       placeholder="🔍 Pesquisar guia ou cliente..."
+                       style="width: 250px; border-radius: 20px; padding-left: 15px;">
+
+                <button id="btnAddGuia" class="btn btn-success">
+                    <i class="fa fa-plus"></i> Nova Guia
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="tabelaGuias" class="display table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Número</th>
+                        <th>Cliente</th>
+                        <th>Data Emissão</th>
+                        <th>Local Descarga</th>
+                        <th>Estado</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="guiasTabelaBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% include "subsubconteudo/registar_guia.html" %}

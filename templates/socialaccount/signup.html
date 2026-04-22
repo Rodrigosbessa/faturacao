@@ -1,0 +1,36 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <title>Finalizar Registo - Faturamento</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+    <div class="grid-container" id="grid"></div>
+    <div class="main-content">
+        <div class="login-container">
+            <h1>Quase lá!</h1>
+            <p>Esta é a sua primeira vez via Google. Por favor, escolha um nome de utilizador e uma password para o nosso sistema.</p>
+
+            <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    {% if field.name != 'email' %} <div class="form-group">
+                            {{ field.errors }}
+                            <input type="{{ field.field.widget.input_type }}"
+                                   name="{{ field.name }}"
+                                   placeholder="{{ field.label }}"
+                                   required>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                <button type="submit" class="btn-login">Criar Minha Conta</button>
+            </form>
+        </div>
+    </div>
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+body {
+  height: 100vh;
+  display: flex;              
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+#tabs {
+  width: 900px;
+  height: 550px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  font-family: 'Geologica', sans-serif;
+
+}
+
+#tabs > div {
+  height: 480px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.object_view {
+    width: 100%;
+    table-layout: fixed; /* O segredo está aqui! */
+    border-collapse: collapse; /* Melhora o alinhamento das bordas */
+}
+
+.object_view tr {
+    height: 30px;
+}
+.object_view .col_field {
+    width: 100px;
+    height: 13px;
+    padding-top: 8px;
+    padding-bottom: 7px;
+    padding-left: 30px;
+    color: #4d4d4d;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    vertical-align: middle;
+    font-size: 16px;
+    position: relative;
+}
+
+.object_view td {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.object_view .col_data_double {
+    width: 229px;
+}
+.object_view .col_data {
+    color: #000000;
+    height: 13px;
+    padding-top: 8px;
+    padding-bottom: 7px;
+    vertical-align: middle;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Container que segura o texto e o botão */
+.valor-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px; /* Espaço entre o texto e o botão */
+}
+
+/* Onde acontece o truncamento (...) */
+.texto-ellipsis {
+    flex: 1;                /* Ocupa todo o espaço disponível */
+    white-space: nowrap;    /* Não quebra linha */
+    overflow: hidden;       /* Esconde o que sobrar */
+    text-overflow: ellipsis; /* Adiciona os "..." */
+    min-width: 0;           /* Importante para o flexbox entender o limite */
+}
+
+/* O Botão */
+.btn-edit {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #ffffff;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px; /* Ou 50% se quiser redondo */
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.btn-edit:hover {
+    background-color: #3b82f6; /* Um azul moderno */
+    border-color: #2563eb;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Muda a cor do ícone para branco no hover */
+.btn-edit:hover svg {
+    stroke: white;
+}
+
+.btn-edit svg {
+    transition: stroke 0.2s ease;
+}
+
+.edit-input {
+    width: 100%;
+    height: 26px;
+    padding: 2px 5px;
+    font-size: 14px;
+    font-family: 'Geologica', sans-serif;
+    border: 1px solid #3b82f6; /* Borda azul ao editar */
+    border-radius: 4px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.edit-select {
+    width: 100%;
+    height: 28px;
+    padding: 2px 30px 2px 8px; /* Espaço para a seta personalizada */
+    font-size: 14px;
+    font-family: 'Geologica', sans-serif;
+    color: #333;
+    background-color: #ffffff;
+
+    /* Remove a seta padrão do browser */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* Adiciona uma seta personalizada via SVG no background */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+
+    border: 1px solid #d1d1d1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Efeito ao clicar/focar */
+.edit-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: #fff;
+}
+
+/* Estilo para as opções dentro do dropdown */
+.edit-select option {
+    padding: 10px;
+    background-color: #fff;
+    color: #333;
+}
+
+.table-actions {
+    display: flex;
+    justify-content: flex-end; /* Encosta à direita */
+    margin-top: 20px;          /* Espaço entre a tabela e o botão */
+    padding-bottom: 10px;
+}
+
+/* Estilo do Botão Guardar */
+.btn-save {
+    display: flex;
+    align-items: center;
+    background-color: #10b981; /* Verde esmeralda moderno */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Geologica', sans-serif;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-save:hover {
+    background-color: #059669; /* Verde um pouco mais escuro no hover */
+    transform: translateY(-1px); /* Pequeno efeito de elevação */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+}
+
+.invoice_list {
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.invoice_list tr.header td {
+    font-weight: bold;
+    font-size: 14px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 1px solid #d4d4d4;
+    background-color: #d4d4d4;
+}
+.centered {
+    text-align: center;
+}
+
+.invoice_list tr.row td {
+    vertical-align: middle;
+    border-bottom: 1px solid #d4d4d4;
+    font-size: 14px;
+}
+
+.invoice_list tr.row td a {
+    color: #181818;
+    display: block;
+    padding: 6px;
+    text-decoration: none;
+    margin-bottom: 0;
+    width: auto;
+}
+.invoice_list tr.even {
+    background-color: #f4f4f4;
+}
+
+.right {
+    text-align: right;
+}
+
+.invoice_list tr.total td {
+    border-top: 2px solid #d4d4d4;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 14px;
+}
+.invoice_list tr.total td.right {
+    padding-right: 6px;
+}
+.invoice_list tr.total td {
+    border-top: 2px solid #d4d4d4;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 14px;
+}
+.row:hover, .row.even:hover {
+    background-color: #c3c8ca !important;
+    cursor: pointer;
+}
+.btn-add, .btn-export {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-add {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+}
+.btn-add:hover { background-color: #1d4ed8; }
+
+.btn-export {
+    background-color: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+.btn-export:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.btn-receipt {
+    background-color: #f59e0b; /* Amarelo/Laranja */
+    color: white;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-receipt:hover { background-color: #d97706; }
+
+/* Customização do Modal jQuery UI */
+.ui-dialog {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.ui-dialog-titlebar {
+    background: #f8fafc !important;
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 15px 20px !important;
+}
+
+.ui-dialog-title {
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+/* Estilos do Formulário Interno */
+.modern-modal {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    padding: 20px !important;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #334155;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.flex-1 { flex: 1; }
+
+/* Botão de Submissão */
+.btn-submit {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s ease, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-submit:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-submit:active {
+    transform: scale(0.98);
+}
+
+.btn-voltar-fixo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    text-decoration: none;
+    font-family: 'Geologica', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Garante que fica por cima de tudo */
+    transition: all 0.2s;
+}
+
+.btn-voltar-fixo:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: translateY(-2px); /* Pequeno efeito de elevação */
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db; /* Cor azul */
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

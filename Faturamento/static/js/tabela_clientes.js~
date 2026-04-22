@@ -1,0 +1,36 @@
+<script src="tabela_generica.js"></script>
+
+
+<script>
+    let clientesData = [];
+    let currentPage = 1;
+    const rowsPerPage = 5;
+
+    document.addEventListener("DOMContentLoaded", () => {
+    carregarDados(window.clientesUrl, data => {
+        clientesData = data;
+
+        renderTabela({
+            lista: clientesData,
+            tbodyId: "clientesLista table",
+            currentPage,
+            rowsPerPage,
+            colunas: ["codigo", "nome", "contribuinte", "morada1", "codigo_postal", "concelho"],
+            contadorId: "contadorClientes",
+            pagDivId: "pagination",
+            idField: "id_cliente"
+        });
+
+        habilitarPesquisa({
+            inputId: "pesquisaCliente",
+            lista: clientesData,
+            tbodyId: "clientesLista table",
+            rowsPerPage,
+            colunas: ["codigo", "nome", "contribuinte", "morada1", "codigo_postal", "concelho"],
+            contadorId: "contadorClientes",
+            pagDivId: "pagination",
+            idField: "id_cliente"
+        });
+    });
+});
+</script>

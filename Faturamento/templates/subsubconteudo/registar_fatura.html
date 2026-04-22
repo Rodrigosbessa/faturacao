@@ -1,0 +1,122 @@
+{% load static %}
+<div id="box-registar-fatura" class="modern-modal" title="Registar Fatura" style="display:none;">
+    <div class="modal-body">
+        <div class="form-group">
+            <label for="select-cliente">Cliente</label>
+            <select id="select-cliente" class="form-control">
+                <option value="">Selecione o cliente...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="documento">Tipo de documento</label>
+            <select id="documento" class="form-control">
+                <option value="">Selecione o tipo...</option>
+                <option value="FT">Fatura</option>
+                <option value="FS">Fatura-Simplificada</option>
+                <option value="FR">Fatura-Recibo</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group flex-1">
+                <label for="data_emissao_modal">Data de Emissão</label>
+                <input type="date" id="data_emissao_modal" class="form-control">
+            </div>
+
+            <div class="form-group flex-1">
+                <label for="data_vencimento_modal">Data de Vencimento</label>
+                <input type="date" id="data_vencimento_modal" class="form-control">
+            </div>
+        </div>
+
+        <button class="btn-submit" id="btn-registar-fatura">
+            <span class="icon">➕</span> Registar Fatura
+        </button>
+    </div>
+</div>
+<script>
+$(document).ready(function() {
+
+    // 1. Inicializar modal
+    $('#box-registar-fatura').dialog({
+        autoOpen: false,
+        modal: true,
+        width: 450,
+        draggable: true,
+        resizable: false
+    });
+
+    // 2. Carregar Clientes via AJAX
+    $.getJSON("{% url 'get_clientes' %}", function(clientes) {
+        var select = $('#select-cliente');
+        // Limpa para evitar duplicados
+        select.find('option:not(:first)').remove();
+
+        clientes.forEach(function(c) {
+            // Importante: garantir que c.prazo é um número
+            select.append(
+                `<option value="${c.id}" data-prazo="${c.prazo || 0}">${c.nome}</option>`
+            );
+        });
+    });
+
+    // 3. Função de Atualizar Vencimento (Melhorada)
+    function atualizarVencimento() {
+        const selectedOption = $('#select-cliente option:selected');
+        const prazo = parseInt(selectedOption.data('prazo')) || 0;
+        const dataEmissaoVal = $('#data_emissao_modal').val();
+
+        if (dataEmissaoVal) {
+            const emissao = new Date(dataEmissaoVal);
+            const vencimento = new Date(emissao);
+            vencimento.setDate(vencimento.getDate() + prazo);
+
+            const yyyy = vencimento.getFullYear();
+            const mm = String(vencimento.getMonth() + 1).padStart(2, '0');
+            const dd = String(vencimento.getDate()).padStart(2, '0');
+
+            const vencimentoStr = `${yyyy}-${mm}-${dd}`;
+
+            $('#data_vencimento_modal').val(vencimentoStr);
+            // Define o mínimo para a data de vencimento ser a de emissão
+            $('#data_vencimento_modal').attr('min', dataEmissaoVal);
+        }
+    }
+
+    // 4. Gatilhos de mudança
+    $('#select-cliente, #data_emissao_modal').on('change', atualizarVencimento);
+
+    // 5. Abrir Modal
+    $('#btnAddFatura').on('click', function() {
+        const hoje = new Date().toISOString().slice(0,10);
+        $('#data_emissao_modal').val(hoje);
+        $('#data_vencimento_modal').val(hoje); // Valor inicial por segurança
+
+        atualizarVencimento();
+        $('#box-registar-fatura').dialog('open');
+    });
+
+    // 6. Submeter (Botão Registar)
+    $('#btn-registar-fatura').on('click', function(){
+        const dados = {
+            cliente: $('#select-cliente').val(),
+            documento: $('#documento').val(),
+            data_emissao: $('#data_emissao_modal').val(),
+            data_vencimento: $('#data_vencimento_modal').val(),
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        };
+
+        if (!dados.cliente || !dados.documento) {
+            alert("Por favor, selecione o cliente e o tipo de documento.");
+            return;
+        }
+
+        $.post("{% url 'criar_documento_temp' %}", dados, function(response){
+            window.location.href = `/faturas/novo/?temp_id=${response.id}&numero=${response.numero}&cliente=${dados.cliente}`;
+        }).fail(function(xhr){
+            alert("Erro ao criar documento: " + xhr.responseText);
+        });
+    });
+});
+</script>

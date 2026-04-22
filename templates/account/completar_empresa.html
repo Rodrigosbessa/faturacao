@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Dados da Empresa - Faturamento</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+    <div class="grid-container" id="grid"></div>
+    <div class="main-content">
+        <div class="login-container empresa-container">
+            <h1>Dados da Empresa</h1>
+            <p>Por favor, preencha os dados da sua empresa para continuar.</p>
+    
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    {% for field in form %}
+                        <div class="form-group {% if field.name == 'morada' %}full-width{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <button type="submit" class="btn-login">Finalizar Registo</button>
+            </form>
+        </div>
+    </div>
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+<script src="{% static 'js/validacao_empresa.js' %}"></script>
+</html>

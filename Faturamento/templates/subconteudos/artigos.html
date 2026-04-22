@@ -1,0 +1,65 @@
+{% load static %}
+<div class="subconteudo-item" id="artigos" style="display:none; margin-top: 20px;">
+    <div class="panel panel-default" style="padding: 20px;">
+
+        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Lista de Artigos</h2>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <span id="contadorArtigo" class="text-muted small" style="font-family: 'Geologica', sans-serif;"></span>
+                <input type="text"
+                       id="pesquisaArtigo"
+                       class="form-control"
+                       placeholder="🔍 Pesquisar artigo..."
+                       style="width: 250px; border-radius: 20px; padding-left: 15px;">
+                <button id="btnAddArtigo" class="btn btn-success">
+                    <i class="fa fa-plus"></i> Novo Artigo
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="tabelaArtigos" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Preço</th>
+                        <th>Taxa</th>
+                        <th style="text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="artigosTabelaBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="paginationArtigos" class="text-center" style="margin-top: 15px; font-family: 'Geologica', sans-serif"></div>
+    </div>
+
+    <div id="modal-apagar-artigo" title="Confirmar Eliminação" style="display:none;">
+        <div class="custom-modal-body">
+            <div class="header-icon-container delete-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+
+            <h3>Tem a certeza?</h3>
+            <p>Esta ação não pode ser revertida e o artigo será removido permanentemente do sistema.</p>
+
+            <div class="modal-footer-vertical">
+                <button id="btnConfirmarEliminar" class="btn-primary-custom btn-danger-custom">
+                    Sim, Eliminar Artigo
+                </button>
+                <button onclick="$('#modal-apagar-artigo').dialog('close');" class="btn-cancel-link">
+                    Cancelar e Manter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById("btnAddArtigo").addEventListener("click", function() {
+    window.location.href = "/artigo/adicionar/";
+});
+</script>

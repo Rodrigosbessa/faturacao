@@ -1,0 +1,77 @@
+{% load i18n %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Sign Out" %} - Faturix</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilo específico para o botão de cancelar/voltar */
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+
+        .logout-icon {
+            font-size: 50px;
+            color: #ff4d4d;
+            margin-bottom: 20px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-container" id="grid"></div>
+    <div class="main-content">
+        <div class="login-container" style="max-width: 400px; margin-top: 100px; text-align: center;">
+
+            <i class="fa-solid fa-right-from-bracket logout-icon"></i>
+
+            <h1>{% trans "Sign Out" %}</h1>
+
+            <p style="margin-bottom: 30px;">
+                {% trans "Are you sure you want to sign out?" %}
+            </p>
+
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+
+                {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+
+                <button type="submit" class="btn-login" style="background: #d9534f; border: none; width: 100%;">
+                    {% trans "Sign Out" %}
+                </button>
+            </form>
+
+            <a href="/" class="btn-cancel">
+                <i class="fa-solid fa-arrow-left"></i> Voltar ao Início
+            </a>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+
+            <small style="color: rgba(255,255,255,0.5);">
+                Sessão ativa como: <strong>{{ user.username }}</strong>
+            </small>
+        </div>
+    </div>
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

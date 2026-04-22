@@ -1,0 +1,72 @@
+{% load static %}
+<div id="clientes" class="subconteudo-item" style="display: none; margin-top: 20px;">
+    <div class="panel panel-default" style="padding: 20px;">
+
+        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Lista de Clientes</h2>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <span id="contadorClientes" class="text-muted small" style="font-family: 'Geologica', sans-serif;"></span>
+                <input type="text"
+                       id="pesquisaClientes"
+                       class="form-control"
+                       placeholder="🔍 Pesquisar cliente..."
+                       style="width: 250px; border-radius: 20px; padding-left: 15px;">
+                <button id="btnAddCliente" class="btn btn-success" data-url="{% url 'adicionar_cliente' %}">
+                    <i class="fa fa-plus"></i> Novo Cliente
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="tabelaClientes" class="display table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>NIF</th>
+                        <th>Morada</th>
+                        <th>Cód. Postal</th>
+                        <th>Concelho</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="clientesTabelaBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div id="modal-nao-eliminar" title="Operação Interrompida" style="display:none;">
+    <div class="custom-modal-body">
+        <div class="header-icon-container info-icon">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <h3>Não é possível eliminar</h3>
+        <p>Este cliente possui documentos ou histórico associado. <br>Para manter a integridade dos dados, a eliminação foi bloqueada.</p>
+
+        <div class="modal-footer-vertical">
+            <button onclick="$('#modal-nao-eliminar').dialog('close');" class="btn-primary-custom btn-info-custom">
+                Compreendido
+            </button>
+        </div>
+    </div>
+</div>
+<div id="modal-apagar-cliente" title="Confirmar Eliminação" style="display:none;">
+    <div class="custom-modal-body">
+        <div class="header-icon-container delete-icon">
+            <i class="fas fa-user-minus"></i>
+        </div>
+        <h3>Eliminar Cliente?</h3>
+        <p>Esta ação removerá o cliente permanentemente. <br>Certifica-te de que esta é a intenção correta.</p>
+
+        <div class="modal-footer-vertical">
+            <button id="btnConfirmarEliminarCliente" class="btn-danger-custom">
+                Sim, Eliminar Cliente
+            </button>
+            <button onclick="$('#modal-apagar-cliente').dialog('close');" class="btn-cancel-link">
+                Não, manter cliente
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+</script>
