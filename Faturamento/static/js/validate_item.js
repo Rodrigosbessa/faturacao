@@ -12,7 +12,7 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            // Verifica se começa com o nome + "="
+            
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -44,7 +44,7 @@ function validarNumericoInput(input, tipo) {
     let campo = campos.find(c => c.id.includes(tipo));
     if (!campo) return;
 
-    // Permitir campo vazio enquanto o utilizador escreve
+    
     if (input.value.trim() === "") return;
 
     let valor = parseFloat(input.value.replace(',', '.'));
@@ -62,7 +62,7 @@ function validarNumericoInput(input, tipo) {
         .toFixed(campo.step.toString().split('.')[1]?.length || 0)
         .replace('.', ',');
 }
-// Seleção dos campos
+
 const campos = [
     {id: '#quantity', min: 1, max: 1000, step: 1},
     {id: '#price', min: 0, max: 1000000, step: 0.01},
@@ -95,7 +95,7 @@ function calcularTotalInput() {
     let preco = parseNumero($("#price").val());
     let desconto = parseNumero($("#discount").val());
     let quantidade = parseInt($("#quantity").val(), 10) || 1;
-    let iva = parseNumero($("#tax").val()); // só informativo
+    let iva = parseNumero($("#tax").val()); 
 
     if (quantidade <= 0) quantidade = 1;
     if (desconto < 0) desconto = 0;
@@ -122,7 +122,7 @@ function calcularTotalLinha($linha) {
 
     let subtotal = preco * quantidade;
 
-    // 🔹 agora o desconto é sobre o total
+    
     if (desconto > subtotal) desconto = subtotal;
 
     let total = subtotal - desconto;
@@ -135,7 +135,7 @@ $(document).on("input",
     function () {
 
         let $linha = $(this).closest("tr");
-        calcularTotalLinha($linha); // apenas calcula
+        calcularTotalLinha($linha); 
 });
 
 $(document).on("blur", "tr.product_edit input.price, tr.product_edit input.quantity, tr.product_edit input.discount, tr.product_edit input.tax", function(e) {
@@ -154,11 +154,11 @@ $(document).on("blur", "tr.product_edit input.price, tr.product_edit input.quant
 });
 
 $("#price, #quantity, #discount, #tax").on("blur", function(e) {
-    let tipo = this.id; // 'price', 'quantity', 'discount', 'tax'
+    let tipo = this.id; 
     validarNumericoInput(this, tipo);
 
     if (this.id === 'price' || this.id === 'quantity' || this.id === 'discount') {
-        calcularTotalInput(); // recalcula total do próximo artigo
+        calcularTotalInput(); 
     }
 });
 
@@ -174,7 +174,7 @@ function atualizarSupIVA() {
 
         const $campoIVA = $linha.find("td:has(.tax)");
 
-        // limpar antigos
+        
         $campoIVA.find("sup.iva-sup").remove();
 
         if (motivo) {
@@ -182,7 +182,7 @@ function atualizarSupIVA() {
                 `<sup class="iva-sup">*${indice}</sup>`
             );
 
-            // guardar o índice na linha
+            
             $linha.data("indiceIVA0", indice);
 
             indice++;
@@ -214,13 +214,13 @@ window.atualizarResumoMotivos = function() {
 
     const motivos = Object.keys(mapa);
 
-    // 🔥 Se não houver → remover bloco
+    
     if (motivos.length === 0) {
         $("#taxreason_block").remove();
         return;
     }
 
-    // 🔥 Criar bloco se faltar
+    
     if ($("#taxreason_block").length === 0) {
 
         const bloco = `
@@ -238,7 +238,7 @@ Isento de IVA de acordo com artigo 9º do Código do IVA (CIVA)
         $("tbody#iva_lines").closest("table").after(bloco);
     }
 
-    // 🔥 Construir texto
+    
     let html = `
 <div class="taxtitle">Condições de Enquadramento de IVA:</div>
 `;
@@ -252,17 +252,17 @@ Isento de IVA de acordo com artigo 9º do Código do IVA (CIVA)
     }
 
     motivos.forEach((motivo) => {
-        const motivoData = taxReasons.find(t => t.code === motivo); // Encontra o motivo na lista da API
+        const motivoData = taxReasons.find(t => t.code === motivo); 
 
         if (motivoData) {
-            const descricao = motivoData.description || ""; // Descrição do motivo
+            const descricao = motivoData.description || ""; 
 
             const indices = mapa[motivo]
                 .sort((a, b) => a - b)
-                .map(i => `(<sup>*${i}</sup>)`) // Índices com o número da linha
+                .map(i => `(<sup>*${i}</sup>)`) 
                 .join("");
 
-            html += `${indices} ${motivo} - ${descricao}<br>`;  // Inclui a descrição do motivo
+            html += `${indices} ${motivo} - ${descricao}<br>`;  
         }
     });
 
@@ -270,7 +270,7 @@ Isento de IVA de acordo com artigo 9º do Código do IVA (CIVA)
 }
 $(function() {
 
-    // Modal de erro genérico
+    
     $("#box-erro").dialog({
         autoOpen: false,
         modal: true,
@@ -306,7 +306,7 @@ $(function() {
         } else if (tipo === "Taxa" || tipo === "T") {
             src = "/static/images/icon_type_tax_on.png";
         }
-        if (!src) return ""; // caso inválido
+        if (!src) return ""; 
 
         return `<img src="${src}" width="18" height="18" alt="">`;
     }
@@ -319,7 +319,7 @@ $(function() {
         return precoUnitarioFinal * qtd;
     }
 
-    // Botão adicionar artigo
+    
     function gerarItemId() {
         return Math.floor(Math.random() * 100000000);
     }
@@ -398,7 +398,7 @@ $(function() {
 
         let $linhaNova = $(`#item${itemId}`);
 
-        // Armazena motivo IVA0 se houver
+        
         if (motivoIVA0) {
             $linhaNova.data("motivoIVA0", motivoIVA0);
         }
@@ -413,7 +413,7 @@ $(function() {
 
         linhaEmEdicao = null;
 
-        // Limpa os inputs do formulário
+        
         $("#code, #item").val("");
         $("#quantity").val("1");
         $("#price, #discount, #total").val("0,00");
@@ -446,10 +446,10 @@ $(function() {
         };
 
         $.ajax({
-            url: "/validar-linha/",  // endpoint backend que valida a linha
+            url: "/validar-linha/",  
             method: "POST",
             contentType: "application/json",
-            headers: { "X-CSRFToken": getCookie("csrftoken") }, // Django CSRF
+            headers: { "X-CSRFToken": getCookie("csrftoken") }, 
             data: JSON.stringify(dadosLinha),
             success: function(response) {
                 if (!response.ok) {
@@ -458,15 +458,15 @@ $(function() {
                     return;
                 }
 
-                // --- NOVA LÓGICA DE AUTOLIQUIDAÇÃO AUTOMÁTICA ---
+                
                 if (tax === 0) {
-                    // Se for Autoliquidação, define M30 automaticamente e ignora o modal
+                    
                     if (window.impostoCliente === "Autoliquidação") {
                         criarLinhaNaTabela(tipo, code, item, quantity, price, discount, tax, "M30");
                         return;
                     }
 
-                    // Se NÃO for autoliquidação (mas for IVA 0), abre o modal para escolha manual
+                    
                     linhaEmEdicao = {
                         $linha: null,
                         tipo: tipo,
@@ -481,7 +481,7 @@ $(function() {
                     return;
                 }
 
-                // Se a taxa for superior a 0, cria a linha normalmente
+                
                 criarLinhaNaTabela(tipo, code, item, quantity, price, discount, tax);
             }
         });
@@ -503,13 +503,13 @@ $(function() {
                 }
 
                 if (linhaEmEdicao.$linha) {
-                    // Linha existente (edição)
+                    
                     linhaEmEdicao.$linha.data("motivoIVA0", motivo);
                     linhaEmEdicao.$linha.find(".motivo_tax").val(motivo);
                     atualizarResumoMotivos()
                     finalizarSave(linhaEmEdicao.$linha);
                 } else {
-                    // Linha nova
+                    
                     criarLinhaNaTabela(
                         linhaEmEdicao.tipo,
                         linhaEmEdicao.code,
@@ -548,7 +548,7 @@ $(document).on('click', '.item_edit', function() {
     $linha.find('.edit_input input').show();
     $linha.find('.view_input').hide();
 
-    // Trocar botões
+    
     $(this).hide();
     $linha.find('.item_save').show();
 });
@@ -558,7 +558,7 @@ function finalizarSave($linha) {
     $linha.find('.edit_input input').each(function() {
         let valor = $(this).val();
 
-            // Formatar números corretamente
+            
         if ($(this).hasClass('price') || $(this).hasClass('discount')) {
             valor = formatNumero(parseNumero(valor));
         }
@@ -585,24 +585,24 @@ $(document).on('click', '.item_save', function() {
         tax: parseNumero($linha.find('.tax').val())
     };
 
-    // --- NOVA LÓGICA DE AUTOLIQUIDAÇÃO NA EDIÇÃO ---
+    
     if (data.tax === 0) {
         if (window.impostoCliente === "Autoliquidação") {
-            // Define M30 automaticamente na linha e nos campos ocultos
+            
             $linha.data("motivoIVA0", "M30");
             $linha.find('.motivo_tax').val("M30");
         } else {
-            // Se não for autoliquidação, abre o modal para escolha manual
+            
             linhaEmEdicao = {
                 data: data,
                 $linha: $linha
             };
             $("#modal-iva0").dialog("open");
-            return; // Interrompe para esperar o modal
+            return; 
         }
     }
 
-    // Se a taxa for alterada de 0 para outro valor, limpamos o motivo
+    
     if (data.tax !== 0) {
         $linha.removeData("motivoIVA0");
         $linha.find('.motivo_tax').val('');
@@ -637,7 +637,7 @@ $(document).on('click', '.item_delete', function() {
         linhaEmEdicao = null;
     }
 
-    // Remove a linha
+    
     $linha.remove();
 
     atualizarResumoComDelay();
@@ -646,9 +646,9 @@ $(document).on('click', '.item_delete', function() {
 function atualizarResumoFatura(simboloMoeda) {
     let subtotal = 0;
     let total = 0;
-    let ivaIncidencias = {}; // {taxa: valor}
+    let ivaIncidencias = {}; 
 
-    // Itera sobre cada linha de produto adicionada
+    
     $("tr.product_edit").each(function() {
         let preco = parseNumero($(this).find("input.price").val());
         let quantidade = parseNumero($(this).find("input.quantity").val());
@@ -664,22 +664,22 @@ function atualizarResumoFatura(simboloMoeda) {
 
     total = subtotal + Object.values(ivaIncidencias).reduce((a,b) => a + b, 0);
 
-    // Atualiza subtotal e total com símbolo dinâmico
+    
     $("#subtotal_value").text(formatNumero(subtotal) + " " + simboloMoeda);
     $("#total_value").text(formatNumero(total) + " " + simboloMoeda);
 
-    // Limpa linhas de IVA
+    
     $("#iva_lines").empty();
 
-    // Adiciona linhas de IVA
+    
     for (let taxa in ivaIncidencias) {
 
         let valorIva = ivaIncidencias[taxa];
         let base = 0;
 
         if (parseFloat(taxa) === 0) {
-            // IVA 0 → base = valor sem IVA
-            base = valorIva; // ou soma dos subtotais das linhas com taxa 0
+            
+            base = valorIva; 
         } else {
             base = valorIva / (parseFloat(taxa)/100);
         }
@@ -697,7 +697,7 @@ $(document).on("click", "#item_update", function () {
 
     const $btn = $(this);
 
-    // Desativar botão + mostrar loading
+    
     $btn.prop("disabled", true).addClass("loading");
 
     const simboloAtual = $("#currency_text").text();
@@ -705,10 +705,10 @@ $(document).on("click", "#item_update", function () {
     setTimeout(() => {
         atualizarResumoFatura(simboloAtual);
 
-        // Reativar botão
+        
         $btn.prop("disabled", false).removeClass("loading");
 
-    }, 500); // delay curto e elegante
+    }, 500); 
 });
 
 $(function() {
@@ -732,7 +732,7 @@ $(function() {
         });
     }
 
-    // Inicializa ao clicar no botão "edit"
+    
     $("#button_edit_load").on("click", function() {
         $("#loaddate, #unloaddate").show();
 
@@ -740,7 +740,7 @@ $(function() {
         attachDateTimePicker("#unloaddate", "#unloaddate_text", 0);
     });
 
-    // Validação correta usando parseDateTime
+    
     function parseDateTimeValue(val) {
         if (!val) return null;
         return $.datepicker.parseDateTime("dd/mm/yy", "HH:mm", val);
@@ -760,7 +760,7 @@ $(function() {
         }
     }
 
-    // Validar quando fecha qualquer input
+    
     $("#loaddate, #unloaddate").on("change", validateDates);
 
 });
@@ -788,10 +788,10 @@ $(function() {
             $('#' + cancelId + ', #' + saveId).show();
             $(this).hide();
 
-            // Se o input estiver vazio, tentamos recuperar do texto da DIV
-            // Mas o ideal é que o input já tenha o valor dd/mm/yy definido no carregamento
+            
+            
             if (!input.val() && textDiv.text().trim() !== "") {
-                // Apenas como fallback caso o input perca o valor
+                
                 const d = $.datepicker.parseDate("d MM yy", textDiv.text().trim(), {
                     monthNames: mesesNome
                 });
@@ -800,7 +800,7 @@ $(function() {
 
             if (input.hasClass('hasDatepicker')) input.datepicker("destroy");
 
-            // Calcula minDate dinamicamente
+            
             let minVenc = 0;
             if (inputId === "payment_date_input") {
                 const emissaoVal = $("#date_input").val();
@@ -810,7 +810,7 @@ $(function() {
                     } catch(e) { minVenc = 0; }
                 }
 
-                // Se vencimento atual for menor que emissão, limpa
+                
                 const vencVal = input.val();
                 if (vencVal) {
                     try {
@@ -826,10 +826,10 @@ $(function() {
                 }
             }
 
-            // Inicializa datepicker
+            
             if (inputId === "date_input") {
 
-                // Calcula maxDate com base no vencimento atual
+                
                 let maxEmissao = null;
                 const vencVal = $("#payment_date_input").val();
 
@@ -841,8 +841,8 @@ $(function() {
 
                 input.datepicker({
                     dateFormat: "dd/mm/yy",
-                    minDate: 0,          // 🚫 Não permite datas passadas
-                    maxDate: maxEmissao, // 🚫 Não permite emissão > vencimento
+                    minDate: 0,          
+                    maxDate: maxEmissao, 
 
                     onClose: function() {
                         const val = input.val();
@@ -860,7 +860,7 @@ $(function() {
                     }
                 }).datepicker("show");
             } else {
-                // Datepicker do vencimento
+                
                 input.datepicker({
                     dateFormat: "dd/mm/yy",
                     minDate: minVenc,
@@ -889,7 +889,7 @@ $(function() {
             try {
                 const venc = $.datepicker.parseDate("dd/mm/yy", vencVal);
 
-                // Atualiza limite da emissão
+                
                 $("#date_input").datepicker("option", "maxDate", venc);
 
             } catch(e) {}
@@ -960,11 +960,11 @@ $(function() {
         return true;
     }
 
-    // Inicializa os campos
+    
     attachDatePicker('date_edit', 'date_cancel', 'date_update', 'date_text', 'date_input', 0);
     attachDatePicker('payment_date_edit', 'payment_date_cancel', 'payment_date_update', 'payment_date_text', 'payment_date_input', 0);
 
-    // Atualiza minDate do vencimento quando emissão muda
+    
     $("#date_input").on("change", function() {
         const emissaoVal = $(this).val();
         if (!emissaoVal) return;
@@ -972,10 +972,10 @@ $(function() {
         let emissao;
         try { emissao = $.datepicker.parseDate("dd/mm/yy", emissaoVal); } catch(e) { return; }
 
-        // Atualiza minDate do vencimento
+        
         $("#payment_date_input").datepicker("option", "minDate", emissao);
 
-        // Limpa vencimento se for menor que nova emissão
+        
         const vencVal = $("#payment_date_input").val();
         if (vencVal) {
             try {
@@ -991,7 +991,7 @@ $(function() {
         }
     });
 
-    // Valida datas ao carregar a página
+    
     validateDates();
 
 });
@@ -1064,8 +1064,8 @@ $(function() {
 
 function apagarDocumento() {
     const urlParams = new URLSearchParams(window.location.search);
-    const temp_id = urlParams.get("temp_id"); // pega temp_id da URL
-    const csrftoken = getCookie('csrftoken'); // função que pega CSRF
+    const temp_id = urlParams.get("temp_id"); 
+    const csrftoken = getCookie('csrftoken'); 
 
     const tipo_doc = "TEMP";
     $.ajax({
@@ -1091,7 +1091,7 @@ function apagarDocumento() {
 }
 
 $(function() {
-    // Inicializa o modal
+    
     $("#modal-apagar").dialog({
         autoOpen: false,
         modal: true,
@@ -1108,7 +1108,7 @@ $(function() {
         }
     });
 
-    // Abrir modal ao clicar no link
+    
     $("#tools_delete").on("click", function(e) {
         e.preventDefault();
         $("#modal-apagar").dialog("open");
@@ -1116,11 +1116,11 @@ $(function() {
 });
 
 function setupDateIcons(editId, cancelId, saveId, textId, inputId, isSelect = false) {
-    // Configurar o efeito de hover e clique para o ícone de editar
+    
     $('#' + editId)
         .hover(
-            function () { $(this).attr('src', editIconOn); }, // Muda para 'on' quando o mouse passa
-            function () { $(this).attr('src', editIconOff); } // Muda para 'off' quando o mouse sai
+            function () { $(this).attr('src', editIconOn); }, 
+            function () { $(this).attr('src', editIconOff); } 
         )
         .on('click', function () {
             $('#' + textId).hide();
@@ -1129,11 +1129,11 @@ function setupDateIcons(editId, cancelId, saveId, textId, inputId, isSelect = fa
             $(this).hide();
         });
 
-    // Configurar o efeito de hover e clique para o ícone de cancelar
+    
     $('#' + cancelId)
         .hover(
-            function () { $(this).attr('src', cancelIconOn); }, // Muda para 'on' quando o mouse passa
-            function () { $(this).attr('src', cancelIconOff); } // Muda para 'off' quando o mouse sai
+            function () { $(this).attr('src', cancelIconOn); }, 
+            function () { $(this).attr('src', cancelIconOff); } 
         )
         .on('click', function () {
             $('#' + textId).show();
@@ -1144,38 +1144,38 @@ function setupDateIcons(editId, cancelId, saveId, textId, inputId, isSelect = fa
 
     $('#' + saveId)
         .hover(
-            function () { $(this).attr('src', saveIconOn); }, // Muda para 'on' quando o mouse passa
-            function () { $(this).attr('src', saveIconOff); } // Muda para 'off' quando o mouse sai
+            function () { $(this).attr('src', saveIconOn); }, 
+            function () { $(this).attr('src', saveIconOff); } 
         )
         .on('click', function () {
             let newVal;
 
-            // Verifica se é um campo de seleção ou de texto
+            
             if (isSelect) {
                 newVal = $('#' + inputId + ' option:selected').text();
             } else {
                 newVal = $('#' + inputId).val();
             }
 
-            // Atualiza o texto visível
+            
             $('#' + textId).text(newVal).show();
             $('#' + inputId).parent().hide();
             $('#' + editId).show();
             $('#' + cancelId + ', #' + saveId).hide();
 
-            // 🔹 Se for moeda, atualizar valores no resumo
+            
             if (textId === "currency_text") {
                 const simbolo = newVal;
 
-                // Atualiza o valor no subtotal
+                
                 const subtotal = $("#subtotal_value").text().replace(/[^\d,\.]/g, '');
                 $("#subtotal_value").text(`${subtotal} ${simbolo}`);
 
-                // Atualiza o valor total
+                
                 const total = $("#total_value").text().replace(/[^\d,\.]/g, '');
                 $("#total_value").text(`${total} ${simbolo}`);
 
-                // Atualiza cada valor de IVA
+                
                 $("#iva_lines .value").each(function(){
                     const val = $(this).text().replace(/[^\d,\.]/g, '');
                     $(this).text(`${val} ${simbolo}`);
@@ -1186,7 +1186,7 @@ function setupDateIcons(editId, cancelId, saveId, textId, inputId, isSelect = fa
 
 
 $(function () {
-    // 📅 Data de Emissão
+    
     setupDateIcons(
         'date_edit',
         'date_cancel',
@@ -1195,7 +1195,7 @@ $(function () {
         'date_input'
     );
 
-    // 📅 Data de Vencimento
+    
     setupDateIcons(
         'payment_date_edit',
         'payment_date_cancel',
@@ -1204,7 +1204,7 @@ $(function () {
         'payment_date_input'
     );
 
-    // 📝 Descrição
+    
     setupDateIcons(
         'button_edit',
         'button_cancel',
@@ -1212,7 +1212,7 @@ $(function () {
         'description_text',
         'description'
     );
-    // Footer
+    
     setupDateIcons(
         'button_edit_footer',
         'button_cancel_footer',
@@ -1227,7 +1227,7 @@ $(function () {
 
 $(function () {
 
-    // HOVER DOS ÍCONES
+    
     $('#button_edit_load, #button_cancel_load, #button_update_load').hover(
         function () {
             $(this).attr('src', $(this).data('on'));
@@ -1237,19 +1237,19 @@ $(function () {
         }
     );
 
-    // EDITAR — mostrar todos os inputs
+    
     $('#button_edit_load').on('click', function () {
         $('.loadblock .text').hide();
-        $('.loadblock .input input, .loadblock .input select').show(); // incluir selects
+        $('.loadblock .input input, .loadblock .input select').show(); 
 
-        // copiar texto para input ou selecionar a opção
+        
         $('.loadblock .item').each(function () {
             const text = $(this).find('.text').text().trim();
             const input = $(this).find('.input input, .input select');
             if(input.is('input')) {
                 input.val(text);
             } else if(input.is('select')) {
-                input.val(text); // se o texto for o valor da opção
+                input.val(text); 
             }
         });
 
@@ -1257,7 +1257,7 @@ $(function () {
         $(this).hide();
     });
 
-    // CANCELAR — voltar ao estado inicial
+    
     $('#button_cancel_load').on('click', function () {
 
         $('.loadblock .input input, .loadblock .input select').hide();
@@ -1267,7 +1267,7 @@ $(function () {
         $('#button_cancel_load, #button_update_load').hide();
     });
 
-    // SALVAR — copiar inputs → texto
+    
     $('#button_update_load').on('click', function () {
         $('.loadblock .item').each(function () {
             const input = $(this).find('.input input, .input select');
@@ -1287,9 +1287,9 @@ $(function () {
 $(function() {
 
     const defaultText = "Caso pretenda pode adicionar aqui uma descrição...";
-    let originalText = "";   // 🔥 guarda valor real
+    let originalText = "";   
 
-    // EDITAR
+    
     $('#button_edit').on('click', function() {
 
         $('.description_block').css('background', '#ffffff');
@@ -1311,7 +1311,7 @@ $(function() {
         $(this).hide();
     });
 
-    // SALVAR
+    
     $('#button_update').on('click', function() {
 
         let newVal = $('#description').val().trim();
@@ -1331,10 +1331,10 @@ $(function() {
         $('#button_cancel, #button_update').hide();
     });
 
-    // ❌ CANCELAR (AGORA CORRETO)
+    
     $('#button_cancel').on('click', function() {
 
-        // 🔥 Restaurar valor original também no textarea
+        
         let restoreVal = originalText === defaultText ? "" : originalText;
 
         $('#description').val(restoreVal);
@@ -1355,9 +1355,9 @@ $(function() {
 $(function () {
 
     const defaultFooterText = "Caso pretenda pode adicionar aqui um rodapé...";
-    let originalFooterText = "";   // 🔥 guarda valor original
+    let originalFooterText = "";   
 
-    // HOVER (ícones)
+    
     $('.icon-btn').hover(
         function () {
             $(this).attr('src', $(this).data('on'));
@@ -1367,14 +1367,14 @@ $(function () {
         }
     );
 
-    // EDITAR
+    
     $('#button_edit_footer').on('click', function () {
 
         originalFooterText = $('#footer_text').text().trim();
 
         let currentText = originalFooterText;
 
-        // Se for texto padrão → textarea vazio
+        
         if (currentText === defaultFooterText) {
             currentText = "";
         }
@@ -1407,7 +1407,7 @@ $(function () {
         $('#button_cancel_footer, #button_update_footer').hide();
     });
 
-    // SALVAR
+    
     $('#button_update_footer').on('click', function () {
 
         let newVal = $('#footer').val().trim();
@@ -1469,7 +1469,7 @@ $(function () {
     $(document).on("click", "tr.input .code, tr.input .item, tr.product .code, tr.product .item, tr.product .view_input", function () {
         $("#box-artigo").dialog("open");
 
-        // guardar a linha correta
+        
         window.linhaEmEdicao = $(this).closest("tr");
     });
 
@@ -1494,7 +1494,7 @@ $(function () {
 
         const $linha = window.linhaEmEdicao;
 
-        // preencher inputs da linha
+        
         $linha.find(".item").val(descricao);
         $linha.find(".code").val(id);
         $linha.find("#poriginal").val(preco.toFixed(2));
@@ -1541,7 +1541,7 @@ $(function () {
         $("#box-artigo").dialog("close");
     });
 
-    // atualizar total ao mudar quantidade
+    
     $("#quantity").on("input", function () {
         const preco = parseFloat($("#poriginal").val()) || 0;
         const quantidade = parseInt($(this).val()) || 1;
@@ -1549,7 +1549,7 @@ $(function () {
         $("#total").val(total.toFixed(2).replace('.', ','));
     });
 
-    // filtro
+    
     $("#search-artigo").on("keyup", function () {
         const search = $(this).val().toLowerCase();
         $("#box-artigo ul li").each(function () {
@@ -1560,7 +1560,7 @@ $(function () {
 });
 
 $(function () {
-        // OK do preço
+        
     $("#box-preco").dialog({
         autoOpen: false,
         modal: true,
@@ -1580,7 +1580,7 @@ $(function () {
         }
     });
 
-    // Abrir modal ao clicar no ícone de preço
+    
     $(document).on("click", ".price_container img", function() {
         linhaEmEdicao = $(this).closest("tr");
         const iva = parseNumero(linhaEmEdicao.find(".tax").val());
@@ -1595,7 +1595,7 @@ $(function () {
         $("#box-preco").dialog("open");
     });
 
-    // Enter para confirmar preço
+    
     $("#preco_com_iva").on("keydown", function(e){
         if(e.key==="Enter"){
             e.preventDefault();
@@ -1618,7 +1618,7 @@ $(function () {
         }
     });
 
-    // Abrir modal ao clicar no ícone de desconto
+    
     $(document).on("click", ".discount_container img", function(){
         linhaEmEdicao = $(this).closest("tr");
 
@@ -1632,7 +1632,7 @@ $(function () {
         $("#box-desconto").dialog("open");
     });
 
-    // Atualiza valor do desconto enquanto digita
+    
     $("#discount_percent").on("input", atualizarDescontoValor);
     $("#discount_percent").on("blur", aplicarDesconto);
     $("#discount_percent").on("keydown", function(e){
@@ -1726,7 +1726,7 @@ async function finalizarDocumento(btn, modal) {
 
             if (modal) modal.dialog("close");
         } else {
-            // ERRO: Reativar os botões e mostrar erro
+            
             if (btn) btn.prop("disabled", false);
             if (modal) modal.dialog("close");
             abrirModalErro(data.error || "Erro ao processar documento.");
@@ -1759,10 +1759,10 @@ $(function () {
                     return;
                 }
 
-                // Desativa para evitar cliques duplos
+                
                 buttons.prop("disabled", true);
 
-                // Passamos os botões para a função para que ela os possa reativar em caso de erro
+                
                 finalizarDocumento(buttons, dialog);
             },
             "Cancelar": function () {
@@ -1963,10 +1963,10 @@ $(function () {
                     return;
                 }
 
-                // Desativa para evitar cliques duplos
+                
                 buttons.prop("disabled", true);
 
-                // Passamos os botões para a função para que ela os possa reativar em caso de erro
+                
                 finalizarDocumentoGuia(buttons, dialog);
             },
             "Cancelar": function () {

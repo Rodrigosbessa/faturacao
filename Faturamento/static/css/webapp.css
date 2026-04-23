@@ -20,34 +20,34 @@ body {
     width: 100vw;
     height: 100vh;
     display: grid;
-    /* Tamanho dos quadrados: 50px */
+    
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
     grid-template-rows: repeat(auto-fill, minmax(50px, 1fr));
     z-index: 0;
     pointer-events: all;
 }
 
-/* Quadrados da Grelha - Mais visíveis */
+
 .grid-item {
-    /* Linhas da grelha ligeiramente mais claras */
+    
     border: 0.1px solid rgba(100, 255, 218, 0.05);
     transition: background 1s ease;
 }
 
-/* Quando o mouse passa: Azul Elétrico/Ciano */
+
 .grid-item.active {
-    background: #64ffda; /* Cor "Teal" vibrante */
+    background: #64ffda; 
     box-shadow: 0 0 20px #64ffda, 0 0 40px rgba(100, 255, 218, 0.4);
     transition: 0s;
     z-index: 2;
 }
 
-/* BARRA SUPERIOR - CORREÇÃO DE BUG */
+
 .navbar-fixed-top {
     background: rgba(10, 25, 47, 0.9) !important;
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(100, 255, 218, 0.15) !important;
-    height: 80px !important; /* Altura fixa para todos os elementos */
+    height: 80px !important; 
     display: flex !important;
     align-items: center !important;
 }
@@ -55,7 +55,7 @@ body {
 .navbar-fixed-top .container-fluid {
     display: flex !important;
     align-items: center !important;
-    justify-content: flex-start !important; /* Força tudo para a esquerda no início */
+    justify-content: flex-start !important; 
     height: 80px;
     padding: 0 30px !important;
 }
@@ -69,10 +69,10 @@ body {
 .nav.navbar-nav {
     display: flex !important;
     flex-direction: row !important;
-    margin: 0 0 0 40px !important; /* Dá o espaço entre o nome da empresa e o Vendas */
+    margin: 0 0 0 40px !important; 
     float: none !important;
 }
-/* LOGO */
+
 .navbar-header {
     margin: 0 !important;
     display: flex;
@@ -88,7 +88,7 @@ body {
     color: #64ffda !important;
 }
 
-/* MENU CENTRAL (Vendas, Dashboard...) */
+
 .navbar-collapse {
     border: none !important;
     box-shadow: none !important;
@@ -97,14 +97,14 @@ body {
 }
 
 .navbar-nav.navbar-right.btn-logout-container {
-    margin-left: auto !important; /* Esta linha empurra o botão para a direita toda */
+    margin-left: auto !important; 
     margin-right: 0 !important;
     display: flex !important;
     float: none !important;
 }
 
 .btn-logout {
-    margin-top: 0 !important; /* Removemos aquele margin-top de 18px que bugava */
+    margin-top: 0 !important; 
     display: flex !important;
     align-items: center;
     gap: 8px;
@@ -132,7 +132,7 @@ body {
 }
 
 .nav-item {
-    width: auto !important; /* Remove largura fixa para não bugar o alinhamento */
+    width: auto !important; 
     margin: 0 5px !important;
 }
 
@@ -163,17 +163,17 @@ body {
 }
 
 .second-topbar {
-    background: rgba(255, 255, 255, 0.03) !important; /* Estilo Vidro */
+    background: rgba(255, 255, 255, 0.03) !important; 
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 15px;
     margin-bottom: 30px;
 
-    /* RESOLVE O PROBLEMA DO RATO */
+    
     pointer-events: all;
 }
 .second-topbar .nav > li > a {
-    color: #e6f1ff !important; /* Texto claro */
+    color: #e6f1ff !important; 
     border-radius: 10px;
     margin: 5px;
     transition: 0.3s;
@@ -183,7 +183,7 @@ body {
     background: rgba(100, 255, 218, 0.05) !important;
 }
 
-/* Item Ativo na segunda barra */
+
 .second-navbar-collapse .sub-item.active-second > a {
     background-color: rgba(100, 255, 218, 0.2) !important;
     color: #64ffda !important;
@@ -191,7 +191,7 @@ body {
 }
 
 .icon-nav {
-    filter: brightness(0) invert(1); /* Torna os ícones brancos para combinarem */
+    filter: brightness(0) invert(1); 
     opacity: 0.8;
 }
 
@@ -221,9 +221,9 @@ table caption {
 }
 
 .subconteudo-item {
-    pointer-events: all; /* Garante que o rato funciona */
+    pointer-events: all; 
 }
-/* Transformar a div .panel num container de Vidro */
+
 .subconteudo-item .panel.panel-default {
     background: rgba(255, 255, 255, 0.03) !important;
     backdrop-filter: blur(15px);
@@ -234,15 +234,15 @@ table caption {
     margin-top: 20px;
 }
 
-/* Estilo para os Títulos H2 dentro dos subconteúdos */
+
 .subconteudo-item h2 {
-    color: #64ffda !important; /* Ciano Neon */
+    color: #64ffda !important; 
     font-family: 'Geologica', sans-serif !important;
     text-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
     font-weight: 600;
 }
 
-/* TABELAS GLOBAIS */
+
 .table {
     background: transparent !important;
     color: #ccd6f6 !important;
@@ -278,32 +278,32 @@ table caption {
     border: none !important;
     vertical-align: middle !important;
 }
-/* Anula o efeito zebra do Bootstrap e coloca o nosso estilo de vidro */
+
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {
-    background-color: transparent !important; /* Remove o #f9f9f9 */
-    color: #ccd6f6 !important;               /* Garante que a letra fica clara */
+    background-color: transparent !important; 
+    color: #ccd6f6 !important;               
 }
 
-/* Mantém apenas uma leve distinção entre linhas se quiseres, mas em modo escuro */
+
 .table-striped > tbody > tr:nth-child(odd) {
     background-color: rgba(255, 255, 255, 0.02) !important;
 }
 .table-responsive {
     width: 100% !important;
-    overflow-x: auto !important; /* Força o scroll horizontal se não couber */
+    overflow-x: auto !important; 
     display: block !important;
-    -webkit-overflow-scrolling: touch; /* Suavidade no telemóvel */
+    -webkit-overflow-scrolling: touch; 
     border-radius: 12px;
 }
 
 #tabelaFaturas th,
 #tabelaFaturas td {
-    white-space: nowrap !important; /* Mantém as datas e valores numa linha só */
+    white-space: nowrap !important; 
     padding: 12px 10px !important;
 }
 
-/* Scrollbar com o teu estilo (Ciano) para não ficar a barra cinzenta feia do Windows */
+
 .table-responsive::-webkit-scrollbar {
     height: 6px;
 }
@@ -314,7 +314,7 @@ table caption {
     background: rgba(100, 255, 218, 0.3);
     border-radius: 10px;
 }
-/* INPUTS DE PESQUISA (Dentro de qualquer subconteudo) */
+
 .subconteudo-item .form-control {
     background: rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(100, 255, 218, 0.2) !important;
@@ -328,7 +328,7 @@ table caption {
     box-shadow: 0 0 10px rgba(100, 255, 218, 0.3) !important;
 }
 
-/* BOTÕES SUCESSO (Novo Cliente / Novo Artigo) */
+
 .btn-success {
     background: transparent !important;
     color: #64ffda !important;
@@ -344,11 +344,11 @@ table caption {
     transform: translateY(-2px);
 }
 
-/* BARRA DE FILTROS - GLASS & RESPONSIVE */
+
 .filters-bar {
     display: flex !important;
     flex-direction: row !important;
-    flex-wrap: wrap !important; /* Permite saltar para baixo em ecrãs pequenos */
+    flex-wrap: wrap !important; 
     align-items: flex-end !important;
     gap: 15px !important;
     background: rgba(255, 255, 255, 0.03) !important;
@@ -359,26 +359,26 @@ table caption {
     margin-bottom: 20px;
 }
 
-/* Divs internas (containers dos inputs) */
+
 .filters-bar > div {
     display: flex !important;
     flex-direction: column !important;
-    flex: 1 1 auto !important; /* Deixa crescer se houver espaço, mas respeita o max-width */
+    flex: 1 1 auto !important; 
 }
 
-/* PESQUISA: Máximo de 350px, mas encolhe se o ecrã for pequeno */
+
 .filter-search {
     max-width: 350px !important;
-    min-width: 200px !important; /* Não deixa ficar minúsculo */
+    min-width: 200px !important; 
 }
 
-/* SELECTS: Máximo de 180px, encolhem se necessário */
+
 .filter-select {
     max-width: 180px !important;
     min-width: 140px !important;
 }
 
-/* Labels e Inputs */
+
 .filters-bar label {
     color: #64ffda !important;
     font-size: 11px !important;
@@ -387,7 +387,7 @@ table caption {
     margin-bottom: 8px;
 }
 
-/* EFEITO HOVER NOS INPUTS E SELECTS */
+
 .filters-bar .form-control {
     background: rgba(0, 0, 0, 0.3) !important;
     border: 1px solid rgba(100, 255, 218, 0.2) !important;
@@ -395,11 +395,11 @@ table caption {
     border-radius: 8px !important;
     cursor: pointer;
     transition: all 0.3s ease-in-out !important;
-    appearance: none; /* Remove a seta padrão chata do navegador */
+    appearance: none; 
     -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364ffda' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: calc(100% - 12px) center; /* Coloca a nossa seta ciano */
+    background-position: calc(100% - 12px) center; 
     padding-right: 30px !important;
 }
 
@@ -410,15 +410,15 @@ table caption {
     box-shadow: 0 4px 12px rgba(100, 255, 218, 0.1) !important;
 }
 
-/* ESTILIZAR AS OPÇÕES (A caixa que abre) */
-/* Nota: O suporte para estilizar options é limitado, mas isto ajuda nos browsers modernos */
+
+
 .filters-bar select option {
-    background-color: #0a192f !important; /* Fundo escuro profundo */
+    background-color: #0a192f !important; 
     color: #ccd6f6 !important;
     padding: 10px !important;
 }
 
-/* Focar o campo */
+
 .filters-bar .form-control:focus {
     outline: none !important;
     border-color: #64ffda !important;
@@ -437,7 +437,7 @@ table caption {
 }
 
 
-/* ESTADOS DAS FATURAS (Badges Modernas) */
+
 .table tbody td span.badge-estado {
     padding: 4px 10px;
     border-radius: 6px;
@@ -446,7 +446,7 @@ table caption {
     text-transform: uppercase;
 }
 
-/* Cores Neon para os Estados */
+
 .estado-pago { color: #45ef70; background: rgba(69, 239, 112, 0.1); border: 1px solid rgba(69, 239, 112, 0.3); }
 .estado-pendente { color: #f4e05a; background: rgba(244, 224, 90, 0.1); border: 1px solid rgba(244, 224, 90, 0.3); }
 .estado-rascunho { color: #8892b0; background: rgba(136, 146, 176, 0.1); border: 1px solid rgba(136, 146, 176, 0.3); }
@@ -592,7 +592,7 @@ table caption {
     color: #1e293b !important;
 }
 
-/* Estilos do Formulário Interno */
+
 .modern-modal {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     padding: 20px !important;
@@ -635,7 +635,7 @@ table caption {
 
 .flex-1 { flex: 1; }
 
-/* Botão de Submissão */
+
 .btn-submit {
     width: 100%;
     background-color: #2563eb;
@@ -662,7 +662,7 @@ table caption {
     transform: scale(0.98);
 }
 
-/* Estilo do Container do Modal - Tua base com melhorias */
+
 .custom-modal {
     font-family: 'Geologica', sans-serif;
     padding: 30px;
@@ -671,8 +671,7 @@ table caption {
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     border: none !important;
 
-    /* REMOVA o max-width fixo se ele for muito pequeno,
-       ou use margin: auto para garantir o centramento no dialog */
+    
     width: 100%;
     max-width: 450px;
     margin: 0 auto !important;
@@ -683,7 +682,7 @@ table caption {
     flex-direction: column;
 }
 
-/* Garante que o dialog não tenha margens estranhas que o empurrem */
+
 .modal-dialog-centered {
     display: flex;
     align-items: center;
@@ -696,7 +695,7 @@ table caption {
     }
 }
 
-/* Título e Texto - Teu estilo ajustado */
+
 .custom-modal h3 {
     margin-top: 15px;
     color: #1e293b;
@@ -711,9 +710,9 @@ table caption {
     line-height: 1.5;
 }
 
-/* Elementos Novos para condizer com o estilo */
 
-/* Ícone de destaque no topo */
+
+
 .header-icon-container {
     width: 60px;
     height: 60px;
@@ -727,7 +726,7 @@ table caption {
     margin: 0 auto 10px;
 }
 
-/* O Campo de Seleção Moderno */
+
 .custom-select-saas {
     width: 100%;
     height: 48px;
@@ -748,7 +747,7 @@ table caption {
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
-/* Botões Empilhados para Mobile-First look */
+
 .btn-generate {
     width: 100%;
     background: #3b82f6;
@@ -784,14 +783,14 @@ table caption {
     color: #64748b;
 }
 
-/* Grupo de Botões */
+
 .button-group {
     display: flex;
-    flex-direction: column; /* Empilhados em mobile, mude para 'row' se preferir lado a lado */
+    flex-direction: column; 
     gap: 12px;
 }
 
-/* Botão Base */
+
 .btn-via {
     display: flex;
     align-items: center;
@@ -845,7 +844,7 @@ table caption {
     outline: none !important;
 }
 
-/* CSS Essencial para Small Boxes do AdminLTE */
+
 .small-box {
     border-radius: 0.25rem;
     box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
@@ -899,13 +898,13 @@ body {
     overflow-x: hidden !important;
 }
 
-/* CONTAINER PRINCIPAL */
+
 .dashboard-container {
     pointer-events: all !important;
     background: rgba(255, 255, 255, 0.02) !important;
     backdrop-filter: blur(15px);
     border: 1px solid rgba(100, 255, 218, 0.1) !important;
-    max-width: 1200px !important; /* Aumentado para respirar melhor */
+    max-width: 1200px !important; 
     margin: 0 auto;
     padding: 30px;
     border-radius: 20px;
@@ -913,7 +912,7 @@ body {
     color: #e6f1ff;
 }
 
-/* TÍTULOS */
+
 .dashboard-container h2, .dashboard-container h5, .card-title {
     color: #64ffda !important;
     font-family: 'Geologica', sans-serif;
@@ -922,11 +921,11 @@ body {
     letter-spacing: 1px;
 }
 
-/* SMALL BOXES (Os 3 cards do topo) */
+
 .small-box {
     border-radius: 15px !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    background: rgba(10, 25, 47, 0.6) !important; /* Azul marinho profundo */
+    background: rgba(10, 25, 47, 0.6) !important; 
     overflow: hidden;
     transition: 0.3s;
 }
@@ -941,12 +940,12 @@ body {
     color: #fff !important;
 }
 
-/* Cores específicas para os ícones e bordas das boxes */
+
 .bg-info { border-left: 5px solid #00d2ff !important; }
 .bg-danger { border-left: 5px solid #ff4646 !important; }
 .bg-warning { border-left: 5px solid #f4e05a !important; }
 
-/* CARTÕES DOS GRÁFICOS */
+
 .card {
     background: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(100, 255, 218, 0.1) !important;
@@ -960,7 +959,7 @@ body {
     color: #64ffda !important;
 }
 
-/* SELECT DO ANO */
+
 #select-ano-grafico {
     background: #0a192f !important;
     color: #64ffda !important;
@@ -968,9 +967,9 @@ body {
     border-radius: 10px;
 }
 
-/* Ajuste para os small-boxes dentro do container centralizado */
+
 .dashboard-container .row {
-    justify-content: center;      /* Centraliza os boxes se sobrarem espaços */
+    justify-content: center;      
 }
 
 #faturacaoChart {
@@ -978,7 +977,7 @@ body {
 }
 
 #dashboard .col-lg-6, #dashboard .col-md-12 {
-    margin-bottom: 2rem !important; /* Espaço entre linhas */
+    margin-bottom: 2rem !important; 
 }
 #dashboard .card-header {
     display: flex !important;
@@ -997,21 +996,21 @@ body {
     letter-spacing: 1px;
 }
 
-/* O botão X (caso os gráficos também tenham) */
+
 #dashboard .card-tools {
     position: absolute;
     right: 1rem;
 }
 
 #tabela-faturas-container {
-    display: none !important; /* Começa escondido */
+    display: none !important; 
     visibility: visible !important;
     opacity: 0;
     transition: opacity 0.5s ease;
-    z-index: 9999 !important; /* Fica à frente de TUDO */
+    z-index: 9999 !important; 
     position: relative !important;
     width: 100% !important;
-    min-height: 200px !important; /* Garante que não tem altura 0 */
+    min-height: 200px !important; 
 }
 
 #tabela-faturas-container.show {
@@ -1019,32 +1018,32 @@ body {
     opacity: 1 !important;
 }
 
-/* Garante que o card lá dentro não seja transparente demais */
+
 #tabela-faturas-container .card {
-    background: #0a192f !important; /* Cor sólida para teste */
+    background: #0a192f !important; 
     border: 1px solid #64ffda !important;
 }
 
-/* Cabeçalho da Tabela */
+
 #tabela-faturas-container .card-header {
     display: flex !important;
-    justify-content: center !important; /* Centraliza o título */
+    justify-content: center !important; 
     align-items: center;
-    position: relative; /* Necessário para posicionar o X nos cantos */
+    position: relative; 
     padding: 15px 25px !important;
 }
 
 #tabela-faturas-container .card-title {
-    float: none !important; /* Remove o padrão do AdminLTE */
+    float: none !important; 
     margin: 0 !important;
     font-size: 1.2rem;
     font-weight: 600;
-    color: #64ffda; /* Cor Neon */
+    color: #64ffda; 
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-/* Texto das células */
+
 #corpo-tabela-faturas td {
     color: #ccd6f6 !important;
     padding: 15px !important;
@@ -1062,7 +1061,7 @@ body {
     background: rgba(255, 70, 70, 0.1) !important;
     color: #ff4646 !important;
     border: 1px solid rgba(255, 70, 70, 0.3) !important;
-    border-radius: 50% !important; /* Botão circular */
+    border-radius: 50% !important; 
     width: 32px;
     height: 32px;
     display: flex;
@@ -1085,13 +1084,13 @@ body {
 .object_view {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 8px; /* Espaçamento entre linhas */
+    border-spacing: 0 8px; 
 }
 
 .object_view td {
     border: none;
     padding: 12px 15px;
-    background: #fcfcfc; /* Fundo muito leve para as células */
+    background: #fcfcfc; 
 }
 
 .object_view tr {
@@ -1126,24 +1125,24 @@ body {
 .object_view td:first-child { border-radius: 8px 0 0 8px; }
 .object_view td:last-child { border-radius: 0 8px 8px 0; }
 
-/* Container que segura o texto e o botão */
+
 .valor-container {
     display: flex;
     align-items: center;
     width: 100%;
-    gap: 8px; /* Espaço entre o texto e o botão */
+    gap: 8px; 
 }
 
-/* Onde acontece o truncamento (...) */
+
 .texto-ellipsis {
-    flex: 1;                /* Ocupa todo o espaço disponível */
-    white-space: nowrap;    /* Não quebra linha */
-    overflow: hidden;       /* Esconde o que sobrar */
-    text-overflow: ellipsis; /* Adiciona os "..." */
-    min-width: 0;           /* Importante para o flexbox entender o limite */
+    flex: 1;                
+    white-space: nowrap;    
+    overflow: hidden;       
+    text-overflow: ellipsis; 
+    min-width: 0;           
 }
 
-/* O Botão */
+
 .btn-edit {
     background-color: #f1f5f9;
     border: none;
@@ -1159,7 +1158,7 @@ body {
     color: white;
 }
 
-/* Muda a cor do ícone para branco no hover */
+
 .btn-edit:hover svg {
     stroke: white;
 }
@@ -1190,15 +1189,15 @@ body {
 }
 .object_view td {
     border-bottom: 1px solid #f0f0f0;
-    position: relative; /* Base para o z-index do input funcionar */
-    overflow: visible !important; /* Permite que o foco/borda apareça bem */
+    position: relative; 
+    overflow: visible !important; 
 }
 .object_view td:has(.edit-input:focus),
 .object_view td:has(.edit-select:focus) {
     background-color: #f0f7ff;
 }
 
-/* Efeito ao clicar/focar */
+
 .edit-select:focus {
     outline: none;
     border-color: #3b82f6;
@@ -1206,7 +1205,7 @@ body {
     background-color: #fff;
 }
 
-/* Estilo para as opções dentro do dropdown */
+
 .edit-select option {
     padding: 10px;
     background-color: #fff;
@@ -1215,12 +1214,12 @@ body {
 
 .table-actions {
     display: flex;
-    justify-content: flex-end; /* Encosta à direita */
-    margin-top: 20px;          /* Espaço entre a tabela e o botão */
+    justify-content: flex-end; 
+    margin-top: 20px;          
     padding-bottom: 10px;
 }
 
-/* Estilo do Botão Guardar */
+
 .btn-save {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     padding: 12px 25px;
@@ -1244,12 +1243,12 @@ body {
 
 #tabs {
     width: 950px;
-    height: 520px; /* Aumentado ligeiramente para respirar melhor */
+    height: 520px; 
     margin: 20px auto;
     border: none;
     background-color: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08); /* Sombra mais suave e profunda */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
     font-family: 'Geologica', sans-serif;
     padding: 15px;
 }
@@ -1276,7 +1275,7 @@ body {
     border-bottom: 2px solid #3b82f6;
 }
 
-/* Conteúdo das Abas */
+
 #tabs > div {
     height: 420px;
     border: none;
@@ -1285,7 +1284,7 @@ body {
     padding: 10px 20px;
 }
 
-/* Ajustes para os Cards da Tab 2 */
+
 #tabs-2 .card {
     border: 1px solid #f0f0f0;
     border-radius: 12px;
@@ -1307,13 +1306,13 @@ body {
     margin: 0;
 }
 
-/* Container do Input de Matrícula */
+
 .input-group-matricula {
     display: flex;
     align-items: center;
     background: #ffffff;
     border: 2px solid #e2e8f0;
-    border-radius: 10px; /* Bordas arredondadas modernas */
+    border-radius: 10px; 
     padding: 4px;
     transition: all 0.3s ease;
     max-width: 350px;
@@ -1324,7 +1323,7 @@ body {
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
-/* O Input propriamente dito */
+
 #nova-matricula {
     border: none !important;
     background: transparent !important;
@@ -1344,7 +1343,7 @@ body {
     text-transform: none;
 }
 
-/* O Botão de Adicionar */
+
 #btn-adicionar-transporte {
     background-color: #3b82f6;
     color: white;
@@ -1370,7 +1369,7 @@ body {
     transform: scale(0.98);
 }
 
-/* Lista de Transportes */
+
 .list-group-item {
     border: 1px solid #f1f5f9;
     margin-bottom: 5px;
@@ -1386,7 +1385,7 @@ body {
     border-color: #3b82f6;
 }
 
-/* Botão SAF-T Mensal */
+
 #btn-gerar-saft-mensal {
     border-radius: 10px;
     border-width: 2px;
@@ -1405,7 +1404,7 @@ body {
     display: none;
 }
 
-/* O Container do Dialog */
+
 .ui-dialog[aria-describedby="modal-apagar-artigo"] {
     border: none !important;
     border-radius: 20px !important;
@@ -1416,14 +1415,14 @@ body {
     z-index: 9999 !important;
 }
 
-/* Overlay (Fundo escuro) */
+
 .ui-widget-overlay {
-    background: rgba(15, 23, 42, 0.6) !important; /* Slate 900 com opacidade */
+    background: rgba(15, 23, 42, 0.6) !important; 
     opacity: 1 !important;
-    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+    backdrop-filter: blur(4px); 
 }
 
-/* Estilos Internos (Reaproveitando a tua lógica SaaS) */
+
 .custom-modal-body {
     padding: 35px;
     text-align: center;
@@ -1441,13 +1440,13 @@ body {
 
 .btn-danger-custom {
     width: 100%;
-    background-color: #ef4444 !important; /* Vermelho vibrante moderno (Tailwind Red 500) */
+    background-color: #ef4444 !important; 
     color: #ffffff !important;
     border: none !important;
     padding: 14px 20px !important;
     font-size: 15px !important;
     font-weight: 600 !important;
-    border-radius: 12px !important; /* Bordas mais suaves */
+    border-radius: 12px !important; 
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
@@ -1458,12 +1457,12 @@ body {
 }
 
 .btn-danger-custom:hover {
-    background-color: #dc2626 !important; /* Vermelho um pouco mais escuro no hover */
+    background-color: #dc2626 !important; 
     transform: translateY(-1px);
     box-shadow: 0 6px 15px rgba(239, 68, 68, 0.35) !important;
 }
 
-/* Modificador para o modal de bloqueio (Info) */
+
 .info-icon {
     background: #f0f9ff !important;
     color: #0ea5e9 !important;
@@ -1485,7 +1484,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* Garante que o jQuery UI respeita as larguras para estes IDs também */
+
 .ui-dialog[aria-describedby="modal-nao-eliminar"],
 .ui-dialog[aria-describedby="modal-apagar-cliente"] {
     border: none !important;
@@ -1495,8 +1494,108 @@ body {
     background: #fff !important;
 }
 
-/* Esconde a barra de título padrão do jQuery UI para estes modais */
+
 .ui-dialog[aria-describedby="modal-nao-eliminar"] .ui-dialog-titlebar,
 .ui-dialog[aria-describedby="modal-apagar-cliente"] .ui-dialog-titlebar {
     display: none;
+}
+
+#preview-logo-container {
+    background: #f8fafc;
+    border: 2px dashed #e2e8f0;
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 150px;
+}
+
+#logo-preview {
+    transition: transform 0.3s ease;
+}
+
+#logo-preview:hover {
+    transform: scale(1.05);
+}
+
+.custom-file-upload button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+
+.card-identity {
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+    overflow: hidden;
+}
+
+
+.logo-upload-zone {
+    background: #fcfdfe;
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 30px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-upload-zone:hover {
+    border-color: #3b82f6;
+    background-color: #f0f7ff;
+}
+
+
+
+
+.btn-select-logo {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-select-logo:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+
+.btn-confirm-logo {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-confirm-logo:hover {
+    background: #059669;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+
+.upload-hint {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    background: #f1f5f9;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
 }

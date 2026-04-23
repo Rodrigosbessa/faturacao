@@ -1,4 +1,3 @@
-// Start Add/Edit modal button - invoice
 const showAddModal = document.querySelector(
     '.main__modal'
 );
@@ -19,4 +18,3 @@ closeShowModal.forEach((btn) => {
     });
 });
 
-// End Add/Edit modal button - invoice

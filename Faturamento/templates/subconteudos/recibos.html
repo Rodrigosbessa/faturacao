@@ -103,11 +103,11 @@ function enviarAnulacao(id, motivo) {
     $btn.prop('disabled', true).text('A processar...');
 
     $.ajax({
-        url: `/recibos/anular/${id}/`, //
+        url: `/recibos/anular/${id}/`, 
         type: 'POST',
         data: {
             'motivo': motivo,
-            'csrfmiddlewaretoken': '{{ csrf_token }}' // O Django exige isto por segurança
+            'csrfmiddlewaretoken': '{{ csrf_token }}' 
         },
         success: function(response) {
             if (response.success) {

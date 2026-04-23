@@ -1,4 +1,4 @@
-/* Configurações Gerais */
+
 * {
     margin: 0;
     padding: 0;
@@ -9,21 +9,21 @@
 body {
     margin: 0;
     width: 100vw;
-    /* Mudamos de height para min-height para permitir que o corpo cresça */
+    
     min-height: 100vh;
     background: #0a192f;
-    /* Permitimos o scroll vertical (auto) mas escondemos o horizontal (hidden) */
+    
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
     justify-content: center;
-    /* Mudamos para flex-start para o scroll começar do topo se o form for gigante */
+    
     align-items: center;
-    padding: 40px 0; /* Dá um espaço para o container não colar nas bordas da tela */
+    padding: 40px 0; 
 }
 
 .main-content {
-    /* Removemos o margin-top fixo de 100px para não empurrar o form para fora no mobile */
+    
     position: relative;
     z-index: 10;
     pointer-events: none;
@@ -31,7 +31,7 @@ body {
     justify-content: center;
     width: 100%;
 }
-/* Adicione isto para a grelha aparecer atrás */
+
 .grid-container {
     position: fixed;
     top: 0;
@@ -39,72 +39,72 @@ body {
     width: 100vw;
     height: 100vh;
     display: grid;
-    /* Tamanho dos quadrados: 50px */
+    
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
     grid-template-rows: repeat(auto-fill, minmax(50px, 1fr));
     z-index: 0;
     pointer-events: all;
 }
 
-/* Quadrados da Grelha - Mais visíveis */
+
 .grid-item {
-    /* Linhas da grelha ligeiramente mais claras */
+    
     border: 0.1px solid rgba(100, 255, 218, 0.05);
     transition: background 1s ease;
 }
 
-/* Quando o mouse passa: Azul Elétrico/Ciano */
+
 .grid-item.active {
-    background: #64ffda; /* Cor "Teal" vibrante */
+    background: #64ffda; 
     box-shadow: 0 0 20px #64ffda, 0 0 40px rgba(100, 255, 218, 0.4);
     transition: 0s;
     z-index: 2;
 }
 
-/* Container do Login - Estilo Base */
+
 .login-container {
     background: rgba(255, 255, 255, 0.07);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(100, 255, 218, 0.2); /* Borda inicial mais sutil */
+    border: 1px solid rgba(100, 255, 218, 0.2); 
     padding: 40px;
     border-radius: 24px;
     width: 90%;
-    max-width: 450px; /* Ajustei para bater com o teu HTML inline */
+    max-width: 450px; 
     text-align: center;
     pointer-events: all;
     color: #e6f1ff;
 
-    /* CRUCIAL PARA A ANIMAÇÃO SER SUAVE */
+    
     transition: transform 0.3s ease,
                 box-shadow 0.3s ease,
                 border-color 0.3s ease;
 
-    /* Sombra inicial mais suave */
+    
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* O EFEITO HOVER - Quando passas o rato na caixa */
+
 .login-container:hover {
-    /* 1. Levanta a caixa levemente */
+    
     transform: translateY(-5px);
 
-    /* 2. Brilha a borda com a cor Ciano/Teal */
+    
     border-color: rgba(100, 255, 218, 0.6);
 
-    /* 3. Projeta uma sombra mais forte e com um leve brilho da cor ativa */
+    
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5),
                 0 0 15px rgba(100, 255, 218, 0.15);
 }
 
-/* Destaque para o Título */
+
 h1 {
     color: #64ffda;
     margin-bottom: 10px;
     font-weight: 800;
 }
 
-/* Estilo dos Inputs do Django Allauth */
+
 form input {
     width: 100%;
     padding: 12px 15px;
@@ -123,7 +123,7 @@ form input:focus {
     background: #fff;
 }
 
-/* Botão */
+
 .btn-login {
     width: 100%;
     padding: 12px;
@@ -143,7 +143,7 @@ form input:focus {
     transform: translateY(-1px);
 }
 
-/* Links e Textos Extra */
+
 p {
     margin-top: 20px;
     font-size: 14px;
@@ -160,7 +160,7 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Estilo para as mensagens de erro do Django */
+
 .errorlist {
     list-style: none;
     color: #ffcccc;
@@ -169,14 +169,14 @@ a:hover {
     text-align: left;
 }
 
-/* Variante azul para o botão Google */
+
 .btn-google-confirm {
     width: 100%;
     padding: 12px;
     margin-top: 20px;
     border: none;
     border-radius: 5px;
-    background: #4285F4; /* Azul Oficial Google */
+    background: #4285F4; 
     color: white;
     font-size: 18px;
     font-weight: bold;
@@ -189,16 +189,16 @@ a:hover {
     transform: translateY(-1px);
 }
 
-/* Ajuste específico para a página de Empresa */
+
 .empresa-container {
-    max-width: 800px !important; /* Damos espaço para as colunas */
+    max-width: 800px !important; 
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    text-align: left; /* Garante que os labels ficam à esquerda */
+    text-align: left; 
 }
 
 .form-group label {
@@ -207,7 +207,7 @@ a:hover {
     color: #fff;
 }
 
-/* Força os inputs a serem consistentes */
+
 .form-grid input, .form-grid select {
     width: 100%;
     padding: 10px;

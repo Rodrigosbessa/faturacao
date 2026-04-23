@@ -38,7 +38,7 @@
 <script>
 $(document).ready(function() {
 
-    // 1. Inicializar modal
+    
     $('#box-registar-fatura').dialog({
         autoOpen: false,
         modal: true,
@@ -47,21 +47,21 @@ $(document).ready(function() {
         resizable: false
     });
 
-    // 2. Carregar Clientes via AJAX
+    
     $.getJSON("{% url 'get_clientes' %}", function(clientes) {
         var select = $('#select-cliente');
-        // Limpa para evitar duplicados
+        
         select.find('option:not(:first)').remove();
 
         clientes.forEach(function(c) {
-            // Importante: garantir que c.prazo é um número
+            
             select.append(
                 `<option value="${c.id}" data-prazo="${c.prazo || 0}">${c.nome}</option>`
             );
         });
     });
 
-    // 3. Função de Atualizar Vencimento (Melhorada)
+    
     function atualizarVencimento() {
         const selectedOption = $('#select-cliente option:selected');
         const prazo = parseInt(selectedOption.data('prazo')) || 0;
@@ -79,25 +79,25 @@ $(document).ready(function() {
             const vencimentoStr = `${yyyy}-${mm}-${dd}`;
 
             $('#data_vencimento_modal').val(vencimentoStr);
-            // Define o mínimo para a data de vencimento ser a de emissão
+            
             $('#data_vencimento_modal').attr('min', dataEmissaoVal);
         }
     }
 
-    // 4. Gatilhos de mudança
+    
     $('#select-cliente, #data_emissao_modal').on('change', atualizarVencimento);
 
-    // 5. Abrir Modal
+    
     $('#btnAddFatura').on('click', function() {
         const hoje = new Date().toISOString().slice(0,10);
         $('#data_emissao_modal').val(hoje);
-        $('#data_vencimento_modal').val(hoje); // Valor inicial por segurança
+        $('#data_vencimento_modal').val(hoje); 
 
         atualizarVencimento();
         $('#box-registar-fatura').dialog('open');
     });
 
-    // 6. Submeter (Botão Registar)
+    
     $('#btn-registar-fatura').on('click', function(){
         const dados = {
             cliente: $('#select-cliente').val(),

@@ -89,12 +89,12 @@
 <script>
 $(document).ready(function() {
 
-    // Ao clicar no botão, mostrar o modal
+    
     $('#btnAddFatura').on('click', function() {
         $('#box-registar-fatura').show();
     });
 
-    // Opcional: fechar ao clicar fora do modal
+    
     $(document).on('click', function(e) {
         const modal = $('#box-registar-fatura');
         if (!$(e.target).closest('#box-registar-fatura, #btnAddFatura').length) {
@@ -137,7 +137,7 @@ $(document).on('click', '#faturasTabelaBody .btn-continue', function() {
 
 $(document).ready(function () {
 
-    // 1. Inicializar o Modal (Executa uma única vez quando a página carrega)
+    
     $("#modal-apagar-documento").dialog({
         autoOpen: false,
         modal: true,
@@ -168,7 +168,7 @@ $(document).ready(function () {
     $(document).on('click', '#btnConfirmarEliminarDocumento', function (e) {
         e.preventDefault();
 
-        const tipoBotao = $('#id_documento_apagar').data('tipo');  // <-- pega o tipo correto
+        const tipoBotao = $('#id_documento_apagar').data('tipo');  
 
         const idDocumento = $('#id_documento_apagar').val();
 
@@ -177,7 +177,7 @@ $(document).ready(function () {
             return;
         }
 
-        // 2. Executar o AJAX
+        
         $.ajax({
             url: `/apagar-documento/`,
             type: 'POST',
@@ -213,7 +213,7 @@ $(document).ready(function () {
 
 $(document).ready(function(){
 
-    // 1. Inicializar modal (Apenas uma vez)
+    
     $('#modal-impressao').dialog({
         autoOpen: false,
         modal: true,
@@ -222,16 +222,16 @@ $(document).ready(function(){
         draggable: true
     });
 
-    // 2. Ouvir o clique no botão de imprimir da TABELA
-    // Mudámos de #btn-print para .btn-print e usamos delegação
+    
+    
     $(document).on('click', '.btn-print', function(e){
         e.preventDefault();
         e.stopPropagation();
 
-        // Pegar o ID do documento do atributo data-id do botão
+        
         const documentoId = $(this).data('id');
 
-        // Guardar o ID num campo oculto dentro do modal para usar depois
+        
         if ($('#id_fatura_imprimir').length === 0) {
             $('body').append('<input type="hidden" id="id_fatura_imprimir">');
         }
@@ -240,7 +240,7 @@ $(document).ready(function(){
         $('#modal-impressao').dialog('open');
     });
 
-    // 3. Ouvir o clique nas vias (Original, Duplicado, etc.)
+    
     $(document).on('click', '.btn-via', function(){
         const via = $(this).data('via');
         const documentoId = $('#id_fatura_imprimir').val();
@@ -250,7 +250,7 @@ $(document).ready(function(){
             return;
         }
 
-        // Abrir o PDF
+        
         window.open(`/faturas/${documentoId}/pdf/?via=${via}`, '_blank');
 
         $('#modal-impressao').dialog('close');

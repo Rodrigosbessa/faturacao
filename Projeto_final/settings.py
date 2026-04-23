@@ -14,17 +14,10 @@ from pathlib import Path
 
 from django_otp.plugins import otp_totp
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-
 ALLOWED_HOSTS = ['faturix-kya9.onrender.com', 'localhost', '127.0.0.1']
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -86,9 +79,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 WSGI_APPLICATION = 'Projeto_final.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 import os
 
 import dj_database_url
@@ -104,32 +94,6 @@ DATABASES = {
     )
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    # {
-    #     'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    #     'OPTIONS': {
-    #         'min_length': 8,
-    #     }
-    # },
-    # {
-    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    # },
-    # {
-    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    # },
-    # {
-    #     'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    # },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -138,13 +102,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -153,18 +112,17 @@ SOCIALACCOUNT_FORMS = {
     'signup': 'Faturamento.forms.MyCustomSocialSignupForm',
 }
 
-# Substitui o backend de SMTP pelo da API
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 DEFAULT_FROM_EMAIL = 'suporte@faturix.org'
 EMAIL_TIMEOUT = 10
 SERVER_EMAIL = 'suporte@faturix.org'
-# --- CONFIGURAÇÃO OTP (MFA) ---
+
 OTP_EMAIL_TOKEN_TEMPLATE = 'otp_email/otp_email_token.txt'
 OTP_EMAIL_SUBJECT_TEMPLATE = 'otp_email/otp_email_subject.txt'
 OTP_EMAIL_TOKEN_VALIDITY = 300
-#ola
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -210,7 +168,6 @@ else:
 LOGIN_REDIRECT_URL = 'check_mfa_status'
 LOGOUT_REDIRECT_URL = 'account_login'
 
-# ola
 ALLOWED_HOSTS = [
     'faturix.org',
     'www.faturix.org',
@@ -227,3 +184,5 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1',
 ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

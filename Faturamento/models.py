@@ -7,7 +7,7 @@ class Vendedor(models.Model):
     nome = models.CharField(max_length=40)
 
     class Meta:
-        db_table = 'vendedor'  # indica que usa a tabela existente no MySQL
+        db_table = 'vendedor'  
 
     def __str__(self):
         return self.nome
@@ -83,17 +83,17 @@ class Precos(models.Model):
 
 def validar_nif_portugal(nif):
     nif = str(nif)
-    # 1. Tem de ter 9 dígitos e ser numérico
+    
     if not nif.isdigit() or len(nif) != 9:
         return False
 
-    # 2. Primeiros dígitos válidos em PT
-    # 1, 2, 3 (Pessoas Singulares); 5 (Empresas); 6 (Organismos Públicos);
-    # 8 (Empresas não residentes); 9 (Pessoas Coletivas/Consumidor Final)
+    
+    
+    
     if nif[0] not in '1235689':
         return False
 
-    # 3. Algoritmo do dígito de controlo (Check-digit)
+    
     soma = 0
     for i in range(8):
         soma += int(nif[i]) * (9 - i)
@@ -140,10 +140,10 @@ class Cliente1(models.Model):
         db_column='impostos'
     )
 
-    # PODEM SER NULL (Adicionado null=True, blank=True)
+    
     zona = models.ForeignKey(
         Zona,
-        on_delete=models.SET_NULL,  # Recomendado mudar para SET_NULL se for opcional
+        on_delete=models.SET_NULL,  
         db_column='zona',
         null=True,
         blank=True
@@ -189,7 +189,7 @@ class Artigo(models.Model):
     id_artigo = models.BigAutoField(primary_key=True)
     nome = models.CharField(max_length=40)
     descricao = models.CharField(max_length=255, blank=True, null=True)
-    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0.00,null=False,    # Garante que o banco nunca aceite NULL
+    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0.00,null=False,    
     blank=True)
     taxa = models.DecimalField(max_digits=10, decimal_places=2)
     tipo = models.CharField(max_length=20, default='Produto')
@@ -316,14 +316,14 @@ class DocumentoTemp(models.Model):
         blank=True
     )
 
-    # Datas
+    
     data_emissao = models.DateField(default=timezone.now)
     data_vencimento = models.DateField()
 
-    # Totais
+    
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    # Estado
+    
     estado = models.CharField(max_length=20, choices=ESTADOS, default='Rascunho')
 
     empresa = models.ForeignKey(
@@ -361,11 +361,11 @@ class DocumentoTemp(models.Model):
     descricao = models.TextField(null=True, blank=True)
     rodape = models.TextField(null=True, blank=True)
 
-    # Auditoria
+    
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
-    # Transporte adicional
+    
     local_carga = models.CharField(max_length=255, null=True, blank=True)
     local_descarga = models.CharField(max_length=255, null=True, blank=True)
     data_carga = models.DateTimeField(null=True, blank=True)
@@ -402,6 +402,7 @@ class Empresa(models.Model):
     telefone = models.CharField(max_length=30, blank=True, null=True)
     local = models.CharField(max_length=150, blank=True, null=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
+    logo = models.ImageField(upload_to='logos/', null=True, blank=True)
 
     def __str__(self):
         return self.nome
@@ -461,11 +462,11 @@ class TempArtigos(models.Model):
     )
 
     motivo = models.ForeignKey(
-        'TaxReason',  # Nome da tabela de motivos
-        on_delete=models.SET_NULL,  # Se o motivo for excluído, manter o artigo
+        'TaxReason',  
+        on_delete=models.SET_NULL,  
         null=True,
         blank=True,
-        db_column='motivo_id'  # Nome da coluna no banco de dados
+        db_column='motivo_id'  
     )
 
     class Meta:
@@ -536,7 +537,7 @@ class DocumentoFinalizado(models.Model):
         ('Pago', 'Pago'),
     ]
 
-    # Novo campo físico na base de dados
+    
     estado_pagamento = models.CharField(
         max_length=10,
         choices=PAGAMENTO_CHOICES,

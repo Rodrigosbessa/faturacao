@@ -491,14 +491,14 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
         $(".loadblock").remove();
     }
 
-    // 🔹 Número do documento já formatado
+    
     const nomeTipo = nomesTipo[doc.tipo] || doc.tipo;
     const numeroFormatado = `${nomeTipo} ${doc.serie} ${doc.ano}/${doc.numero}`;
 
     $(".document-number").text(numeroFormatado);
     $("#doc_numero").text(numeroFormatado);
 
-    // 🔹 Datas
+    
     $("#date_text").text(formatDate(doc.data_emissao));
     $("#date_input").val(formatInputDate(doc.data_emissao));
     $("#data_emissao").val(doc.data_emissao);
@@ -507,7 +507,7 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
     $("#payment_date_input").val(formatInputDate(doc.data_vencimento));
     $("#data_vencimento").val(doc.data_vencimento);
 
-    // 🔹 Método de Pagamento (se for Fatura-Recibo)
+    
     if (doc.tipo === "FR" && doc.cliente) {
         const pagamentoHTML = `
             <tr id="payment_method_row">
@@ -534,10 +534,10 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
                 </td>
             </tr>`;
 
-        // Adiciona ao DOM
+        
         $("#payment_date_text").closest("tr").after(pagamentoHTML);
 
-        // Setup dos ícones para editar / cancelar / salvar
+        
         setupPaymentMethodIcons(
             'payment_method_edit',
             'payment_method_cancel',
@@ -552,12 +552,12 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
     const currencyText = $("#currency_text");
     const currencyHidden = $("#currency_value");
 
-    // Limpa o select
+    
     selectMoeda.empty();
 
-    let moedaAtual = doc.moeda || doc.moedas[0]; // moeda do documento ou default (primeira da lista)
+    let moedaAtual = doc.moeda || doc.moedas[0]; 
 
-    // Preenche o select com todas as moedas
+    
     doc.moedas.forEach((m, index) => {
         const isSelected = moedaAtual && m.id === moedaAtual.id;
         selectMoeda.append($("<option>", {
@@ -569,7 +569,7 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
     currencyHidden.val(moedaAtual.id);
     atualizarResumoFatura(moedaAtual.simbolo);
 
-    // Setup ícones (editar / cancelar / salvar) – reaproveitando sua função
+    
     setupCurrencyIconsExisting(
         'currency_edit',
         'currency_cancel',
@@ -582,13 +582,13 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
     );
 
     $('#currency_edit').on('click', function() {
-        // Esconde o texto visível
+        
         $('#currency_text').hide();
 
-        // Mostra o select (que está dentro da div)
-        $('.currency_input').show(); // ou $('#currency_input').parent()
+        
+        $('.currency_input').show(); 
 
-        // Esconde botão de editar, mostra cancelar e salvar
+        
         $(this).hide();
         $('#currency_cancel, #currency_update').show();
     });
@@ -615,7 +615,7 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
         $('#currency_cancel, #currency_update').hide();
     });
 
-    // Atualiza resumo da fatura ao alterar valores dos produtos
+    
     $("body").on("input change", "tr.product_edit input", function() {
         const simboloAtual = currencyText.text();
         atualizarResumoFatura(simboloAtual);
@@ -623,7 +623,7 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
 
 
 
-    // 🔹 Empresa
+    
     const e = doc.empresa;
     $("#empresaNome").text(e.nome);
     $("#empresaMorada").text(e.morada);
@@ -636,36 +636,36 @@ $.getJSON(`/api/documento-temp/${tempId}/`, function(doc) {
 
 
 
-    // 🔹 Cliente — bloco "Para"
+    
     if (doc.cliente) {
         const c = doc.cliente;
         $("#cli_entity").text(c.nome);
         $("#cli_address").text(c.morada1 + (c.morada2 ? ", " + c.morada2 : ""));
-        $("#cli_postcode").text(c.codigo_postal + " " + c.concelho); // podes ajustar cidade se tiver
+        $("#cli_postcode").text(c.codigo_postal + " " + c.concelho); 
         $("#cli_country").text(c.pais);
         $("#cli_email").text(c.email);
         $("#cli_nif").text(c.contribuinte);
         let localDescarga = c.local_descarga || "V/ Morada";
 
-        // Atualiza o texto visível
+        
         $("#unloadplace_text").text(localDescarga);
 
-        // Atualiza o input para edição
+        
         $("#unloadplace").val(localDescarga);
     }
     const taxfreereasonSelect = $("#taxfreereason");
 
-    // Limpar as opções existentes antes de adicionar novas
+    
     taxfreereasonSelect.empty();
 
-    // Adicionar a opção padrão
+    
     taxfreereasonSelect.append('<option value="">Selecione o motivo</option>');
 
-    // Adicionar os motivos de IVA ao select
+    
     doc.tax_reasons.forEach(tax => {
         const option = $("<option>", {
-            value: tax.code, // O código é o value
-            text: `${tax.code} - ${tax.description}` // Exibição do código seguido da descrição
+            value: tax.code, 
+            text: `${tax.code} - ${tax.description}` 
         });
         taxfreereasonSelect.append(option);
     });
@@ -678,12 +678,12 @@ function formatInputDate(dateStr) {
     if (!dateStr) return "";
     const date = new Date(dateStr);
     const dia = date.getDate().toString().padStart(2, "0");
-    const mes = (date.getMonth() + 1).toString().padStart(2, "0"); // 01-12
+    const mes = (date.getMonth() + 1).toString().padStart(2, "0"); 
     const ano = date.getFullYear();
-    return `${dia}/${mes}/${ano}`; // formato dd/mm/yyyy
+    return `${dia}/${mes}/${ano}`; 
 }
 
-// Função auxiliar para formatar YYYY-MM-DD → "20 Fevereiro 2026" (div)
+
 function formatDate(dateStr) {
     if (!dateStr) return "";
     const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -703,7 +703,7 @@ function setupPaymentMethodIcons(editId, cancelId, saveId, textId, selectId, hid
     const select = $('#' + selectId);
     const hidden = $('#' + hiddenId);
 
-    // Hover nos ícones
+    
     editBtn.hover(
         () => editBtn.attr('src', '/static/images/icon_edit_on.png'),
         () => editBtn.attr('src', '/static/images/icon_edit_off.png')
@@ -717,7 +717,7 @@ function setupPaymentMethodIcons(editId, cancelId, saveId, textId, selectId, hid
         () => saveBtn.attr('src', '/static/images/icon_save_off.png')
     );
 
-    // Editar
+    
     editBtn.on('click', () => {
         textDiv.hide();
         select.parent().show();
@@ -726,7 +726,7 @@ function setupPaymentMethodIcons(editId, cancelId, saveId, textId, selectId, hid
         saveBtn.show();
     });
 
-    // Cancelar
+    
     cancelBtn.on('click', () => {
         textDiv.show();
         select.parent().hide();
@@ -735,15 +735,15 @@ function setupPaymentMethodIcons(editId, cancelId, saveId, textId, selectId, hid
         saveBtn.hide();
     });
 
-    // Salvar
+    
     saveBtn.on('click', () => {
         const selectedOption = select.find('option:selected');
         const nome = selectedOption.text().trim();
 
-        // Atualiza o texto visível
+        
         textDiv.text(nome).show();
 
-        // Atualiza o campo hidden com o valor real
+        
         hidden.val(nome);
 
         select.parent().hide();
@@ -753,7 +753,7 @@ function setupPaymentMethodIcons(editId, cancelId, saveId, textId, selectId, hid
     });
 }
 
-// Inicializa os ícones
+
 setupPaymentMethodIcons(
     'payment_method_edit',
     'payment_method_cancel',
@@ -763,7 +763,7 @@ setupPaymentMethodIcons(
     'payment_method_value'
 );
 
-// Função para setup da moeda existente
+
 function setupCurrencyIconsExisting(editId, cancelId, saveId, textId, selectId, hiddenId, moedas, moedaSelecionada) {
     const editBtn = $('#' + editId);
     const cancelBtn = $('#' + cancelId);
@@ -772,19 +772,19 @@ function setupCurrencyIconsExisting(editId, cancelId, saveId, textId, selectId, 
     const select = $('#' + selectId);
     const hidden = $('#' + hiddenId);
 
-    // Preenche o select com moedas
+    
     select.empty();
     moedas.forEach((m, index) => {
         const isSelected = moedaSelecionada ? m.codigo === moedaSelecionada.codigo : index === 0;
         select.append(`<option value="${m.codigo}" ${isSelected ? 'selected' : ''}>${m.simbolo}</option>`);
     });
 
-    // Atualiza texto visível e hidden com a moeda selecionada ou default
+    
     const moedaAtual = moedaSelecionada || moedas[0];
     textDiv.text(`${moedaAtual.simbolo}`);
     hidden.val(moedaAtual.id);
 
-    // Hover nos ícones
+    
     editBtn.hover(
         () => editBtn.attr('src', '/static/images/icon_edit_on.png'),
         () => editBtn.attr('src', '/static/images/icon_edit_off.png')
@@ -798,7 +798,7 @@ function setupCurrencyIconsExisting(editId, cancelId, saveId, textId, selectId, 
         () => saveBtn.attr('src', '/static/images/icon_save_off.png')
     );
 
-    // Editar
+    
     editBtn.on('click', () => {
         textDiv.hide();
         select.parent().show();
@@ -807,7 +807,7 @@ function setupCurrencyIconsExisting(editId, cancelId, saveId, textId, selectId, 
         saveBtn.show();
     });
 
-    // Cancelar
+    
     cancelBtn.on('click', () => {
         textDiv.show();
         select.parent().hide();
@@ -816,7 +816,7 @@ function setupCurrencyIconsExisting(editId, cancelId, saveId, textId, selectId, 
         saveBtn.hide();
     });
 
-    // Salvar
+    
     saveBtn.on('click', () => {
         const selectedOption = select.find('option:selected');
         const nome = selectedOption.text().trim();
@@ -834,9 +834,9 @@ function setupCurrencyIconsExisting(editId, cancelId, saveId, textId, selectId, 
 function atualizarResumoFatura(simboloMoeda) {
     let subtotal = 0;
     let total = 0;
-    let ivaIncidencias = {}; // {taxa: valor}
+    let ivaIncidencias = {}; 
 
-    // Itera sobre cada linha de produto adicionada
+    
     $("tr.product_edit").each(function() {
         let preco = parseNumero($(this).find("input.price").val());
         let quantidade = parseNumero($(this).find("input.quantity").val());
@@ -852,17 +852,17 @@ function atualizarResumoFatura(simboloMoeda) {
 
     total = subtotal + Object.values(ivaIncidencias).reduce((a,b) => a + b, 0);
 
-    // Atualiza subtotal e total com símbolo dinâmico
+    
     $("#subtotal_value").text(formatNumero(subtotal) + " " + simboloMoeda);
     $("#total_value").text(formatNumero(total) + " " + simboloMoeda);
 
-    // Limpa linhas de IVA
+    
     $("#iva_lines").empty();
 
-    // Adiciona linhas de IVA
+    
     for (let taxa in ivaIncidencias) {
         if (ivaIncidencias[taxa] > 0) {
-            let base = ivaIncidencias[taxa] / (parseFloat(taxa)/100); // valor base aproximado
+            let base = ivaIncidencias[taxa] / (parseFloat(taxa)/100); 
             let linhaIva = `
                 <tr class="resume tax">
                     <td colspan="3">IVA ${parseFloat(taxa).toFixed(2)}% (Incidência: ${formatNumero(base)})</td>

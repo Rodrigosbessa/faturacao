@@ -49,9 +49,9 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
 
         try:
             user = User.objects.get(email__iexact=email)
-            sociallogin.connect(request, user)  # conecta a conta social ao user existente
+            sociallogin.connect(request, user)
         except User.DoesNotExist:
-            pass  # cria novo user normalmente
+            pass
 
 from django import forms
 from .models import Empresa
@@ -63,8 +63,7 @@ class EmpresaForm(forms.ModelForm):
         if not nif.isdigit() or len(nif) != 9:
             raise forms.ValidationError("O NIF deve conter exatamente 9 dígitos.")
 
-        # 2. Validação da lógica do dígito de controlo
-        # (Usando a sua função convertida para método)
+
         soma = 0
         for i in range(8):
             soma += int(nif[i]) * (9 - i)
@@ -75,8 +74,7 @@ class EmpresaForm(forms.ModelForm):
         if int(nif[8]) != digito_controlo:
             raise forms.ValidationError("O NIF introduzido não é válido.")
 
-        # 3. Regras de prefixo para Portugal
-        # NIFs de empresas começam tipicamente por 5, 6, 8 ou 9
+
         if nif[0] not in '123456789':
             raise forms.ValidationError("O NIF deve começar por um dígito válido.")
 
@@ -91,9 +89,9 @@ class EmpresaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Aplica a classe 'form-control' a todos os campos
+
         for field in self.fields:
-            if field != 'pais':  # O 'pais' já tem a classe definida no widget acima
+            if field != 'pais':
                 self.fields[field].widget.attrs.update({'class': 'form-control'})
 
     class Meta:

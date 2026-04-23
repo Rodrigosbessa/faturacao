@@ -17,7 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from Faturamento import views
-from allauth.account.views import LoginView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -75,4 +76,7 @@ urlpatterns = [
     path('transporte/adicionar/', views.adicionar_transporte_ajax, name='adicionar_transporte'),
     path('api/obter-periodos/', views.obter_periodos_disponiveis, name='obter_periodos'),
     path('gerar-saft/', views.gerar_saft, name='gerar_saft'),
+    path('configuracoes/update-logo/', views.update_logo, name='update_logo'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

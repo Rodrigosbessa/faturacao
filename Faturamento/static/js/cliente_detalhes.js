@@ -15,53 +15,45 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-function editarCliente() {
+async function editarCliente() {
     const btn = document.getElementById("btn-guardar-cliente");
     const idCliente = btn.getAttribute('data-id');
 
-    if (!idCliente) {
-        alert("ID do cliente não encontrado.");
-        return;
-    }
-
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> A guardar...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar...';
 
     const dados = {};
-    document.querySelectorAll('#tabs-1 input, #tabs-1 select').forEach(el => {
+    
+    document.querySelectorAll('#tabs-1 .edit-input, #tabs-1 .edit-select, #tabs-1 input[type="hidden"]').forEach(el => {
         if (el.name) {
-            dados[el.name] = el.value;
+            dados[el.name] = el.value.trim();
         }
     });
 
-    // 2. Enviar via fetch usando o objeto 'dados'
-    fetch(`/cliente/${idCliente}/editar/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dados) // Agora a variável 'dados' existe!
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Resposta do servidor:", data);
+    try {
+        const response = await fetch(`/cliente/${idCliente}/editar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        });
+
+        const data = await response.json();
 
         if (data.success) {
-            alert(data.message || "Sucesso!");
+            
+            alert("Alterações guardadas com sucesso!");
             window.location.reload();
         } else {
-            alert("Erro do Servidor: " + (data.error || "Erro desconhecido"));
-            btn.disabled = false;
-            btn.innerText = "Guardar Alterações";
+            throw new Error(data.error || "Erro ao guardar dados.");
         }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert("Erro de comunicação com o servidor.");
+    } catch (error) {
+        alert(error.message);
         btn.disabled = false;
-        btn.innerText = "Guardar Alterações";
-    });
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Alterações';
+    }
 }
 
 document.querySelectorAll('.edit-input, .edit-select').forEach(el => {
@@ -97,9 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Importante: Se mudar o país, limpar ou revalidar o campo
+    
     countrySelect.addEventListener("change", () => {
-        nifInput.value = ""; // Opcional: limpa para evitar erros de formato
+        nifInput.value = ""; 
     });
 
     telemovelInput.addEventListener("input", () => {
@@ -226,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let campo of obrigatorios) {
             let el = document.querySelector(`[name="${campo.name}"]`);
-            // Ajuste aqui: verificamos el.value diretamente para funcionar em Selects e Inputs
+            
             if (!el || !el.value || el.value.toString().trim() === "") {
                 alert(`Erro AT: O campo [${campo.label}] é obrigatório.`);
                 el.focus();
@@ -249,24 +241,45 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 $(document).ready(function() {
-    $('.btn-edit').on('click', function() {
-        const $td = $(this).closest('td');
+    
+    $('.col_data').on('click', function() {
+        const $td = $(this);
+        const $container = $td.find('.valor-container');
 
+        
+        if ($container.is(':visible')) {
+            $container.hide();
+            const $field = $td.find('.edit-select, .edit-input');
+            $field.show().focus();
+        }
+    });
+
+    
+    $('.edit-input, .edit-select').on('click', function(e) {
+        e.stopPropagation();
+    });
+});
+$(document).ready(function() {
+    $('.btn-edit').on('click', function(e) {
+        e.stopPropagation();
+        const $td = $(this).closest('td');
         $td.find('.valor-container').hide();
-        // Tenta encontrar um select ou um input dentro desta célula
         const $field = $td.find('.edit-select, .edit-input');
         $field.show().focus();
     });
 
-    // Quando o campo (select ou input) perder o foco
     $(document).on('blur change', '.edit-select, .edit-input', function() {
         const $field = $(this);
         const $td = $field.closest('td');
 
-        // Se for select, pega o texto da opção; se for input, pega o valor
-        const novoTexto = $field.is('select') ?
-                          $field.find('option:selected').text() :
-                          $field.val();
+        
+        let novoTexto = "";
+        if ($field.is('select')) {
+            novoTexto = $field.find('option:selected').text();
+            if ($field.val() === "") novoTexto = "---";
+        } else {
+            novoTexto = $field.val() || "---";
+        }
 
         $td.find('.texto-ellipsis').text(novoTexto);
         $field.hide();
@@ -284,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
             .then(res => res.json())
             .then(data => {
-                // Ordenar por nome comum
+                
                 data.sort((a, b) => a.name.common.localeCompare(b.name.common));
 
                 let optionsHtml = '<option value="">Selecione um país...</option>';
@@ -301,11 +314,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </option>`;
                 });
 
-                // Preenche o Select
+                
                 countrySelect.innerHTML = optionsHtml;
 
-                // --- O PONTO CHAVE ---
-                // Se encontrarmos o nome correspondente à sigla, atualizamos o span
+                
+                
                 if (nomePorExtensoencontrado) {
                     $spanPais.text(nomePorExtensoencontrado);
                 }
@@ -313,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(err => console.error("Erro ao carregar países:", err));
     }
 
-    // Evento de Change: Quando o usuário mudar manualmente o select
+    
     $(countrySelect).on('change', function() {
         const nomeCompleto = $(this).find('option:selected').text();
         if ($(this).val() !== "") {
@@ -321,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Lógica do Código Postal (Portugal)
+    
     const postalInput = document.getElementById("postal");
     if (postalInput) {
         postalInput.addEventListener("blur", () => {
@@ -335,11 +348,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!data || data.length === 0) return;
                     const d = data[0];
 
-                    // Atualiza Distrito e Concelho
+                    
                     $('input[name="distrito"]').val(d.Distrito).closest('td').find('.texto-ellipsis').text(d.Distrito);
                     $('input[name="concelho"]').val(d.Concelho).closest('td').find('.texto-ellipsis').text(d.Concelho);
 
-                    // Seleciona Portugal no Select e dispara o change para o span mudar para "Portugal"
+                    
                     $(countrySelect).val("PT").trigger('change');
                 });
         });
@@ -350,11 +363,11 @@ document.addEventListener('click', function(e) {
     const linha = e.target.closest('.factura-linha');
 
     if (linha) {
-        // 2. Extrai o ID que guardámos no data-id
+        
         const id = linha.getAttribute('data-id');
 
         if (id) {
-            // 3. Redireciona
+            
             window.location.href = `/faturas/ver/${id}/`;
         }
     }
@@ -379,19 +392,19 @@ $(document).ready(function() {
             return;
         }
 
-        // Preenche o modal com a dívida real
+        
         $('#display-total-acumulado').text(saldoTexto);
         $('#valor_recibo').val(saldoNumerico.toFixed(2));
 
         $('#modal-emitir-recibo').dialog('open');
     });
 
-    // 3. Fechar modal
+    
     $('#btnCancelarRecibo').on('click', function() {
         $('#modal-emitir-recibo').dialog('close');
     });
 
-    // 4. Confirmar e Enviar para o Servidor
+    
     $('#btnConfirmarRecibo').on('click', function(e) {
         e.preventDefault();
 
@@ -431,7 +444,7 @@ $(document).ready(function() {
                 const msg = xhr.responseJSON ? xhr.responseJSON.error : "Erro crítico no servidor.";
                 alert("Erro: " + msg);
 
-                // Reativa o botão em caso de erro
+                
                 $btn.prop('disabled', false).text('Confirmar e Emitir');
             }
         });

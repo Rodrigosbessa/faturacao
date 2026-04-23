@@ -1,73 +1,107 @@
-$( function() {
-    $( "#tabs" ).tabs();
-} );
+$(function() {
+    
+    $("#tabs").tabs();
 
-document.getElementById("btn-guardar-cliente").addEventListener("click", function() {
+    
 
-    let nome = document.querySelector('[name="nome"]').value.trim();
-    let descricao = document.querySelector('[name="descricao"]').value.trim();
-    let tipo = document.querySelector('[name="tipo"]').value;
-    let taxa = document.querySelector('[name="taxa"]').value;
-    let preco = document.querySelector('[name="preco"]').value;
+    
+    $('.col_data').on('click', function(e) {
+        
+        if ($(this).find('.edit-input, .edit-select').is(':visible')) return;
 
-    if(nome === ""){
-        alert("O nome do produto é obrigatório.");
-        return;
-    }
+        const $td = $(this);
+        const $container = $td.find('.valor-container');
+        const $field = $td.find('.edit-input, .edit-select');
 
-    if(tipo === ""){
-        alert("Selecione o tipo de produto.");
-        return;
-    }
-
-    if(taxa !== "" && (isNaN(taxa) || taxa < 0 || taxa > 100)){
-        alert("Taxa de IVA inválida.");
-        return;
-    }
-
-    if(preco !== "" && (isNaN(preco) || preco < 0)){
-        alert("Preço inválido.");
-        return;
-    }
-
-    let pathParts = window.location.pathname.split('/');
-    let id_artigo = pathParts[pathParts.indexOf('artigo') + 1];
-
-    let formData = new FormData();
-    formData.append('nome', nome);
-    formData.append('descricao', descricao);
-    formData.append('tipo', tipo);
-    formData.append('taxa', taxa);
-    formData.append('preco', preco);
-
-    let url;
-    if (idArtigo && idArtigo !== "") {
-        url = `/artigo/${idArtigo}/editar/`; // Caso de Edição
-    } else {
-        url = '/artigo/adicionar/'; // Caso de Criação
-    }
-    fetch(url, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-    })
-    .then(response => response.json().then(data => ({status: response.status, body: data})))
-    .then(res => {
-        if(res.status === 200 && res.body.success){
-            alert("Artigo atualizado com sucesso!");
-        } else if(res.body.errors){
-            alert("Erros:\n" + res.body.errors.join("\n"));
-        } else {
-            alert("Erro inesperado ao enviar os dados.");
+        if ($field.length > 0) {
+            $container.hide();
+            $field.show().focus();
         }
-    })
-    .catch(error => {
-        console.error(error);
-        alert("Erro de conexão ao enviar os dados.");
     });
 
+    
+    $(document).on('blur change', '.edit-input, .edit-select', function() {
+        const $field = $(this);
+        const $td = $field.closest('td');
+        const $container = $td.find('.valor-container');
+        const $textSpan = $td.find('.texto-ellipsis');
+
+        let novoTexto = "";
+
+        if ($field.is('select')) {
+            novoTexto = $field.find('option:selected').text();
+        } else {
+            novoTexto = $field.val();
+            
+            if ($field.attr('name') === 'preco' && novoTexto) novoTexto += " €";
+            if ($field.attr('name') === 'taxa' && novoTexto) novoTexto += "%";
+        }
+
+        if (novoTexto.trim() !== "") {
+            $textSpan.text(novoTexto);
+        }
+
+        $field.hide();
+        $container.show();
+    });
+
+    
+    $(document).on('click', '.edit-input, .edit-select', function(e) {
+        e.stopPropagation();
+    });
+
+
+    
+
+    document.getElementById("btn-guardar-cliente").addEventListener("click", function() {
+        
+        let nome = document.querySelector('[name="nome"]').value.trim();
+        let descricao = document.querySelector('[name="descricao"]').value.trim();
+        let tipo = document.querySelector('[name="tipo"]').value;
+        let taxa = document.querySelector('[name="taxa"]').value;
+        let preco = document.querySelector('[name="preco"]').value;
+
+        
+        if(nome === ""){ alert("O nome do produto é obrigatório."); return; }
+        if(tipo === ""){ alert("Selecione o tipo de produto."); return; }
+
+        if(taxa !== "" && (isNaN(taxa.replace('%','')) || taxa < 0 || taxa > 100)){
+            alert("Taxa de IVA inválida."); return;
+        }
+
+        
+        let formData = new FormData();
+        formData.append('nome', nome);
+        formData.append('descricao', descricao);
+        formData.append('tipo', tipo);
+        formData.append('taxa', taxa);
+        formData.append('preco', preco);
+
+        let url = (typeof idArtigo !== 'undefined' && idArtigo !== "")
+                  ? `/artigo/${idArtigo}/editar/`
+                  : '/artigo/adicionar/';
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success){
+                alert("Artigo guardado com sucesso!");
+                window.location.reload();
+            } else {
+                alert("Erro: " + (data.errors ? data.errors.join("\n") : "Erro desconhecido"));
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Erro de conexão.");
+        });
+    });
 });
 
 function getCookie(name) {
@@ -76,7 +110,6 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            // verifica se o cookie começa com o nome
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;

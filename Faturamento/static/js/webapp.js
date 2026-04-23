@@ -9,25 +9,25 @@ let tables = {
 
 itens.forEach(item => {
     item.addEventListener("click", () => {
-        // 1. Limpar o estado de todos os itens
+        
         itens.forEach(i => {
             i.classList.remove("redondo");
-            // Removemos o brilho/borda de destaque dos outros
+            
             i.style.borderColor = "rgba(100, 255, 218, 0.1)";
             i.style.background = "transparent";
 
             const link = i.querySelector("a");
-            if (link) link.style.color = "rgba(230, 241, 255, 0.7)"; // Branco azulado fosco
+            if (link) link.style.color = "rgba(230, 241, 255, 0.7)"; 
         });
 
-        // 2. Aplicar o novo visual de "Ativo" ao item clicado
+        
         item.classList.add("redondo");
 
-        // Em vez de apenas "redondo", vamos dar o brilho Ciano diretamente
+        
         item.style.background = "rgba(100, 255, 218, 0.15)";
         item.style.borderColor = "#64ffda";
 
-        // 3. Mudar a cor do link interno para o Ciano vibrante (ou Branco)
+        
         const linkAtivo = item.querySelector("a");
         if (linkAtivo) {
             linkAtivo.style.setProperty("color", "#64ffda", "important");
@@ -48,11 +48,11 @@ $(document).ready(function(){
 
         $('.second-navbar-collapse .sub-item').removeClass('active-second');
 
-        // Mostra o conteúdo selecionado
+        
         $('#' + target).fadeIn(300);
     });
 
-    // Segunda topbar (Clientes / Artigos / Faturas / Guias)
+    
     $('.second-navbar-collapse .sub-item').click(function(e){
         e.preventDefault();
         var target = $(this).data('target');
@@ -71,20 +71,20 @@ $(document).ready(function(){
 });
 
 function initDataTable(type) {
-    // Se a tabela já existir, apenas faz reload e ajusta colunas
+    
     if (tables[type] != null) {
         tables[type].ajax.reload(null, false);
         tables[type].columns.adjust();
         return;
     }
 
-    // Configurações específicas por tipo
+    
     let config = {};
 
     if (type === 'clientes') {
         config = {
             url: window.clientesUrl,
-            dataSrc: "data", // Adapte para "" se a sua view de clientes também devolver uma lista direta []
+            dataSrc: "data", 
             columns: [
                 { data: 'codigo' },
                 { data: 'nome' },
@@ -103,7 +103,7 @@ function initDataTable(type) {
     else if (type === 'artigos') {
         config = {
             url: window.artigosUrl,
-            dataSrc: "", // Indica lista direta []
+            dataSrc: "", 
             columns: [
                 { data: 'codigo' },
                 { data: 'nome' },
@@ -127,20 +127,20 @@ function initDataTable(type) {
             dataSrc: "",
             order: [],
             columns: [
-                { data: 'tipo' },         // Index 0
+                { data: 'tipo' },         
                 {
-                    data: 'numero',       // Index 1
+                    data: 'numero',       
                     render: (data, type, row) => row.temporario ? `<i class="text-muted">${data}</i>` : `<strong>${data}</strong>`
                 },
-                { data: 'cliente_nome' }, // Index 2
-                { data: 'data_emissao' }, // Index 3
-                { data: 'vencimento' },   // Index 4
+                { data: 'cliente_nome' }, 
+                { data: 'data_emissao' }, 
+                { data: 'vencimento' },   
                 {
-                    data: 'valor_total',  // Index 5
+                    data: 'valor_total',  
                     render: d => parseFloat(d).toLocaleString('pt-PT', {style: 'currency', currency: 'EUR'})
                 },
                 {
-                    data: 'estado_pagamento',       // Index 6
+                    data: 'estado_pagamento',       
                     render: function(data) {
                         let badgeClass = 'bg-secondary';
                         if (data === 'Pago') badgeClass = 'bg-success';
@@ -152,26 +152,26 @@ function initDataTable(type) {
                     }
                 },
                 {
-                    data: 'estado',  // Index para o estado (Finalizado/Anulado)
+                    data: 'estado',  
                     render: function(data, type, row) {
                         let estadoClass = '';
                         let estadoText = '';
 
-                        // Se o documento for temporário, exibe "Rascunho"
+                        
                         if (row.temporario) {
-                            estadoClass = 'text-info';  // Cor azul para Rascunho
+                            estadoClass = 'text-info';  
                             estadoText = 'Rascunho';
                         } else {
                             if (data === 'Anulado') {
-                                estadoClass = 'text-success'; // Cor verde para "Anulado"
+                                estadoClass = 'text-success'; 
                                 estadoText = 'Anulado';
                             } else {
-                                estadoClass = 'text-muted';  // Cor padrão para "Finalizado"
+                                estadoClass = 'text-muted';  
                                 estadoText = 'Finalizado';
                             }
                         }
 
-                        return `<span class="${estadoClass}">${estadoText}</span>`;  // Exibe o estado com a cor apropriada
+                        return `<span class="${estadoClass}">${estadoText}</span>`;  
                     }
                 },
                 {
@@ -179,7 +179,7 @@ function initDataTable(type) {
                     orderable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
-                        // Para documentos temporários (rascunho)
+                        
                         if (row.temporario) {
                             return `
                                 <div class="btn-group">
@@ -192,7 +192,7 @@ function initDataTable(type) {
                                 </div>`;
                         }
 
-                        // Para notas de crédito (NC) - se o estado não for 'Anulado'
+                        
                         else if (row.tipo.startsWith('Nota de Crédito') && row.estado !== 'Anulado') {
                             return `
                                 <div class="btn-group">
@@ -205,7 +205,7 @@ function initDataTable(type) {
                                 </div>`;
                         }
 
-                        // Para faturas finalizadas ou outros tipos de documentos
+                        
                         else {
                             return `
                                 <div class="btn-group">
@@ -240,7 +240,7 @@ function initDataTable(type) {
                     render: () => `<span class="badge bg-success">Emitida</span>`
                 },
                 {
-                    data: null,             // 6 - Ações
+                    data: null,             
                     orderable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
@@ -256,14 +256,14 @@ function initDataTable(type) {
     }
     else if (type === 'recibos') {
         config = {
-            url: window.recibosUrl, // URL da View acima
+            url: window.recibosUrl, 
             dataSrc: "",
             columns: [
-                { data: 'documento' },           // 0
-                { data: 'data' },         // 1
-                { data: 'cliente' },   // 2
-                { data: 'total' },   // 3
-                { data: 'estado' },  // 4
+                { data: 'documento' },           
+                { data: 'data' },         
+                { data: 'cliente' },   
+                { data: 'total' },   
+                { data: 'estado' },  
                 {
                     data: null,
                     orderable: false,
@@ -300,7 +300,7 @@ function initDataTable(type) {
             if (config.rowClickUrl) {
                 $(row).css('cursor', 'pointer');
                 $(row).on('click', function(e) {
-                    // Evita o redirecionamento ao clicar nos botões de ação
+                    
                     if ($(e.target).closest('button, a, .btn').length) {
                         return;
                     }
@@ -310,20 +310,20 @@ function initDataTable(type) {
         }
     });
 
-    // --- Filtros ---
-    // Barra de Pesquisa Geral
+    
+    
     $(`#pesquisa${type.charAt(0).toUpperCase() + type.slice(1)}`).off('keyup').on('keyup', function() {
         tables[type].search(this.value).draw();
     });
 
-    // Filtros Específicos para Faturas
+    
     if (type === 'faturas') {
         $(`#filtroEstado`).off('change').on('change', function() {
-            tables['faturas'].column(6).search($(this).val()).draw(); // Estado = Índice 6
+            tables['faturas'].column(6).search($(this).val()).draw(); 
         });
 
         $(`#filtroTipo`).off('change').on('change', function() {
-            tables['faturas'].column(0).search($(this).val()).draw(); // Tipo = Índice 0
+            tables['faturas'].column(0).search($(this).val()).draw(); 
         });
     }
 }
@@ -365,7 +365,7 @@ $(document).ready(function () {
 
 $(document).ready(function () {
 
-    // Inicializar apenas o de confirmação, que é o primeiro a ser usado
+    
     $("#modal-apagar-cliente").dialog({
         autoOpen: false,
         modal: true,
@@ -374,7 +374,7 @@ $(document).ready(function () {
         hide: { effect: "fade", duration: 200 }
     });
 
-    // Abrir confirmação
+    
     $(document).on('click', '.btn-delete-cliente', function (e) {
         e.preventDefault();
         const idCliente = $(this).data('id');
@@ -386,7 +386,7 @@ $(document).ready(function () {
         $("#modal-apagar-cliente").dialog("open");
     });
 
-    // Confirmar eliminação via AJAX
+    
     $(document).on('click', '#btnConfirmarEliminarCliente', function (e) {
         e.preventDefault();
         const idCliente = $('#id_cliente_apagar').val();
@@ -412,7 +412,7 @@ $(document).ready(function () {
     });
 
     function tratarErroEliminacao(data) {
-        // 1. Fecha o modal de confirmação
+        
         if ($("#modal-apagar-cliente").hasClass('ui-dialog-content')) {
             $("#modal-apagar-cliente").dialog("close");
         }
@@ -456,9 +456,9 @@ $(document).ready(function () {
     $("#modal-apagar-artigo").dialog({
         autoOpen: false,
         modal: true,
-        width: 420, // Aumentado ligeiramente para o design SaaS
+        width: 420, 
         resizable: false,
-        draggable: false, // Melhora a sensação de "Modal" fixo
+        draggable: false, 
         show: { effect: "fade", duration: 250 },
         hide: { effect: "fade", duration: 200 }
     });
@@ -480,9 +480,9 @@ $(document).ready(function () {
         const btn = $(this);
         const idArtigo = $('#id_artigo_apagar').val();
 
-        if (btn.prop('disabled')) return; // Evita duplo clique
+        if (btn.prop('disabled')) return; 
 
-        // Feedback de Loading
+        
         const originalText = btn.html();
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> A eliminar...');
 
@@ -494,7 +494,7 @@ $(document).ready(function () {
                 if (resp.success) {
                     $("#modal-apagar-artigo").dialog("close");
 
-                    // Notificação de sucesso (Opcional, se tiveres Toastr)
+                    
                     if (typeof tables !== 'undefined' && tables.artigos) {
                         tables.artigos.ajax.reload(null, false);
                     } else {
@@ -514,7 +514,7 @@ $(document).ready(function () {
 });
 
 let dashboardCarregado = false;
-// Função auxiliar para formatar os valores de forma bonita
+
 function formatarMoeda(valor) {
     return parseFloat(valor).toLocaleString('pt-PT', {
         style: 'currency',
@@ -535,7 +535,7 @@ const DashboardManager = {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
 
-        // 1. Ver os dados brutos que chegam do Django
+        
         console.log("Dados brutos:", this.dados.lista_detalhada);
 
         const notasCredito = this.dados.lista_detalhada.filter(d => d.tipo === 'NC');
@@ -559,7 +559,7 @@ const DashboardManager = {
                 const valorReal = parseFloat(f.valor_total) - abatimentoNC;
                 const saldoPendente = valorReal - parseFloat(f.total_pago || 0);
 
-                // Ver cálculo linha a linha
+                
                 console.log(`Fatura ${f.numero}: Total=${f.valor_total}, Abate=${abatimentoNC}, Pago=${f.total_pago}, Saldo=${saldoPendente}`);
 
                 return {
@@ -580,7 +580,7 @@ const DashboardManager = {
                 break;
 
             case 'divida':
-                // Agora usa o nosso cálculo dinâmico, ignorando estados de pagamento do DB
+                
                 listaFiltrada = faturasProcessadas.filter(f => f.saldoPendente > 0.01);
                 titulo.innerText = "Documentos por Pagar";
                 break;
@@ -620,10 +620,10 @@ const DashboardManager = {
             });
         }
 
-        // O TRUQUE: Força o display flex com priority para ganhar do CSS global
+        
         container.style.setProperty('display', 'flex', 'important');
         container.classList.add('show');
-        // Pequeno delay para a animação de entrada funcionar
+        
         setTimeout(() => {
             container.style.opacity = '1';
             container.classList.add('show');
@@ -640,7 +640,7 @@ $('.nav-item[data-target="dashboard"]').on('click', function() {
             url: "/api/dashboard/dados/",
             method: "GET",
             success: function(data) {
-                // CRUCIAL: Passar os dados para o Manager
+                
                 DashboardManager.setDados(data);
 
                 $('#dash-total-faturado').text(formatarMoeda(data.total_faturado));
@@ -671,26 +671,26 @@ $(function () {
         if (faturacaoChart) faturacaoChart.destroy();
 
         faturacaoChart = new Chart(ctx, {
-            type: 'bar', // Definimos o tipo base
+            type: 'bar', 
             data: {
                 labels: ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'],
                 datasets: [
-                                        // Dentro do teu datasets do Chart.js:
+                                        
                     {
                         type: 'line',
                         label: 'TOTAL FATURADO',
-                        borderColor: '#64ffda', // Ciano Neon
+                        borderColor: '#64ffda', 
                         pointBackgroundColor: '#64ffda',
                         borderWidth: 3,
                         fill: true,
-                        backgroundColor: 'rgba(100, 255, 218, 0.1)', // Sombra ciano por baixo da linha
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)', 
                         tension: 0.4,
                         data: data.chart_total,
                     },
                     {
                         type: 'bar',
                         label: 'PAGO',
-                        backgroundColor: 'rgba(69, 239, 112, 0.7)', // Verde neon suave
+                        backgroundColor: 'rgba(69, 239, 112, 0.7)', 
                         hoverBackgroundColor: '#45ef70',
                         data: data.chart_pagos,
                         stack: 'Stack 0',
@@ -700,7 +700,7 @@ $(function () {
                     {
                         type: 'bar',
                         label: 'NÃO PAGO',
-                        backgroundColor: 'rgba(0, 210, 255, 0.7)', // Azul neon
+                        backgroundColor: 'rgba(0, 210, 255, 0.7)', 
                         hoverBackgroundColor: '#00d2ff',
                         data: data.chart_nao_pagos,
                         stack: 'Stack 0',
@@ -716,7 +716,7 @@ $(function () {
                         borderWidth: 1,
                         data: data.chart_vencidos,
                         stack: 'Stack 0',
-                        barPercentage: 0.6,      // Controla a largura da barra (0.6 a 0.8 é o ideal)
+                        barPercentage: 0.6,      
                         categoryPercentage: 0.5,
                     }
                 ]
@@ -726,10 +726,10 @@ $(function () {
                 maintainAspectRatio: false,
                 scales: {
                     x: {
-                        stacked: true,      // Mantém as barras uma em cima da outra
-                        offset: true,       // CRUCIAL: Garante que o ponto da linha fica no centro do slot do mês
+                        stacked: true,      
+                        offset: true,       
                         grid: {
-                            display: false  // Limpa o ruído visual
+                            display: false  
                         }
                     },
                     y: {
@@ -742,7 +742,7 @@ $(function () {
                         labels: { color: '#ccd6f6', font: { family: 'Geologica' } }
                     },
                     tooltip: {
-                        // Melhora a aparência ao passar o rato
+                        
                         backgroundColor: 'rgba(0,0,0,0.8)',
                         padding: 12,
                         titleFont: { size: 14 },
@@ -768,10 +768,10 @@ $(function () {
 
         if (evolucaoChart) evolucaoChart.destroy();
 
-        // Criamos um gradiente para o preenchimento (opcional, mas fica incrível)
+        
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(0, 210, 255, 0.3)');   // Azul no topo
-        gradient.addColorStop(1, 'rgba(0, 210, 255, 0.01)'); // Transparente na base
+        gradient.addColorStop(0, 'rgba(0, 210, 255, 0.3)');   
+        gradient.addColorStop(1, 'rgba(0, 210, 255, 0.01)'); 
 
         evolucaoChart = new Chart(ctx, {
             type: 'line',
@@ -782,21 +782,21 @@ $(function () {
                     data: data.chart_total,
                     fill: true,
                     backgroundColor: gradient,
-                    borderColor: '#00d2ff', // Azul Neon vibrante
+                    borderColor: '#00d2ff', 
                     borderWidth: 3,
                     pointBackgroundColor: '#00d2ff',
-                    pointBorderColor: '#0a192f', // Fundo escuro para destacar o ponto
+                    pointBorderColor: '#0a192f', 
                     pointBorderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,
-                    tension: 0.4 // Curva suave e profissional
+                    tension: 0.4 
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }, // Escondemos a legenda para um look minimalista
+                    legend: { display: false }, 
                     tooltip: {
                         backgroundColor: 'rgba(10, 25, 47, 0.9)',
                         titleColor: '#64ffda',
@@ -816,13 +816,13 @@ $(function () {
                 },
                 scales: {
                     x: {
-                        grid: { display: false }, // Remove as linhas verticais
+                        grid: { display: false }, 
                         ticks: { color: '#8892b0' }
                     },
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: 'rgba(204, 214, 246, 0.05)', // Linhas horizontais quase invisíveis
+                            color: 'rgba(204, 214, 246, 0.05)', 
                             drawBorder: false
                         },
                         ticks: {
@@ -846,14 +846,14 @@ $(function () {
         }
 
         const ctx = canvasElement.getContext('2d');
-        const mesAtual = data.mes_atual; // Mês onde a linha passa a ser tracejada
+        const mesAtual = data.mes_atual; 
         const anoAtual = new Date().getFullYear();
 
-        // Paleta de Cores Futurista
+        
         const cores = {
-            '2024': '#7000ff', // Roxo Profundo
-            '2025': '#00d2ff', // Azul Turquesa
-            '2026': '#64ffda'  // Ciano/Verde Neon (Destaque)
+            '2024': '#7000ff', 
+            '2025': '#00d2ff', 
+            '2026': '#64ffda'  
         };
 
         const datasets = Object.keys(data.comparativo_anos).map((ano) => {
@@ -869,7 +869,7 @@ $(function () {
                 pointRadius: isAnoAtual ? 4 : 2,
                 fill: false,
                 tension: 0.4,
-                // A MAGIA: Segmentação para meses futuros
+                
                 segment: isAnoAtual ? {
                     borderColor: ctx => (ctx.p0DataIndex >= mesAtual - 1 ? 'rgba(100, 255, 218, 0.3)' : undefined),
                     borderDash: ctx => (ctx.p0DataIndex >= mesAtual - 1 ? [6, 6] : undefined),
@@ -941,16 +941,16 @@ $(function () {
 
         const ctx = canvasElement.getContext('2d');
 
-        // Preparar dados
+        
         const anoSelecionado = parseInt(data.ano_atual);
         const anosOrdenados = Object.keys(data.totais_anuais).map(Number).sort((a, b) => a - b);
         const labels = anosOrdenados.filter(a => a <= anoSelecionado);
         const valores = labels.map(a => data.totais_anuais[a.toString()]);
 
-        // Criação de um gradiente vertical para as barras
+        
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(100, 255, 218, 1)');   // Ciano Neon Sólido no topo
-        gradient.addColorStop(1, 'rgba(100, 255, 218, 0.2)'); // Ciano Transparente na base
+        gradient.addColorStop(0, 'rgba(100, 255, 218, 1)');   
+        gradient.addColorStop(1, 'rgba(100, 255, 218, 0.2)'); 
 
         anualChart = new Chart(ctx, {
             type: 'bar',
@@ -962,16 +962,16 @@ $(function () {
                     backgroundColor: gradient,
                     borderColor: '#64ffda',
                     borderWidth: 1,
-                    borderRadius: 8, // Barras mais arredondadas e modernas
-                    hoverBackgroundColor: '#64ffda', // Brilha ao passar o rato
-                    barPercentage: 0.6, // Dá espaço entre as barras
+                    borderRadius: 8, 
+                    hoverBackgroundColor: '#64ffda', 
+                    barPercentage: 0.6, 
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }, // O título do gráfico já explica o que é
+                    legend: { display: false }, 
                     tooltip: {
                         backgroundColor: 'rgba(10, 25, 47, 0.9)',
                         titleFont: { size: 16, weight: 'bold' },
@@ -1028,7 +1028,7 @@ $(function () {
                     {
                         label: 'Ano Selecionado',
                         data: data.top_clientes_valores_ano,
-                        backgroundColor: 'rgba(100, 255, 218, 0.8)', // Verde Água Neon
+                        backgroundColor: 'rgba(100, 255, 218, 0.8)', 
                         borderColor: '#64ffda',
                         borderWidth: 1,
                         borderRadius: 5,
@@ -1038,7 +1038,7 @@ $(function () {
                     {
                         label: 'Total Histórico',
                         data: data.top_clientes_valores_historico,
-                        backgroundColor: 'rgba(112, 0, 255, 0.4)', // Roxo Neon Translúcido
+                        backgroundColor: 'rgba(112, 0, 255, 0.4)', 
                         borderColor: '#7000ff',
                         borderWidth: 1,
                         borderRadius: 5,
@@ -1048,7 +1048,7 @@ $(function () {
                 ]
             },
             options: {
-                indexAxis: 'y', // Mantém o gráfico horizontal
+                indexAxis: 'y', 
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
@@ -1102,10 +1102,10 @@ $(function () {
             method: "GET",
             data: { 'ano': anoSelecionado },
             success: function(data) {
-                // 1. Atualizar Títulos (Usa a classe conforme combinamos)
+                
                 $('.ano-titulo-grafico').text(data.ano_atual);
 
-                // 2. Preencher Select apenas se estiver vazio (Carregamento inicial)
+                
                 const selectAno = $('#select-ano-grafico');
                 if (selectAno.children().length === 0) {
                     data.anos_lista.forEach(a => {
@@ -1113,16 +1113,16 @@ $(function () {
                         selectAno.append(`<option value="${a}" ${selected}>${a}</option>`);
                     });
                 } else {
-                    // Se o utilizador mudou manualmente, garantimos que o valor está correto
+                    
                     selectAno.val(data.ano_atual);
                 }
 
-                // 3. Atualizar Cards de Texto
+                
                 $('#dash-total-faturado').text(new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(data.total_faturado));
                 $('#dash-saldo-pendente').text(new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(data.saldo_pendente));
                 $('#dash-vencidos').text(data.total_vencidos);
 
-                // 4. Renderizar tudo
+                
                 renderizarGrafico(data);
                 renderizarEvolucaoMensal(data);
                 renderizarComparativoAnos(data);
@@ -1133,7 +1133,7 @@ $(function () {
                 if (data.empresa) {
                     const e = data.empresa;
 
-                    // Atualiza os textos (Spans)
+                    
                     $('.empresa-nome').text(e.nome);
                     $('.empresa-morada').text(e.morada);
                     $('.empresa-nif').text(e.nif);
@@ -1154,7 +1154,7 @@ $(function () {
                     $('input[name="email"]').val(e.email);
                     const select = document.getElementById('country');
 
-                    // Procura a opção que tem o texto igual ao e.pais (ex: "Portugal")
+                    
                     for (let i = 0; i < select.options.length; i++) {
                         if (select.options[i].text.trim().toLowerCase() === e.pais.trim().toLowerCase()) {
                             select.selectedIndex = i;
@@ -1162,16 +1162,16 @@ $(function () {
                         }
                     }
 
-                    // Atualiza o span visual para garantir que fica igual ao nome no select
+                    
                     $('.empresa-pais').text(e.pais);
 
-                    // Dispara o change para garantir que qualquer outra lógica (como NIF) reaja
+                    
                     $(select).trigger('change');
                 }
             }
         });
     }
-    // Função para traduzir a sigla
+    
     function traduzirTipo(sigla) {
         const tipos = {
             'FT': 'Fatura',
@@ -1208,7 +1208,7 @@ function editarEmpresa() {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> A guardar...';
 
     const dados = {};
-    // Captura inputs de ambas as tabs para garantir que nada fica de fora
+    
     document.querySelectorAll('#tabs-1 input, #tabs-1 select, #tabs-2 input').forEach(el => {
         if (el.name) {
             if (el.name === 'pais') {
@@ -1289,12 +1289,12 @@ document.addEventListener("DOMContentLoaded", () => {
    countrySelect.addEventListener("change", () => {
         const nomePais = countrySelect.options[countrySelect.selectedIndex].text;
 
-        // Atualiza o span que o usuário vê na tabela
+        
         if (siglaSpan) {
             siglaSpan.textContent = nomePais;
         }
 
-        // Se você ainda quiser resetar o NIF ao trocar de país (como estava no seu código):
+        
         if (nifInput) {
             nifInput.value = "";
         }
@@ -1396,7 +1396,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let campo of obrigatorios) {
             let el = document.querySelector(`[name="${campo.name}"]`);
-            // Ajuste aqui: verificamos el.value diretamente para funcionar em Selects e Inputs
+            
             if (!el || !el.value || el.value.toString().trim() === "") {
                 alert(`Erro AT: O campo [${campo.label}] é obrigatório.`);
                 el.focus();
@@ -1420,10 +1420,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 $(document).ready(function() {
-    // Inicialização do JQuery UI Tabs (se estiveres a usar)
+    
     if ($("#tabs").tabs) { $("#tabs").tabs(); }
 
-    // 1. Ao clicar no botão de editar
+    
     $('.btn-edit').on('click', function(e) {
         e.stopPropagation();
 
@@ -1431,10 +1431,10 @@ $(document).ready(function() {
         const $container = $td.find('.valor-container');
         const $field = $td.find('.edit-select, .edit-input');
 
-        // Animação simples de fade
+        
         $container.fadeOut(100, function() {
             $field.fadeIn(100).focus();
-            // Se for input de texto, coloca o cursor no final
+            
             if($field.is('input')) {
                 const val = $field.val();
                 $field.val('').val(val);
@@ -1442,13 +1442,13 @@ $(document).ready(function() {
         });
     });
 
-    // 2. Ao perder o foco ou mudar (Blur / Change)
+    
     $(document).on('blur', '.edit-select, .edit-input', function() {
         const $field = $(this);
         const $td = $field.closest('td');
         const $container = $td.find('.valor-container');
 
-        // Pequeno timeout para capturar cliques em selects
+        
         setTimeout(() => {
             const novoTexto = $field.is('select') ?
                               $field.find('option:selected').text() :
@@ -1463,7 +1463,7 @@ $(document).ready(function() {
         }, 150);
     });
 
-    // 3. Atalho: Enter para confirmar a edição
+    
     $(document).on('keypress', '.edit-input', function(e) {
         if(e.which == 13) {
             $(this).blur();
@@ -1475,7 +1475,7 @@ $(document).ready(function() {
 document.addEventListener("DOMContentLoaded", () => {
     const countrySelect = document.getElementById("country");
     const $spanPais = $(countrySelect).closest('td').find('.texto-ellipsis');
-    // Captura o nome que veio do Django (ex: "Portugal")
+    
     const nomePaisNoSpan = $spanPais.text().trim();
 
     function carregarPaises() {
@@ -1487,7 +1487,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 let optionsHtml = '<option value="">Selecione um país...</option>';
 
                 data.forEach(c => {
-                    // Verifica se o nome da API é igual ao nome que veio no span
+                    
                     const isSelected = c.name.common.toLowerCase() === nomePaisNoSpan.toLowerCase();
 
                     optionsHtml += `<option value="${c.cca2}" ${isSelected ? 'selected' : ''}>
@@ -1500,7 +1500,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(err => console.error("Erro ao carregar países:", err));
     }
 
-    // Evento de Change: Quando o usuário mudar manualmente o select
+    
     $(countrySelect).on('change', function() {
         const nomeCompleto = $(this).find('option:selected').text();
         if ($(this).val() !== "") {
@@ -1508,7 +1508,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Lógica do Código Postal (Portugal)
+    
     const postalInput = document.getElementById("postal");
     if (postalInput) {
         postalInput.addEventListener("blur", () => {
@@ -1522,10 +1522,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!data || data.length === 0) return;
                     const d = data[0];
 
-                    // Atualiza Distrito e Concelho
+                    
                     $('input[name="cidade"]').val(d.Concelho).closest('td').find('.texto-ellipsis').text(d.Concelho);
 
-                    // Seleciona Portugal no Select e dispara o change para o span mudar para "Portugal"
+                    
                     $(countrySelect).val("PT").trigger('change');
                 });
         });
@@ -1533,7 +1533,7 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarPaises();
 });
 
-// --- GESTÃO DE TRANSPORTES (MATRÍCULAS) ---
+
 document.getElementById('btn-adicionar-transporte').addEventListener('click', function() {
     const btn = this;
     const input = document.getElementById('nova-matricula');
@@ -1544,7 +1544,7 @@ document.getElementById('btn-adicionar-transporte').addEventListener('click', fu
         return;
     }
 
-    // Feedback visual no botão
+    
     const originalText = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1560,7 +1560,7 @@ document.getElementById('btn-adicionar-transporte').addEventListener('click', fu
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Adiciona à lista visualmente sem recarregar a página
+            
             const lista = document.getElementById('lista-transportes');
             const novoItem = document.createElement('li');
             novoItem.className = "list-group-item d-flex justify-content-between align-items-center animated fadeIn";
@@ -1568,9 +1568,9 @@ document.getElementById('btn-adicionar-transporte').addEventListener('click', fu
                 <span><i class="fas fa-truck-moving mr-2 text-primary"></i> <strong>${matricula}</strong></span>
                 <span class="badge badge-success">Novo</span>
             `;
-            lista.prepend(novoItem); // Adiciona no topo da lista
+            lista.prepend(novoItem); 
 
-            input.value = ""; // Limpa campo
+            input.value = ""; 
         } else {
             alert("Erro: " + data.error);
         }
@@ -1583,21 +1583,21 @@ document.getElementById('btn-adicionar-transporte').addEventListener('click', fu
 });
 
 $(document).ready(function() {
-    // Forçar que o modal comece escondido via JS (segurança extra)
+    
     $('#modalSaft').modal({ show: false });
 
-    // --- EXPORTAÇÃO SAF-T (MODAL E PERÍODOS) ---
+    
     $('#btn-gerar-saft-mensal').on('click', function(e) {
-        e.preventDefault(); // Impede qualquer comportamento padrão
+        e.preventDefault(); 
 
         const btn = $(this);
-        // Evita múltiplos cliques
+        
         if (btn.prop('disabled')) return;
 
         btn.prop('disabled', true).prepend('<i class="fas fa-spinner fa-spin mr-2 spinner-tmp"></i>');
 
         $.ajax({
-            url: "/api/obter-periodos/", // Confirma se esta rota está correta
+            url: "/api/obter-periodos/", 
             method: "GET",
             success: function(data) {
                 let select = $('#select-saft-periodo');
@@ -1610,7 +1610,7 @@ $(document).ready(function() {
                     data.periodos.forEach(p => {
                         select.append(`<option value="${p.ano}-${p.mes}">${meses[p.mes]} de ${p.ano}</option>`);
                     });
-                    // SÓ ABRE O MODAL SE TIVERMOS DADOS
+                    
                     $('#modalSaft').modal('show');
                 } else {
                     alert("Não existem períodos de faturação disponíveis.");
@@ -1632,5 +1632,88 @@ $(document).ready(function() {
         let [ano, mes] = valor.split('-');
         window.location.href = `/gerar-saft/?mes=${mes}&ano=${ano}`;
         $('#modalSaft').modal('hide');
+    });
+});
+
+$(document).ready(function() {
+
+    
+    function limparEcra() {
+        
+        $('.conteudo-item').hide();
+
+        
+        
+        $('#clientes, #artigos, #faturas, #guias, #recibos').hide();
+
+        
+        $('.nav-item, .sub-item').removeClass('active');
+
+        console.log("Ecrã limpo - Home");
+    }
+
+    
+    $('.navbar-brand-home').on('click', function(e) {
+        e.preventDefault();
+        limparEcra();
+    });
+
+    
+    $('.nav-item').on('click', function() {
+        const target = $(this).data('target');
+        $('.conteudo-item').hide(); 
+        $('#' + target).show();     
+    });
+});
+
+document.getElementById('input-logo').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    const file = e.target.files[0];
+
+    
+    const currentLogo = document.getElementById('logo-preview');
+    const newPreview = document.getElementById('logo-new-preview');
+    const cloudIcon = document.querySelector('.fa-cloud-upload-alt');
+    const btnGuardar = document.getElementById('btn-guardar-logo');
+
+    reader.onload = function(e) {
+        if (currentLogo) currentLogo.classList.add('d-none');
+        if (cloudIcon) cloudIcon.classList.add('d-none');
+
+        newPreview.src = e.target.result;
+        newPreview.classList.remove('d-none');
+        btnGuardar.classList.remove('d-none'); 
+    }
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+});
+
+
+document.getElementById('btn-guardar-logo').addEventListener('click', function() {
+    const fileInput = document.getElementById('input-logo');
+    const file = fileInput.files[0];
+
+    if (!file) return;
+
+    let formData = new FormData();
+    formData.append('logo', file);
+
+    fetch('/configuracoes/update-logo/', { 
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            alert("Logótipo atualizado com sucesso!");
+            location.reload();
+        } else {
+            alert("Erro ao atualizar o logótipo.");
+        }
     });
 });

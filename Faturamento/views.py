@@ -11,7 +11,7 @@ from functools import wraps
 
 @login_required
 def webapp_view(request):
-    # REGRA: Se tem email e não verificou o código, manda para o check_mfa
+    
     if request.user.email and not request.user.is_verified():
         return redirect('check_mfa_status')
 
@@ -54,7 +54,7 @@ def otp_verify_view(request):
         messages.error(request, "O teu utilizador não tem e-mail configurado.")
         return redirect('webapp_home')
 
-    # 2. Se o utilizador já validou o OTP nesta sessão, entra direto
+    
     if request.user.is_verified():
         return redirect('webapp_home')
 
@@ -68,9 +68,9 @@ def otp_verify_view(request):
         else:
             messages.error(request, "Código inválido. Tente novamente.")
     else:
-        # 3. GERAR E ENVIAR O CÓDIGO REAL
+        
         try:
-            # O django-otp-email tem um método próprio para gerar e enviar
+            
             device.generate_challenge()
 
             messages.info(request, f"Enviámos um código de 6 dígitos para {request.user.email}")
@@ -206,7 +206,7 @@ def proximo_codigo_cliente(request):
 @login_required
 @empresa_obrigatoria
 def proximo_codigo_artigo(request):
-    # Filtra os artigos APENAS da empresa do utilizador logado
+    
     ultimo = Artigo.objects.filter(empresa=request.empresa).aggregate(
         max_codigo=Max('id_artigo')
     )['max_codigo']
@@ -224,7 +224,7 @@ def validar_nif_portugal(nif):
     if nif[0] not in '123456789':
         return False
 
-    # Prefixos específicos de 2 dígitos
+    
     if nif[0] == '4' and nif[1] != '5': return False
 
     soma = 0
@@ -316,10 +316,10 @@ def validar_dados_cliente(request, post_data, cliente_id=None, is_edit=False):
         val = post_data.get(field_name)
         if field_name in obrigatorios or (val and val != ""):
 
-            # Cria o dicionário de filtros dinamicamente
+            
             query_params = {id_name: val}
 
-            # Apenas adiciona o filtro de empresa se o modelo realmente o tiver
+            
             if hasattr(model, 'empresa'):
                 query_params['empresa'] = request.empresa
 
@@ -361,7 +361,7 @@ def adicionar_cliente(request):
                     numero = 1
                 novo_codigo = f"C{numero:03d}"
 
-                # ATRIBUIÇÃO À VARIÁVEL 'novo_cliente'
+                
                 novo_cliente = Cliente1.objects.create(
                     empresa=request.empresa,
                     codigo=novo_codigo,
@@ -387,7 +387,7 @@ def adicionar_cliente(request):
 
             url_detalhes = reverse('cliente_detalhes', kwargs={'id_cliente': novo_cliente.id_cliente})
 
-            # Retorna a URL para o JS redirecionar
+            
             return JsonResponse({
                 'status': 'success',
                 'message': 'Cliente adicionado com sucesso!',
@@ -636,7 +636,7 @@ def cliente_apagar(request, id_cliente):
     try:
         cliente = Cliente1.objects.filter(empresa=request.empresa).get(id_cliente=id_cliente)
 
-        # Verifica se existem documentos associados
+        
         existe_documento = DocumentoFinalizado.objects.filter(
             cliente_id=id_cliente,
             empresa=request.empresa
@@ -645,7 +645,7 @@ def cliente_apagar(request, id_cliente):
         if existe_documento:
             return JsonResponse({
                 "success": False,
-                "has_documents": True,  # Flag explícita
+                "has_documents": True,  
                 "error": "Não é possível apagar o cliente porque existem documentos associados."
             }, status=400)
 
@@ -708,8 +708,8 @@ PRAZO_PAGAMENTO = {
 @login_required
 @empresa_obrigatoria
 def get_clientes(request):
-    # Usamos prefetch_related em vez de select_related para evitar o INNER JOIN
-    # que esconde clientes sem pagamento
+    
+    
     clientes = Cliente1.objects.filter(empresa=request.empresa).prefetch_related('pagamento')
 
     data = []
@@ -736,7 +736,7 @@ def get_clientes(request):
 def adicionar_item(request, template_name='faturas/nova_fatura.html'):
     artigos = Artigo.objects.filter(empresa=request.empresa).order_by('descricao')
 
-    # Debug: Imprime no terminal para veres se os dados existem
+    
     print(f"--- Artigos da Empresa: {request.empresa} ---")
     for art in artigos:
         print(f"ID: {art.id_artigo} | Nome: {art.nome} | Preço: {art.preco} | Taxa: {art.taxa}")
@@ -801,7 +801,7 @@ def validar_linha(request):
     if tipo_doc == "GT":
         tax = 0
     else:
-        # Apenas valida taxas para FT, FR, FS, NC
+        
         if tax not in [0, 6, 13, 23]:
             erros.append("O IVA deve ser 0%, 6%, 13% ou 23%.")
 
@@ -821,7 +821,7 @@ def validar_linha(request):
 @login_required
 @empresa_obrigatoria
 def matriculas_dropdown(request):
-    transportes = Transporte.objects.filter(empresa=request.empresa).order_by('descricao')  # ou outro filtro
+    transportes = Transporte.objects.filter(empresa=request.empresa).order_by('descricao')  
     data = [{"descricao": t.descricao} for t in transportes]
     return JsonResponse(data, safe=False)
 
@@ -862,7 +862,7 @@ def criar_documento_temp(request):
         return JsonResponse({"erro": "Campos obrigatórios em falta."}, status=400)
 
     try:
-        # Certifique-se de que os dados do cliente sejam válidos
+        
         cliente = Cliente1.objects.select_related(
             "impostos"
         ).get(id_cliente=cliente_id,
@@ -872,8 +872,8 @@ def criar_documento_temp(request):
         return JsonResponse({"erro": "Cliente inválido."}, status=400)
 
     try:
-        # Converte as datas para objetos datetime
-        data_emissao = datetime.strptime(data_emissao, "%Y-%m-%d")  # Supondo que a data seja no formato "YYYY-MM-DD"
+        
+        data_emissao = datetime.strptime(data_emissao, "%Y-%m-%d")  
         data_vencimento = datetime.strptime(data_vencimento, "%Y-%m-%d")
     except ValueError:
         return JsonResponse({"erro": "Formato de data inválido. Use YYYY-MM-DD."}, status=400)
@@ -888,12 +888,12 @@ def criar_documento_temp(request):
             defaults={"serie": "A", "ultimo_numero": 0}
         )
 
-        # Incrementa o número do documento
+        
         numero = contador.ultimo_numero + 1
         contador.ultimo_numero = numero
         contador.save()
 
-        # Cria o documento temporário
+        
         doc = DocumentoTemp.objects.create(
             tipo=documento,
             serie=contador.serie,
@@ -990,7 +990,7 @@ def obter_documento_temp(request, temp_id):
 
     empresa = request.empresa
     return JsonResponse({
-        # --- DOCUMENTO ---
+        
         "id": doc.id,
         "tipo": doc.tipo,
         "serie": doc.serie,
@@ -1008,11 +1008,11 @@ def obter_documento_temp(request, temp_id):
         "expedicao": doc.expedicao,
         "matricula": doc.transporte if doc.transporte else None,
 
-        # --- CLIENTE ---
+        
         "cliente": cliente_data,
         "modalidades": modalidades,
 
-        # --- MOEDA ---
+        
         "moeda": {
             "id": doc.moeda.id,
             "codigo": doc.moeda.codigo,
@@ -1020,10 +1020,10 @@ def obter_documento_temp(request, temp_id):
             "simbolo": doc.moeda.simbolo,
         },
 
-        # lista de moedas disponíveis
+        
         "moedas": moedas,
 
-        # --- EMPRESA ---
+        
         "empresa": {
             "nome": empresa.nome,
             "morada": empresa.morada,
@@ -1095,7 +1095,7 @@ import re
 def validar_ordem_compra(ordem_compra):
     """ Valida se a ordem de compra segue o formato esperado (ex: 'PO12345'). """
     if ordem_compra:
-        if not re.match(r'^[A-Za-z]{2,4}\d{1,6}$', ordem_compra):  # Exemplo de padrão alfanumérico (PO12345)
+        if not re.match(r'^[A-Za-z]{2,4}\d{1,6}$', ordem_compra):  
             raise ValidationError("Ordem de compra inválida. O formato esperado é 'PO12345'.")
     return ordem_compra
 
@@ -1104,7 +1104,7 @@ def validar_ordem_compra(ordem_compra):
 def validar_numero_compromisso(numero_compromisso):
     """ Valida se o número de compromisso é um número válido e dentro do limite esperado. """
     if numero_compromisso:
-        if not numero_compromisso.isdigit():  # Verifica se o número de compromisso é numérico
+        if not numero_compromisso.isdigit():  
             raise ValidationError("Número de compromisso inválido. Apenas números são permitidos.")
         if len(numero_compromisso) < 6 or len(numero_compromisso) > 12:
             raise ValidationError("Número de compromisso inválido. O comprimento deve ser entre 6 e 12 caracteres.")
@@ -1140,7 +1140,7 @@ def atualizar_documento(request):
             if not documento:
                 return JsonResponse({"success": False, "error": "Documento não encontrado"}, status=404)
 
-            # Atualizar campos do documento
+            
             documento.data_emissao = data.get("data_emissao") or documento.data_emissao
             documento.data_vencimento = data.get("data_vencimento") or documento.data_vencimento
             documento.ordem_compra = data.get("ordem_compra") or documento.ordem_compra
@@ -1170,7 +1170,7 @@ def atualizar_documento(request):
                 if data_emissao:
                     documento.data_emissao = datetime.strptime(data_emissao, "%d/%m/%Y")
 
-                    # Verificar se a data de emissão é maior ou igual à data atual
+                    
                     if documento.data_emissao.date() < timezone.now().date():
                         return JsonResponse(
                             {"success": False, "error": "A data de emissão não pode ser anterior à data atual."},
@@ -1178,25 +1178,25 @@ def atualizar_documento(request):
 
                 local_carga = data.get("local_carga")
                 if local_carga:
-                    if len(local_carga) > 255:  # Limite de 255 caracteres para local de carga
+                    if len(local_carga) > 255:  
                         raise ValidationError("O local de carga não pode ter mais que 255 caracteres.")
 
                 local_descarga = data.get("local_descarga")
                 if local_descarga:
-                    if len(local_descarga) > 255:  # Limite de 255 caracteres para local de descarga
+                    if len(local_descarga) > 255:  
                         raise ValidationError("O local de descarga não pode ter mais que 255 caracteres.")
 
                 data_vencimento = data.get("data_vencimento")
                 if data_vencimento:
                     documento.data_vencimento = datetime.strptime(data_vencimento, "%d/%m/%Y")
 
-                    # Verificar se a data de vencimento é maior ou igual à data atual
+                    
                     if documento.data_vencimento.date() < timezone.now().date():
                         return JsonResponse(
                             {"success": False, "error": "A data de vencimento não pode ser anterior à data atual."},
                             status=400)
 
-                    # Validar se a data de vencimento não é anterior à data de emissão
+                    
                     if documento.data_vencimento.date() < documento.data_emissao.date():
                         return JsonResponse({"success": False,
                                              "error": "A data de vencimento não pode ser anterior à data de emissão."},
@@ -1204,10 +1204,10 @@ def atualizar_documento(request):
 
                 data_carga = data.get("data_carga")
                 if data_carga:
-                    # converter string para datetime
+                    
                     dt_carga_naive = datetime.strptime(data_carga, "%d/%m/%Y %H:%M")
 
-                    # tornar timezone-aware
+                    
                     documento.data_carga = timezone.make_aware(dt_carga_naive, timezone.get_current_timezone())
 
                     if documento.data_carga.date() < timezone.now().date():
@@ -1216,7 +1216,7 @@ def atualizar_documento(request):
                             status=400
                         )
 
-                # Data de descarga
+                
                 data_descarga = data.get("data_descarga")
                 if data_descarga:
                     dt_descarga_naive = datetime.strptime(data_descarga, "%d/%m/%Y %H:%M")
@@ -1246,7 +1246,7 @@ def atualizar_documento(request):
 
             expedicao = data.get("expedicao")
             if expedicao:
-                if len(expedicao) > 255:  # Limite de 255 caracteres para local de descarga
+                if len(expedicao) > 255:  
                     raise ValidationError("O modo de expedição não pode ter mais que 255 caracteres.")
 
             cliente_id = data.get("cliente_id")
@@ -1278,7 +1278,7 @@ def atualizar_documento(request):
             transporte_descricao = data.get("matricula")
 
             if transporte_descricao:
-                # 1. Validação de tamanho (limite do CharField na BD)
+                
                 if len(transporte_descricao) > 255:
                     return JsonResponse({
                         "success": False,
@@ -1288,7 +1288,7 @@ def atualizar_documento(request):
 
             TempArtigos.objects.filter(id_temp=documento.id, empresa=request.empresa).delete()
 
-            # Criar novos artigos
+            
             artigos_data = data.get("artigos", [])
             if not artigos_data:
                 return JsonResponse(
@@ -1299,7 +1299,7 @@ def atualizar_documento(request):
             if artigos_data:
                 for artigo_data in artigos_data:
                     try:
-                        # Aqui pode ocorrer um erro se 'codigo' não for fornecido ou o formato de dados estiver errado
+                        
                         artigo_codigo = artigo_data.get("codigo")
                         if not artigo_codigo:
                             logger.error(f"Erro: Código do artigo não fornecido para os dados {artigo_data}")
@@ -1313,7 +1313,7 @@ def atualizar_documento(request):
                                 {"success": False, "error": f"Artigo com código {artigo_codigo} não encontrado."},
                                 status=400)
 
-                        # Continuar a criação do artigo, mais validações podem ser feitas aqui
+                        
                         tipo_artigo = artigo_obj.tipo
                         preco = Decimal(artigo_data.get("preco", "0").replace(",", "."))
                         if preco <= 0:
@@ -1453,7 +1453,7 @@ def atualizar_documento(request):
                         )
 
                     except Exception as e:
-                        # Log de erro específico do artigo
+                        
                         logger.error(f"Erro ao processar artigo {artigo_data}: {str(e)}")
                         return JsonResponse({"success": False, "error": f"Erro ao processar artigo: {str(e)}"},
                                             status=400)
@@ -1471,7 +1471,7 @@ def atualizar_documento(request):
             })
 
         except Exception as e:
-            logger.error(f"Erro inesperado ao atualizar documento: {str(e)}", exc_info=True)  # Log detalhado do erro
+            logger.error(f"Erro inesperado ao atualizar documento: {str(e)}", exc_info=True)  
             return JsonResponse({"success": False, "error": f"Erro inesperado: {str(e)}"}, status=400)
 
 
@@ -1486,17 +1486,17 @@ def editar_fatura(request):
     Retorna todos os dados do documento e todos os artigos relacionados.
     """
 
-    # Pega o ID do documento da URL
+    
     temp_id = request.GET.get('temp_id')
 
-    # Busca o documento temporário
+    
     documento = get_object_or_404(DocumentoTemp, id=temp_id, empresa=request.empresa)
 
     artigos = TempArtigos.objects.filter(id_temp=documento, empresa=request.empresa).select_related('id_art', 'motivo')
 
     artigos_novos = Artigo.objects.filter(empresa=request.empresa)
 
-    # Renderiza o template, passando documento e artigos
+    
     return render(request, 'faturas/editar_faturas.html', {
         'documento': documento,
         'artigos': artigos,
@@ -1531,7 +1531,7 @@ def remover_bordas(cell):
 
     for lado in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
         elem = OxmlElement(f'w:{lado}')
-        elem.set(qn('w:val'), 'nil')  # sem borda
+        elem.set(qn('w:val'), 'nil')  
         tcBorders.append(elem)
 
     tcPr.append(tcBorders)
@@ -1546,7 +1546,7 @@ def gerar_qr(documento: DocumentoFinalizado, docx_obj):
     """
     Gera o QR Code oficial da fatura e retorna como InlineImage para inserir no docx.
     """
-    # Montar dados do QR Code
+    
     qr_data = (
         f"A:{documento.empresa_contribuinte}*"
         f"B:{documento.cliente_contribuinte or '999999990'}*"
@@ -1570,13 +1570,13 @@ def gerar_qr(documento: DocumentoFinalizado, docx_obj):
 
     img = qr.make_image(fill_color="black", back_color="white")
 
-    # Salvar em buffer
+    
     qr_buffer = BytesIO()
     img.save(qr_buffer, format="PNG")
     qr_buffer.seek(0)
 
-    # Criar InlineImage do docxtpl
-    qr_inline = InlineImage(docx_obj, qr_buffer, width=Mm(30))  # 30 mm de largura
+    
+    qr_inline = InlineImage(docx_obj, qr_buffer, width=Mm(30))  
     return qr_inline
 
 from docx.shared import Pt, RGBColor
@@ -1646,7 +1646,7 @@ def gerar_word_fatura(request, documento_final, via="original"):
         "local_carga": documento_final.local_carga if documento_final.local_carga else "",
         "local_descarga": documento_final.local_descarga if documento_final.local_descarga else "",
 
-        # Formatação de datas (caso existam)
+        
         "data_carga": (
             documento_final.data_carga.strftime("%d/%m/%Y")
             if documento_final.data_carga else ""
@@ -1666,9 +1666,9 @@ def gerar_word_fatura(request, documento_final, via="original"):
     if documento_final.rodape:
         context["rodape"] = documento_final.rodape
 
-    # =============================
-    # ARTIGOS
-    # =============================
+    
+    
+    
 
     artigos = FinArtigos.objects.filter(id_final=documento_final, empresa=request.empresa)
 
@@ -1684,14 +1684,14 @@ def gerar_word_fatura(request, documento_final, via="original"):
         doc_via = DocxTemplate(modelo_path)
 
 
-        # Criar contexto específico para esta via
+        
         ctx = deepcopy(context)
         ctx["ficheiro"] = nome_via
         ctx["num_folha"] = 1
         ctx["total_folhas"] = 1
         ctx["qr_code"] = gerar_qr(documento_final, doc_via)
 
-        # Renderiza as tags (incluindo as do cabeçalho e o IF da carga/descarga)
+        
         doc_via.render(ctx)
 
         tabela_artigos = encontrar_tabela_por_conteudo(doc_via, "lista")
@@ -1710,16 +1710,16 @@ def gerar_word_fatura(request, documento_final, via="original"):
             ]
 
             for i, cell in enumerate(row):
-                # CORREÇÃO: Gerar um novo elemento de shading para CADA célula
+                
                 shading_elm = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{cor_hex}"/>')
                 cell._tc.get_or_add_tcPr().append(shading_elm)
 
-                # Se a tua função remover_bordas mexer no XML da célula,
-                # garante que ela não apaga o tcPr que acabaste de criar
+                
+                
                 remover_bordas(cell)
 
                 par = cell.paragraphs[0]
-                # Limpar runs existentes
+                
                 for run_existente in par.runs:
                     par._element.remove(run_existente._element)
 
@@ -1733,40 +1733,40 @@ def gerar_word_fatura(request, documento_final, via="original"):
                 run.font.size = Pt(9)
                 par.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        # =============================
-        # RESUMO DE IVA
-        # ============================
+        
+        
+        
         tabela_resumo = encontrar_tabela_por_conteudo(doc_via, "subtotal")
 
-        # 1️⃣ Localizar o elemento XML (TR) da linha do Subtotal
+        
         linha_referencia_tr = None
         for linha in tabela_resumo.rows:
             if "subtotal" in linha.cells[0].text.lower():
                 linha_referencia_tr = linha._tr
                 break
 
-        # Se não encontrar o subtotal, usamos a primeira linha como base
+        
         if linha_referencia_tr is None:
             linha_referencia_tr = tabela_resumo.rows[0]._tr
 
-        # 2️⃣ Inserir as linhas de IVA
+        
         for taxa, dados in sorted(mapa_iva.items(), reverse=True):
-            # Criamos um novo elemento de linha (TR)
-            # Em vez de add_row(), criamos um elemento vazio para ter controle total
+            
+            
             nova_linha_tr = copy.deepcopy(linha_referencia_tr)
 
-            # Limpamos o texto das células da linha clonada
+            
             for cell_xml in nova_linha_tr.xpath('.//w:t'):
                 cell_xml.text = ""
 
-            # Inserimos a nova linha logo após a linha de referência no XML
+            
             linha_referencia_tr.addnext(nova_linha_tr)
 
-            # Agora acessamos essa linha como um objeto do python-docx para formatar
+            
             from docx.table import _Row
             nova_linha = _Row(nova_linha_tr, tabela_resumo)
 
-            # Preencher os dados (assumindo que a tabela tem pelo menos 2 colunas)
+            
             textos = [
                 f"IVA {taxa:.0f}% (Incidência {dados['base']:.2f})",
                 f"{dados['valor']:.2f} {documento_final.moeda_simbolo}"
@@ -1774,15 +1774,15 @@ def gerar_word_fatura(request, documento_final, via="original"):
 
             for j, texto in enumerate(textos):
                 celula = nova_linha.cells[j]
-                # Limpar parágrafos existentes e adicionar o novo
+                
                 p = celula.paragraphs[0]
                 p.clear()
                 run = p.add_run(texto)
                 run.font.name = "Geologica"
                 run.font.size = Pt(9)
 
-            # IMPORTANTE: A próxima taxa deve vir depois desta que acabámos de criar
-            # Por isso, a nova linha passa a ser a nossa referência
+            
+            
             linha_referencia_tr = nova_linha_tr
 
         motivos_agregados = defaultdict(list)
@@ -1791,13 +1791,13 @@ def gerar_word_fatura(request, documento_final, via="original"):
             if art.motivo:
                 motivos_agregados[art.motivo.description].append(idx)
 
-        # --- 2️⃣ Inserir título se houver motivos ---
+        
         tabela_xml = tabela_resumo._tbl
         parent = tabela_xml.getparent()
 
         from docx.oxml import OxmlElement
         if motivos_agregados:
-            # 1️⃣ Criar parágrafo do título
+            
 
             p_titulo_xml = OxmlElement("w:p")
             tabela_xml.addnext(p_titulo_xml)
@@ -1813,7 +1813,7 @@ def gerar_word_fatura(request, documento_final, via="original"):
 
             ultimo_elemento = p_titulo_xml
 
-            # 2️⃣ Inserir linhas agrupadas
+            
             for descricao, indices in motivos_agregados.items():
                 p_xml = OxmlElement("w:p")
                 ultimo_elemento.addnext(p_xml)
@@ -1833,18 +1833,18 @@ def gerar_word_fatura(request, documento_final, via="original"):
     doc_final = documentos_vias[0]
 
     for extra_doc in documentos_vias[1:]:
-        # Pegamos todos os elementos do corpo da via extra
+        
         elementos_para_copiar = [
             deepcopy(el) for el in extra_doc.element.body
             if not isinstance(el, docx.oxml.section.CT_SectPr)
         ]
 
         if elementos_para_copiar:
-            # 1. Forçamos uma quebra de página APENAS no primeiro parágrafo da nova via
-            # Isso garante que a nova via começa no topo, sem criar páginas extras vazias
+            
+            
             primeiro_elemento = elementos_para_copiar[0]
 
-            # Se o primeiro elemento for um parágrafo (<w:p>), inserimos a quebra lá
+            
             if primeiro_elemento.tag.endswith('p'):
                 run = OxmlElement('w:r')
                 br = OxmlElement('w:br')
@@ -1852,7 +1852,7 @@ def gerar_word_fatura(request, documento_final, via="original"):
                 run.append(br)
                 primeiro_elemento.insert(0, run)
             else:
-                # Se o primeiro elemento for uma tabela, criamos um parágrafo de quebra antes
+                
                 p = OxmlElement('w:p')
                 r = OxmlElement('w:r')
                 br = OxmlElement('w:br')
@@ -1861,7 +1861,7 @@ def gerar_word_fatura(request, documento_final, via="original"):
                 p.append(r)
                 doc_final.element.body.append(p)
 
-            # 2. Adicionamos todos os elementos ao documento final
+            
             for el in elementos_para_copiar:
                 doc_final.element.body.append(el)
 
@@ -1886,12 +1886,12 @@ def converter_word_para_pdf(word_buffer):
 
     try:
         if sys.platform == "win32":
-            # SE ESTIVER NO TEU PC (WINDOWS)
-            # Precisas de ter o LibreOffice instalado.
-            # O caminho padrão costuma ser este:
+            
+            
+            
             libreoffice_path = r'C:\Program Files\LibreOffice\program\soffice.exe'
         else:
-            # SE ESTIVER ONLINE (LINUX)
+            
             libreoffice_path = 'libreoffice'
 
         subprocess.run([
@@ -1912,7 +1912,7 @@ def converter_word_para_pdf(word_buffer):
 @login_required
 @empresa_obrigatoria
 def gerar_pdf_fatura(request, documento_id):
-    # Pega o documento
+    
     documento = DocumentoFinalizado.objects.get(id=documento_id, empresa=request.empresa)
 
     via = request.GET.get("via", "original")
@@ -1920,7 +1920,7 @@ def gerar_pdf_fatura(request, documento_id):
     word_buffer = gerar_word_fatura(request, documento, via)
     pdf_bytes = converter_word_para_pdf(word_buffer)
 
-    # Retorna PDF como resposta HTTP
+    
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="Fatura_{documento.id}.pdf"'
     return response
@@ -1969,7 +1969,7 @@ def finalizar_documento(request):
                 if data_emissao:
                     documento.data_emissao = datetime.strptime(data_emissao, "%d/%m/%Y")
 
-                    # Verificar se a data de emissão é maior ou igual à data atual
+                    
                     if documento.data_emissao.date() < timezone.now().date():
                         return JsonResponse(
                             {"success": False, "error": "A data de emissão não pode ser anterior à data atual."},
@@ -1991,13 +1991,13 @@ def finalizar_documento(request):
                 if data_vencimento:
                     documento.data_vencimento = datetime.strptime(data_vencimento, "%d/%m/%Y")
 
-                    # Verificar se a data de vencimento é maior ou igual à data atual
+                    
                     if documento.data_vencimento.date() < timezone.now().date():
                         return JsonResponse(
                             {"success": False, "error": "A data de vencimento não pode ser anterior à data atual."},
                             status=400)
 
-                    # Validar se a data de vencimento não é anterior à data de emissão
+                    
                     if documento.data_vencimento.date() < documento.data_emissao.date():
                         return JsonResponse({"success": False,
                                              "error": "A data de vencimento não pode ser anterior à data de emissão."},
@@ -2006,7 +2006,7 @@ def finalizar_documento(request):
                 data_carga_str = data.get("data_carga")
                 data_descarga_str = data.get("data_descarga")
 
-                # ===== DATA DE CARGA =====
+                
                 if data_carga_str:
                     dt_carga_naive = datetime.strptime(data_carga_str, "%d/%m/%Y %H:%M")
                     data_carga = timezone.make_aware(
@@ -2022,7 +2022,7 @@ def finalizar_documento(request):
 
                     documento.data_carga = data_carga
 
-                # ===== DATA DE DESCARGA =====
+                
                 if data_descarga_str:
                     dt_descarga_naive = datetime.strptime(data_descarga_str, "%d/%m/%Y %H:%M")
                     data_descarga = timezone.make_aware(
@@ -2036,7 +2036,7 @@ def finalizar_documento(request):
                             status=400
                         )
 
-                    # Só comparar se existir data_carga
+                    
                     if data_carga_str and data_descarga < documento.data_carga:
                         return JsonResponse(
                             {"success": False, "error": "A data de descarga não pode ser anterior à data de carga."},
@@ -2057,7 +2057,7 @@ def finalizar_documento(request):
 
             expedicao = data.get("expedicao")
             if expedicao:
-                if len(expedicao) > 255:  # Limite de 255 caracteres para local de descarga
+                if len(expedicao) > 255:  
                     raise ValidationError("O modo de expedição não pode ter mais que 255 caracteres.")
 
             cliente_id = data.get("cliente_id")
@@ -2130,7 +2130,7 @@ def finalizar_documento(request):
                                 {"success": False, "error": f"Artigo com código {artigo_codigo} não encontrado."},
                                 status=400)
 
-                        # Continuar a criação do artigo, mais validações podem ser feitas aqui
+                        
                         tipo_artigo = artigo_obj.tipo
                         preco = Decimal(artigo_data.get("preco", "0").replace(",", "."))
                         if preco <= 0:
@@ -2208,7 +2208,7 @@ def finalizar_documento(request):
                         motivo_tax = artigo_data.get("motivo")
 
                         if iva == 0:
-                            # Motivo obrigatório
+                            
                             if not motivo_tax:
                                 return JsonResponse(
                                     {"success": False, "error": "Motivo de IVA obrigatório quando a taxa é 0%."},
@@ -2457,9 +2457,9 @@ def finalizar_documento(request):
                 status=400
             )
         except Exception as e:
-            print(f"ERRO NO BACKEND: {str(e)}")  # Isto vai aparecer no seu terminal preto
+            print(f"ERRO NO BACKEND: {str(e)}")  
             import traceback
-            traceback.print_exc()  # Isto mostra a linha exata onde falhou
+            traceback.print_exc()  
             return JsonResponse({"success": False, "error": str(e)}, status=400)
     else:
         return JsonResponse(
@@ -2553,10 +2553,10 @@ def api_documento_completo(request, doc_id):
             "modalidade": {"nome": doc.modalidade_nome} if doc.modalidade_nome else None,
         },
 
-        "moeda": {"id": 1, "simbolo": doc.moeda_simbolo},  # Ajuste o ID conforme sua lógica
-        "moedas": list(Moeda.objects.values('id', 'simbolo')),  # Para preencher o select
-        "modalidades": list(Modalidade.objects.values('id_modalidade', 'nome')),  # Para o select de pagamento
-        "tax_reasons": list(TaxReason.objects.values('code', 'description')),  # Para o select de isenção
+        "moeda": {"id": 1, "simbolo": doc.moeda_simbolo},  
+        "moedas": list(Moeda.objects.values('id', 'simbolo')),  
+        "modalidades": list(Modalidade.objects.values('id_modalidade', 'nome')),  
+        "tax_reasons": list(TaxReason.objects.values('code', 'description')),  
         "artigos": lista_artigos
     }
     return JsonResponse(data)
@@ -2631,13 +2631,13 @@ def exportar_cliente_csv(request, id_cliente):
         'FS': 'Fatura Simplificada',
         'NC': 'Nota de Crédito',
     }
-    # 2. Configurar o Response para download de CSV
-    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')  # utf-8-sig para o Excel abrir bem os acentos
+    
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')  
     response['Content-Disposition'] = f'attachment; filename="dados_cliente_{cliente.contribuinte}.csv"'
 
-    writer = csv.writer(response, delimiter=';')  # Ponto e vírgula costuma ser melhor para o Excel em PT
+    writer = csv.writer(response, delimiter=';')  
 
-    # 3. ESCREVER DADOS DO CLIENTE (Cabeçalho + Dados)
+    
     writer.writerow(['--- DADOS DO CLIENTE ---'])
     writer.writerow(['NIF', 'Nome', 'Email', 'Morada', 'CP', 'Cidade', 'Pais'])
     writer.writerow([
@@ -2650,14 +2650,14 @@ def exportar_cliente_csv(request, id_cliente):
         cliente.pais
     ])
 
-    writer.writerow([])  # Linha em branco para separar
+    writer.writerow([])  
 
-    # 4. ESCREVER HISTÓRICO DE FATURAS
+    
     writer.writerow(['--- HISTÓRICO DE FATURAS ---'])
     writer.writerow(['Tipo', 'Numero', 'Data Emissao', 'Valor Total', 'Moeda', 'Pais na Fatura', 'Estado'])
 
     for f in facturas:
-        # 1. Converter a sigla para o nome por extenso
+        
         tipo_extenso = NOMES_TIPOS.get(f.tipo, f.tipo)
 
 
@@ -2666,7 +2666,7 @@ def exportar_cliente_csv(request, id_cliente):
             tipo_extenso,
             f"{f.serie}-{f.numero}/{f.ano}",
             f.data_emissao,
-            str(f.valor_total).replace('.', ','),  # Trocar ponto por vírgula para o Excel PT
+            str(f.valor_total).replace('.', ','),  
             f.moeda_simbolo,
             f.cliente_pais,
             f.estado
@@ -2711,7 +2711,7 @@ def reservar_numero_guia(request):
         return JsonResponse({"erro": "Método inválido."}, status=405)
 
     cliente_id = request.POST.get("cliente")
-    documento = request.POST.get("documento", "GT") # Default para Guia de Transporte
+    documento = request.POST.get("documento", "GT") 
     data_emissao = request.POST.get("data_emissao")
 
     if not all([cliente_id, data_emissao]):
@@ -2754,7 +2754,7 @@ def guia_documento(request):
     ano = request.GET.get('ano')
     data_emissao = request.GET.get('data')
 
-    # Busca o cliente para mostrar o nome/NIF no topo da página
+    
     cliente = get_object_or_404(Cliente1, id_cliente=cliente_id, empresa=request.empresa)
 
     context = {
@@ -2796,7 +2796,7 @@ def api_guia_preparar(request):
             "local_descarga": c.morada1,
         }
 
-    # 4. Dados de Apoio (Selects)
+    
     moedas = list(Moeda.objects.values("id", "codigo", "nome", "simbolo"))
     tax_reasons = list(TaxReason.objects.values("code", "description"))
 
@@ -2804,8 +2804,8 @@ def api_guia_preparar(request):
 
     empresa=request.empresa
     return JsonResponse({
-        # --- DOCUMENTO (Rascunho vindo da URL) ---
-        "id": None,  # Não existe ID temp ainda
+        
+        "id": None,  
         "tipo": request.GET.get('tipo', 'GT'),
         "serie": request.GET.get('serie', 'G'),
         "numero": request.GET.get('numero'),
@@ -2875,7 +2875,7 @@ def finalizar_documento_guia(request):
                 if data_emissao:
                     data_emissao = datetime.strptime(data_emissao, "%d/%m/%Y")
 
-                    # Verificar se a data de emissão é maior ou igual à data atual
+                    
                     if data_emissao.date() < timezone.now().date():
                         return JsonResponse(
                             {"success": False, "error": "A data de emissão não pode ser anterior à data atual."},
@@ -2994,7 +2994,7 @@ def finalizar_documento_guia(request):
             if artigos_data:
                 for artigo_data in artigos_data:
                     try:
-                        # Aqui pode ocorrer um erro se 'codigo' não for fornecido ou o formato de dados estiver errado
+                        
                         artigo_codigo = artigo_data.get("codigo")
                         if not artigo_codigo:
                             logger.error(f"Erro: Código do artigo não fornecido para os dados {artigo_data}")
@@ -3008,7 +3008,7 @@ def finalizar_documento_guia(request):
                                 {"success": False, "error": f"Artigo com código {artigo_codigo} não encontrado."},
                                 status=400)
 
-                        # Continuar a criação do artigo, mais validações podem ser feitas aqui
+                        
                         tipo_artigo = artigo_obj.tipo
                         preco = Decimal(artigo_data.get("preco", "0").replace(",", "."))
                         if preco < 0:
@@ -3086,7 +3086,7 @@ def finalizar_documento_guia(request):
                         motivo_tax = artigo_data.get("motivo")
 
                         if iva == 0:
-                            # Motivo obrigatório
+                            
                             if not motivo_tax:
                                 return JsonResponse(
                                     {"success": False, "error": "Motivo de IVA obrigatório quando a taxa é 0%."},
@@ -3259,9 +3259,9 @@ def finalizar_documento_guia(request):
                 status=400
             )
         except Exception as e:
-            print(f"ERRO NO BACKEND: {str(e)}")  # Isto vai aparecer no seu terminal preto
+            print(f"ERRO NO BACKEND: {str(e)}")  
             import traceback
-            traceback.print_exc()  # Isto mostra a linha exata onde falhou
+            traceback.print_exc()  
             return JsonResponse({"success": False, "error": str(e)}, status=400)
     else:
         return JsonResponse(
@@ -3279,11 +3279,11 @@ def criar_recibo_cliente(request, id):
 
     metodo_nome = request.POST.get('metodo')
 
-    # 1. Verifica se o campo foi preenchido
+    
     if not metodo_nome:
         return JsonResponse({"error": "O método de pagamento é obrigatório."}, status=400)
 
-    # 2. Verifica se o método existe na base de dados
+    
     modalidade_valida = Modalidade.objects.filter(nome=metodo_nome).exists()
     if not modalidade_valida:
         return JsonResponse({"error": "Método de pagamento inválido ou não autorizado."}, status=400)
@@ -3295,7 +3295,7 @@ def criar_recibo_cliente(request, id):
         if valor_disponivel <= 0:
             return JsonResponse({"error": "O valor do recibo deve ser superior a zero."}, status=400)
 
-        # Buscar faturas pendentes
+        
         faturas_pendentes = DocumentoFinalizado.objects.filter(
             cliente_id=id,
             estado='Finalizado',
@@ -3307,40 +3307,40 @@ def criar_recibo_cliente(request, id):
         if not faturas_pendentes.exists():
             return JsonResponse({"error": "Este cliente não possui faturas pendentes de pagamento."}, status=400)
 
-        # Calcular o total da dívida restante antes de criar o recibo
+        
         total_divida_restante = 0
         for fatura in faturas_pendentes:
-            # Buscar notas de crédito para a fatura
+            
             notas_credito = DocumentoFinalizado.objects.filter(documento_origem=fatura, empresa=request.empresa).exclude(estado='Anulado')
 
-            # Calcular o valor total das notas de crédito
+            
             valor_nota_credito = sum(nota_credito.valor_total for nota_credito in notas_credito)
 
             if valor_nota_credito > 0:
                 valor_nota_credito = 0
 
-            # Calcular a dívida atual, considerando as notas de crédito
+            
             divida_atual = fatura.valor_total - fatura.total_pago + valor_nota_credito
 
-            # Garantir que a dívida não seja negativa
+            
             if divida_atual < 0:
                 divida_atual = 0
 
-            # Atualizar o total de dívida restante
+            
             total_divida_restante += divida_atual
 
-        # Verificar se o valor do recibo não excede a dívida total
+        
         if valor_disponivel > total_divida_restante:
             return JsonResponse(
                 {"error": f"O valor do recibo ({valor_disponivel}) excede a dívida total ({total_divida_restante})."},
                 status=400)
 
-        # Gerar numeração sequencial do recibo
+        
         ano_atual = timezone.now().year
         ultimo = Recibo.objects.filter(ano=ano_atual, empresa=request.empresa).order_by('-numero').first()
         novo_numero = (ultimo.numero + 1) if ultimo else 1
 
-        # Criar o cabeçalho do recibo
+        
         recibo = Recibo.objects.create(
             tipo='RE',
             serie=str(ano_atual),
@@ -3354,29 +3354,29 @@ def criar_recibo_cliente(request, id):
             empresa=request.empresa
         )
 
-        temp_valor = valor_disponivel  # Valor total disponível para abatimento
+        temp_valor = valor_disponivel  
 
         for fatura in faturas_pendentes:
             if temp_valor <= 0:
                 break
 
-            # Buscar notas de crédito para a fatura
+            
             notas_credito = DocumentoFinalizado.objects.filter(documento_origem=fatura, empresa=request.empresa).exclude(estado='Anulado')
 
-            # Calcular o valor total das notas de crédito
+            
             valor_nota_credito = sum(nota_credito.valor_total for nota_credito in notas_credito)
 
-            # Calcular a dívida atual, considerando as notas de crédito
+            
             divida_atual = fatura.valor_total - fatura.total_pago + valor_nota_credito
 
-            # Garantir que a dívida não seja negativa
+            
             if divida_atual < 0:
                 divida_atual = 0
 
-            # Calcular o valor a ser abatido
+            
             valor_a_abater = min(temp_valor, divida_atual)
 
-            # Criar a linha do recibo
+            
             ReciboLinhas.objects.create(
                 id_recibo_final=recibo,
                 id_doc_final=fatura,
@@ -3389,14 +3389,14 @@ def criar_recibo_cliente(request, id):
                 empresa=request.empresa
             )
 
-            # Atualizar o total pago da fatura
+            
             fatura.total_pago += valor_a_abater
             fatura.save()
 
-            # Subtrair o valor abatido do valor disponível para pagamento
+            
             temp_valor -= valor_a_abater
 
-        # Retorno com sucesso
+        
         return JsonResponse({
             "success": True,
             "message": "Recibo emitido e faturas liquidadas.",
@@ -3455,7 +3455,7 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):
         ultimo = Recibo.objects.filter(ano=ano_atual, empresa=request.empresa).order_by('-numero').first()
         novo_numero = (ultimo.numero + 1) if ultimo else 1
 
-        # 2. Criar o Cabeçalho do Recibo
+        
         recibo = Recibo.objects.create(
             tipo='RE',
             serie=str(ano_atual),
@@ -3469,7 +3469,7 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):
             empresa=request.empresa
         )
 
-        # 3. Criar a Linha do Recibo para esta fatura única
+        
         ReciboLinhas.objects.create(
             id_recibo_final=recibo,
             id_doc_final=fatura,
@@ -3483,7 +3483,7 @@ def criar_recibo_fatura(request, id_cliente, id_fatura):
 
         )
 
-        # 4. Atualizar a Fatura
+        
         fatura.total_pago += valor_pago
         fatura.save()
 
@@ -3541,16 +3541,16 @@ def anular_recibo(request, id_recibo):
                 return JsonResponse({'success': False, 'message': 'Este recibo já foi anulado anteriormente.'},
                                     status=400)
 
-            # 2. Reverter os valores nos documentos finalizados
+            
             linhas = ReciboLinhas.objects.filter(id_recibo_final=recibo, empresa=request.empresa)
 
             for linha in linhas:
                 doc = linha.id_doc_final
                 doc.total_pago -= linha.valor_recebido
 
-                # O seu método save() no model já vai cuidar de:
-                # - Se total_pago for 0 -> 'Pendente'
-                # - Se total_pago < valor_total -> 'Parcial'
+                
+                
+                
                 doc.save()
 
             recibo.estado = 'Anulado'
@@ -3564,7 +3564,7 @@ def anular_recibo(request, id_recibo):
             })
 
     except Exception as e:
-        # Em caso de erro, o transaction.atomic faz o rollback de tudo
+        
         return JsonResponse({'success': False, 'message': f'Erro ao processar: {str(e)}'}, status=500)
 
 
@@ -3670,7 +3670,7 @@ from django.utils import timezone
 @empresa_obrigatoria
 def dados_dashboard_ajax(request):
     hoje = timezone.now().date()
-    # Pega o ano selecionado no select ou usa o ano atual por defeito
+    
     param_ano = request.GET.get('ano')
     if param_ano and param_ano.isdigit():
         ano_selecionado = int(param_ano)
@@ -3682,7 +3682,7 @@ def dados_dashboard_ajax(request):
         estado='Finalizado',
     )
 
-    # --- CÁLCULOS TOTAIS (Cards de cima) ---
+    
     dados_faturado = docs_validos.aggregate(
         vendas=Sum('valor_total', filter=Q(tipo__in=['FT', 'FR', 'FS'])),
         devolucoes=Sum('valor_total', filter=Q(tipo='NC'))
@@ -3700,8 +3700,8 @@ def dados_dashboard_ajax(request):
         data_vencimento__lt=hoje
     ).count()
 
-    # --- LÓGICA DO GRÁFICO (Agrupamento Mensal) ---
-    # Inicializamos as listas com zeros para os 12 meses
+    
+    
     faturado_mes = [0] * 12
     pagos_mes = [0] * 12
     nao_pagos_mes = [0] * 12
@@ -3712,26 +3712,26 @@ def dados_dashboard_ajax(request):
         tipo__in=['FT', 'FR', 'FS', 'NC']
     ).annotate(mes=ExtractMonth('data_vencimento'))
 
-    # 1. Primeiro, separa os documentos: Faturas e Notas de Crédito
+    
     faturas = [d for d in docs_ano if d.tipo in ['FT', 'FR', 'FS']]
     notas_credito = [d for d in docs_ano if d.tipo == 'NC']
 
-    # 2. Processa as Faturas e aplica as NCs
+    
     for doc in faturas:
         idx = doc.mes - 1
 
         valor_total = float(doc.valor_total)
         valor_pago = float(doc.total_pago or 0)
 
-        # Procura NCs associadas a esta fatura (assumindo que tens um campo documento_origem_id)
-        # Se não tiveres este campo, terás de filtrar por cliente ou outra lógica
+        
+        
         valor_nc = sum([float(nc.valor_total) for nc in notas_credito if nc.documento_origem_id == doc.id])
 
-        # O valor pendente real é: Fatura - Pago - (Valor da NC que é negativo)
-        # Nota: como o valor_total da NC já é negativo (ex: -100), somamos o valor_total
+        
+        
         valor_pendente = valor_total - valor_pago + valor_nc
 
-        faturado_mes[idx] += (valor_total + valor_nc)  # Faturado líquido
+        faturado_mes[idx] += (valor_total + valor_nc)  
         pagos_mes[idx] += valor_pago
 
         if valor_pendente > 0:
@@ -3761,16 +3761,16 @@ def dados_dashboard_ajax(request):
             valor = float(doc.valor_total)
             faturado_ano[idx] += valor
 
-        # Mantendo a estrutura exatamente como você precisa
+        
         dados_comparativos[ano] = faturado_ano
 
     dados_totais_anuais = {}
 
     for ano in anos_recentes:
-        # Filtramos os documentos deste ano específico
+        
         docs_do_ano = docs_validos.filter(data_vencimento__year=ano)
 
-        # Calculamos separadamente para evitar NULLs na subtração direta
+        
         soma_vendas = docs_do_ano.filter(tipo__in=['FT', 'FR', 'FS']).aggregate(Sum('valor_total'))[
                           'valor_total__sum'] or 0
         soma_nc = docs_do_ano.filter(tipo='NC').aggregate(Sum('valor_total'))['valor_total__sum'] or 0
@@ -3788,11 +3788,11 @@ def dados_dashboard_ajax(request):
     ) \
         .values('cliente_nome') \
         .annotate(total_faturado=Sum('valor_total')) \
-        .order_by('-total_faturado')[:5]  # Corrigido para 'total_faturado'
+        .order_by('-total_faturado')[:5]  
 
     nomes_top = [c['cliente_nome'] for c in top_clientes_ano]
 
-    # 2. Histórico (total de todos os anos para esses clientes)
+    
     historico_clientes = docs_validos.filter(
         tipo__in=['FT', 'FR', 'FS', 'NC'],
         cliente_nome__in=nomes_top
@@ -3801,7 +3801,7 @@ def dados_dashboard_ajax(request):
 
     mapa_historico = {c['cliente_nome']: float(c['total_historico'] or 0) for c in historico_clientes}
 
-    # 3. Preparação para o JsonResponse
+    
     labels_clientes = [c['cliente_nome'] for c in top_clientes_ano]
     valores_ano = [float(c['total_faturado'] or 0) for c in top_clientes_ano]
     valores_historico = [mapa_historico.get(nome, 0) for nome in labels_clientes]
@@ -3858,10 +3858,10 @@ def editar_empresa_ajax(request, pk):
         form = EmpresaForm(data, instance=empresa)
 
         if form.is_valid():
-            form.save()  # Isto corre os métodos clean_nif e clean_codigo_postal
+            form.save()  
             return JsonResponse({'success': True, 'message': 'Guardado com sucesso!'})
         else:
-            # Retorna os erros de validação para o JavaScript
+            
             return JsonResponse({'success': False, 'error': form.errors.as_json()}, status=400)
 
     except Empresa.DoesNotExist:
@@ -3880,7 +3880,7 @@ def adicionar_transporte_ajax(request):
 
         clean_desc = descricao.replace('-', '').replace(' ', '')
 
-        # O SAF-T não aceita caracteres especiais (@, #, !, etc.)
+        
         if not re.match(r'^[A-Z0-9]{3,8}$', clean_desc):
             return JsonResponse({
                 'success': False,
@@ -3902,7 +3902,7 @@ def adicionar_transporte_ajax(request):
 @login_required
 @empresa_obrigatoria
 def obter_periodos_disponiveis(request):
-    # Usamos campos diferentes para evitar o conflito
+    
     periodos = DocumentoFinalizado.objects.filter(
         empresa=request.empresa
     ).exclude(
@@ -3912,7 +3912,7 @@ def obter_periodos_disponiveis(request):
         ano_doc=ExtractYear('data_emissao')
     ).values('mes_doc', 'ano_doc').distinct().order_by('-ano_doc', '-mes_doc')
 
-    # Ajuste: mapear o dicionário para a estrutura que o JS espera
+    
     resultado = [
         {'mes': p['mes_doc'], 'ano': p['ano_doc']}
         for p in periodos
@@ -3939,7 +3939,7 @@ def gerar_saft(request):
         estado='Finalizado'
     ).prefetch_related('artigos')
 
-    # 1. Raiz e Header
+    
     audit_file = ET.Element("AuditFile", xmlns="urn:OECD:StandardAuditFile-Tax:PT_3.01")
     header = ET.SubElement(audit_file, "Header")
     ET.SubElement(header, "AuditFileVersion").text = "3.01_01"
@@ -3947,17 +3947,17 @@ def gerar_saft(request):
     ET.SubElement(header, "TaxRegistrationNumber").text = request.empresa.nif
     ET.SubElement(header, "TaxAccountingBasis").text = "I"
 
-    # 2. MasterFiles (Clientes únicos e Produtos únicos)
+    
     master_files = ET.SubElement(audit_file, "MasterFiles")
 
-    # Adicionar Clientes
+    
     for cliente in docs.values('cliente_id', 'cliente_nome', 'cliente_contribuinte').distinct():
         cust = ET.SubElement(master_files, "Customer")
         ET.SubElement(cust, "CustomerID").text = str(cliente['cliente_id'])
         ET.SubElement(cust, "CustomerTaxID").text = cliente['cliente_contribuinte']
         ET.SubElement(cust, "CompanyName").text = cliente['cliente_nome']
 
-    # 3. SourceDocuments
+    
     source_docs = ET.SubElement(audit_file, "SourceDocuments")
     sales_invoices = ET.SubElement(source_docs, "SalesInvoices")
 
@@ -3967,7 +3967,7 @@ def gerar_saft(request):
         ET.SubElement(invoice, "InvoiceDate").text = str(doc.data_emissao)
         ET.SubElement(invoice, "CustomerID").text = str(doc.cliente_id)
 
-        # Iterar sobre o teu modelo FinArtigos
+        
         for linha in doc.artigos.all():
             line = ET.SubElement(invoice, "Line")
             ET.SubElement(line, "LineNumber").text = str(linha.id)
@@ -3977,14 +3977,14 @@ def gerar_saft(request):
             ET.SubElement(line, "UnitPrice").text = str(linha.preco)
             ET.SubElement(line, "CreditAmount").text = str(linha.total)
 
-        # Totais
+        
         totals = ET.SubElement(invoice, "DocumentTotals")
         ET.SubElement(totals, "GrossTotal").text = str(doc.valor_total)
-        ET.SubElement(totals, "NetTotal").text = str(doc.valor_total)  # Simplificação: considera IVA à parte
+        ET.SubElement(totals, "NetTotal").text = str(doc.valor_total)  
 
     payments = ET.SubElement(source_docs, "Payments")
 
-    # Buscar recibos do período
+    
     recibos = Recibo.objects.filter(
         empresa=request.empresa,
         data_emissao__month=mes,
@@ -3997,27 +3997,46 @@ def gerar_saft(request):
         ET.SubElement(payment, "PaymentRefNo").text = f"{recibo.tipo} {recibo.serie}/{recibo.numero}"
         ET.SubElement(payment, "Period").text = str(recibo.data_emissao.month)
         ET.SubElement(payment, "TransactionDate").text = str(recibo.data_emissao)
-        ET.SubElement(payment, "PaymentType").text = "RC"  # RC para recibo
+        ET.SubElement(payment, "PaymentType").text = "RC"  
         ET.SubElement(payment, "Description").text = recibo.modalidade_nome or "Pagamento"
         ET.SubElement(payment, "SystemEntryDate").text = recibo.criado_em.strftime('%Y-%m-%dT%H:%M:%S')
         ET.SubElement(payment, "CustomerID").text = str(recibo.cliente_id)
 
-        # Documentos liquidados (Crucial para a AT!)
+        
         for linha in recibo.linhas.all():
             doc_ref = ET.SubElement(payment, "DocumentTotals")
-            # O SAF-T exige saber qual a fatura que foi paga
+            
             source_doc = ET.SubElement(doc_ref, "SourceDocumentID")
             ET.SubElement(source_doc, "OriginatingON").text = f"{linha.documento_tipo} {linha.documento_numero}"
 
             ET.SubElement(doc_ref, "AmountReceived").text = str(linha.valor_recebido)
 
-        # Total do Recibo
+        
         payment_totals = ET.SubElement(payment, "PaymentMethod")
-        ET.SubElement(payment_totals, "PaymentMethod").text = "OU"  # Outros (ex: Transferência)
+        ET.SubElement(payment_totals, "PaymentMethod").text = "OU"  
         ET.SubElement(payment_totals, "PaymentAmount").text = str(recibo.valor_total)
-    # 4. Finalização
+    
     tree = ET.ElementTree(audit_file)
     response = HttpResponse(content_type="application/xml")
     response['Content-Disposition'] = f'attachment; filename="SAFT_{mes}_{ano}.xml"'
     tree.write(response, encoding='utf-8', xml_declaration=True)
     return response
+
+@login_required
+@empresa_obrigatoria
+def update_logo(request):
+    if request.method == 'POST' and request.FILES.get('logo'):
+        try:
+            
+            empresa = Empresa.objects.first()
+
+            
+
+            empresa.logo = request.FILES['logo']
+            empresa.save()
+
+            return JsonResponse({'success': True, 'logo_url': empresa.logo.url})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Pedido inválido'})

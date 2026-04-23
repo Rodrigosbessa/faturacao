@@ -1,8 +1,8 @@
 const grid = document.getElementById('grid');
-const squareSize = 50; // Tamanho de cada quadrado
+const squareSize = 50; 
 
 function createGrid() {
-    grid.innerHTML = ''; // Limpa se redimensionar
+    grid.innerHTML = ''; 
     const columns = Math.ceil(window.innerWidth / squareSize);
     const rows = Math.ceil(window.innerHeight / squareSize);
     const totalSquares = columns * rows;
@@ -11,10 +11,10 @@ function createGrid() {
         const square = document.createElement('div');
         square.classList.add('grid-item');
 
-        // Quando o mouse passa, acende
+        
         square.addEventListener('mouseenter', () => {
             square.classList.add('active');
-            // Remove a classe depois de um tempo para ele apagar
+            
             setTimeout(() => {
                 square.classList.remove('active');
             }, 500);
@@ -25,4 +25,4 @@ function createGrid() {
 }
 
 createGrid();
-window.addEventListener('resize', createGrid); // Refaz se mudar tamanho da tela
+window.addEventListener('resize', createGrid); 

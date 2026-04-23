@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(event) {
         let valid = true;
 
-        // Validar NIF
+        
         if (!validarNIF(nifInput.value)) {
             alert('NIF inválido para o formato Português.');
             nifInput.focus();
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const countrySelect = document.getElementById("id_pais"); // Corrigido para o ID do Django
+    const countrySelect = document.getElementById("id_pais"); 
 
     const $spanPais = $(countrySelect).closest('div').find('.texto-ellipsis');
 
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(data => {
                 data.sort((a, b) => a.name.common.localeCompare(b.name.common));
 
-                // Montar o select com o formato [Valor: Código, Texto: Nome]
+                
                 let optionsHtml = '<option value="">Selecione um país...</option>';
 
                 data.forEach(c => {
@@ -73,8 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarPaises("PT");
 });
 document.addEventListener("DOMContentLoaded", () => {
-    // Campos do formulário Django
-    const postalInput = document.getElementById("id_codigo_postal"); // ID gerado pelo Django
+    
+    const postalInput = document.getElementById("id_codigo_postal"); 
     const cidadeInput = document.getElementById("id_cidade");
     const paisInput = document.getElementById("id_pais");
 
@@ -90,12 +90,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!data || data.length === 0) return;
                     const d = data[0];
 
-                    // Preencher Cidade (Localidade)
+                    
                     if (cidadeInput) {
                         cidadeInput.value = d.Localidade;
                     }
 
-                    // Preencher País
+                    
                     if (paisInput) {
                         paisInput.value = "PT";
                     }

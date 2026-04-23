@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const clientePaisAtual = "{{ cliente.pais }}".trim();
 
-    // --- 1. Preencher países ---
+    
     fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
         .then(res => res.json())
         .then(data => {
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if(c.name.common === clientePaisAtual || c.cca2 === clientePaisAtual) {
                     option.selected = true;
-                    // Inicializa a sigla se já houver país
+                    
                     siglaInput.value = c.cca2;
                     if(siglaSpan) siglaSpan.textContent = c.cca2;
                 }
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-    // --- 2. Sincronizar Sigla ---
+    
     countrySelect.addEventListener("change", () => {
         const sigla = countrySelect.value;
         siglaInput.value = sigla;
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const postal = postalInput.value.replace(/\D/g, "").trim();
         if(postal.length < 7) return;
 
-        // 1. MOSTRAR O LOADING
+        
         const loadingEl = document.getElementById("loading-postal");
         if(loadingEl) loadingEl.style.display = "block";
 
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch(err => console.error("Erro:", err))
             .finally(() => {
-                // 2. ESCONDER O LOADING (quer a API funcione ou dê erro)
+                
                 if(loadingEl) loadingEl.style.display = "none";
             });
     });
@@ -80,7 +80,7 @@ document.querySelectorAll('.edit-input, .edit-select').forEach(el => {
     el.addEventListener("change", () => el.style.border = "");
 });
 document.addEventListener("DOMContentLoaded", () => {
-    // --- 1. Referências aos Elementos ---
+    
     const nomeInput = document.querySelector('input[name="nome"]');
     const nifInput = document.querySelector('input[name="contribuinte"]');
     const morada1Input = document.querySelector('input[name="morada1"]');
@@ -104,17 +104,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const pais = countrySelect.value;
 
         if (pais === "PT") {
-            // Se for Portugal: apenas números e máximo 9
+            
             nifInput.value = nifInput.value.replace(/\D/g, "").slice(0, 9);
         } else {
-            // Se for estrangeiro: permite letras e números (alfanumérico) e até 12
+            
             nifInput.value = nifInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
         }
     });
 
-    // Importante: Se mudar o país, limpar ou revalidar o campo
+    
     countrySelect.addEventListener("change", () => {
-        nifInput.value = ""; // Opcional: limpa para evitar erros de formato
+        nifInput.value = ""; 
     });
 
     telemovelInput.addEventListener("input", () => {
@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         distritoInput.value = distritoInput.value.replace(/[<>]/g, "").trim();
         concelhoInput.value = concelhoInput.value.replace(/[<>]/g, "").trim()
-        // Validação Localização
+        
         if (!countrySelect.value) { alert("Erro AT: Selecione o País."); return; }
         if (distritoInput.value.length < 2 || concelhoInput.value.length < 2) {
             alert("Erro AT: Distrito e Concelho obrigatórios."); return;
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let campo of obrigatorios) {
             let el = document.querySelector(`[name="${campo.name}"]`);
-            // Ajuste aqui: verificamos el.value diretamente para funcionar em Selects e Inputs
+            
             if (!el || !el.value || el.value.toString().trim() === "") {
                 alert(`Erro AT: O campo [${campo.label}] é obrigatório.`);
                 el.focus();
@@ -273,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function enviarFormulario() {
     const formData = new FormData();
-    // Captura todos os campos
+    
     document.querySelectorAll('input, select').forEach(el => {
         if (el.name) formData.append(el.name, el.value);
     });
@@ -285,11 +285,11 @@ function enviarFormulario() {
         headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
         body: formData
     })
-    .then(response => response.json()) // Extrai o JSON
+    .then(response => response.json()) 
     .then(data => {
         if (data.status === 'success') {
             alert(data.message);
-            // Em vez de recarregar, navega para a página de detalhes
+            
             if (data.redirect_url) {
                 window.location.href = data.redirect_url;
             } else {
