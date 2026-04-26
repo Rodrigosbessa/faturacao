@@ -20,6 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ALLOWED_HOSTS = ['faturix-kya9.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,7 +37,6 @@ INSTALLED_APPS = [
     'allauth.mfa',
     'allauth.socialaccount.providers.google',
     'Faturamento.apps.FaturamentoConfig',
-    'cloudinary_storage',
     'cloudinary',
 ]
 
