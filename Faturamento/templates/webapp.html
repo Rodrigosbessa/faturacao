@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <title>gestao</title>
+    <title>Faturix</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo_faturix.png' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700&display=swap">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
@@ -29,10 +30,11 @@
                 </button>
 
                 <a class="navbar-brand navbar-brand-home" href="#">
-                    {% if empresa.logo %}
-                        <img src="{{ empresa.logo.url }}" class="logo-faturix">
+                    {% if request.user.empresa.logo %}
+                        <img src="{{ request.user.empresa.logo.url }}" class="logo-faturix" style="max-height: 60px; margin-right: 10px;">
+                        <span>{{ request.user.empresa.nome }}</span>
                     {% else %}
-                        <span>{{ empresa.nome }}</span>
+                        <span>{{ request.user.empresa.nome }}</span>
                     {% endif %}
                 </a>
             </div>
@@ -84,6 +86,30 @@
     <div class="main-content">
         <div class="container" style="margin-top:120px;">
           <div id="conteudo">
+            <div class="conteudo-item" id="home" style="display: block;">
+                <div class="home-flex-container">
+                    <div class="empresa-hero-section">
+                        <div class="logo-wrapper-final">
+                            {% if request.user.empresa.logo %}
+                                <img id="main-logo-preview" src="{{ request.user.empresa.logo.url }}" alt="Logo">
+                            {% else %}
+                                <div id="main-logo-placeholder">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                            {% endif %}
+                            <img id="main-logo-new-preview" src="" class="d-none">
+                        </div>
+
+                        <div class="info-hero">
+                            <h1 id="main-empresa-nome">{{ request.user.empresa.nome|default:"Faturix" }}</h1>
+                            <p>Gestão de Faturação</p>
+                            <div class="status-badge">
+                                <span class="dot"></span> Online
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="conteudo-item" id="vendas" style="display: none;">
               <div class="navbar second-topbar">
@@ -174,7 +200,7 @@
                         <div class="small-box bg-warning">
                             <div class="inner">
                                 <h3 id="dash-vencidos" style="color: #191515;"><i class="fas fa-sync fa-spin"></i></h3>
-                                <p style="color: #191515;">Documentos Vencidos</p>
+                                <p style="color:white;">Documentos Vencidos</p>
                             </div>
                             <div class="icon"><i class="fas fa-clock"></i></div>
                             <a href="javascript:void(0)"
@@ -465,14 +491,14 @@
                             <div class="row align-items-center">
                                 <div class="col-md-5">
                                     <div class="logo-upload-zone" id="drop-zone">
-                                        {% if empresa.logo %}
-                                            <img id="logo-preview" src="{{ empresa.logo.url }}" style="max-height: 100px; object-fit: contain;">
+                                        {% if request.user.empresa.logo %}
+                                            <img id="logo-preview" src="{{ request.user.empresa.logo.url }}" style="max-height: 100px; object-fit: contain;">
                                         {% else %}
                                             <i class="fas fa-cloud-upload-alt fa-3x mb-3" style="color: #cbd5e1;"></i>
                                             <span id="no-logo-text" style="color: #64748b; font-weight: 500;">Sem logótipo definido</span>
                                         {% endif %}
 
-                                        <img id="logo-new-preview" src="#" class="d-none" style="max-height: 100px; object-fit: contain;">
+                                        <img id="logo-new-preview" src="#" class="d-none" style="max-height: 100px; width: 100%; object-fit: contain;">
                                     </div>
                                 </div>
 
@@ -545,5 +571,36 @@
 </script>
 <script src="{% static 'js/webapp.js' %}"></script>
 <script src="{% static 'js/script.js' %}"></script>
+<script>
+$(document).ready(function() {
+    function mostrarHome() {
+        console.log("A mostrar a Home...");
+
+        $('.conteudo-item').hide();
+
+        $('#clientes, #artigos, #faturas, #guias, #recibos').hide();
+
+        $('#home').fadeIn();
+
+        $('.nav-item').removeClass('active');
+    }
+
+    $('.navbar-brand-home').on('click', function(e) {
+        e.preventDefault();
+        mostrarHome();
+    });
+
+    $('.nav-item').on('click', function(e) {
+        e.preventDefault();
+        const target = $(this).attr('data-target');
+
+        $('.conteudo-item').hide();
+        $('#' + target).fadeIn();
+
+        $('.nav-item').removeClass('active');
+        $(this).addClass('active');
+    });
+});
+</script>
 </body>
 </html>

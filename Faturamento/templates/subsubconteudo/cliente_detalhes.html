@@ -3,7 +3,8 @@
 <!DOCTYPE html><html lang="en"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detalhes do Cliente</title>
+  <title>Faturix</title>
+  <link rel="icon" type="image/png" href="{% static 'images/logo_faturix.png' %}">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -16,8 +17,8 @@
     <a href="/" class="btn-voltar-fixo">
         <i class="fa fa-home"></i> Voltar
     </a>
-    <div class="dashboard-layout">
-        <div id="tabs">
+    <div class="dashboard-layout" style="justify-content: center; width: 100%; max-width: 100%; margin-top: 50px;">
+        <div id="tabs" style="width: 1000px; flex: none; pointer-events: all;">
           <ul>
             <li><a href="#tabs-1">Identificação</a></li>
             <li><a href="#tabs-2">Faturas</a></li>
@@ -26,7 +27,7 @@
           </ul>
 
           <div id="tabs-1">
-            <table class="object_view">
+            <table class="object_view" style="width: 100%; table-layout: fixed;">
                 <tbody>
                     <tr>
                         <td class="col_field">Nome</td>
@@ -295,7 +296,7 @@
 
           <div id="tabs-2">
             <div class="invoice_list">
-               <table class="invoice_list">
+               <table class="invoice_list" style="width: 100%; table-layout: fixed;">
                     <tbody>
                     <tr class="header">
                         <td class="centered" nowrap="">Tipo</td>
@@ -369,7 +370,7 @@
 
           <div id="tabs-3">
             <div class="invoice_list">
-                <table class="invoice_list">
+                <table class="invoice_list" style="width: 100%; table-layout: fixed;">
                     <tbody>
                     <tr class="header">
                         <td class="centered" nowrap="">Tipo</td>
@@ -412,7 +413,7 @@
             </div>
           </div>
           <div id="tabs-4">
-            <div class="invoice_list" style="margin-top: 30px;">
+            <div class="invoice_list" style="width: 100%; table-layout: fixed;">
                 <h3 style="padding: 10px; color: #444; border-bottom: 2px solid #ccc;">
                     Registo de Recebimentos
                 </h3>

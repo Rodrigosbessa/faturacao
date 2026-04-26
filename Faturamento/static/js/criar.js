@@ -1,6 +1,24 @@
 $( function() {
     $( "#tabs" ).tabs();
 } );
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+document.querySelectorAll('.edit-input, .edit-select').forEach(el => {
+    el.addEventListener("input", () => el.style.border = "");
+    el.addEventListener("change", () => el.style.border = "");
+});
 document.addEventListener("DOMContentLoaded", () => {
     const siglaInput = document.getElementById("sigla");
     const siglaSpan = document.getElementById("sigla-text");
@@ -80,8 +98,6 @@ document.querySelectorAll('.edit-input, .edit-select').forEach(el => {
     el.addEventListener("change", () => el.style.border = "");
 });
 document.addEventListener("DOMContentLoaded", () => {
-    
-    const nomeInput = document.querySelector('input[name="nome"]');
     const nifInput = document.querySelector('input[name="contribuinte"]');
     const morada1Input = document.querySelector('input[name="morada1"]');
     const morada2Input = document.querySelector('input[name="morada2"]');
@@ -104,17 +120,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const pais = countrySelect.value;
 
         if (pais === "PT") {
-            
             nifInput.value = nifInput.value.replace(/\D/g, "").slice(0, 9);
         } else {
-            
             nifInput.value = nifInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
         }
     });
 
-    
+
     countrySelect.addEventListener("change", () => {
-        nifInput.value = ""; 
+        nifInput.value = "";
     });
 
     telemovelInput.addEventListener("input", () => {
@@ -192,11 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btn-guardar-cliente").addEventListener("click", function() {
-        let nome = nomeInput.value.replace(/[<>]/g, "").trim();
-        nome = formatarTitulo(nome);
-        nomeInput.value = nome;
-        if (nome.length === 0) { alert("Erro AT: Nome obrigatório."); nomeInput.focus(); return; }
-
         nifInput.value = nifInput.value.replace(/\D/g, "");
         const nif = nifInput.value;
         if (nif.length > 0 && nif.length < 9 && nif !== "999999990") {
@@ -213,7 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         distritoInput.value = distritoInput.value.replace(/[<>]/g, "").trim();
         concelhoInput.value = concelhoInput.value.replace(/[<>]/g, "").trim()
-        
         if (!countrySelect.value) { alert("Erro AT: Selecione o País."); return; }
         if (distritoInput.value.length < 2 || concelhoInput.value.length < 2) {
             alert("Erro AT: Distrito e Concelho obrigatórios."); return;
@@ -236,7 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
             emailInput.value = emailValue.substring(0, 200);
         }
         const obrigatorios = [
-            { name: 'nome', label: 'Nome' },
             { name: 'morada1', label: 'Morada 1' },
             { name: 'codigo_postal', label: 'Código Postal' },
             { name: 'pais', label: 'País' },
@@ -248,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let campo of obrigatorios) {
             let el = document.querySelector(`[name="${campo.name}"]`);
-            
+
             if (!el || !el.value || el.value.toString().trim() === "") {
                 alert(`Erro AT: O campo [${campo.label}] é obrigatório.`);
                 el.focus();
@@ -263,56 +270,180 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (typeof enviarFormulario === "function") {
-            enviarFormulario();
+        if (typeof editarCliente === "function") {
+            adicionarCliente();
         } else {
             console.log("Validação OK. Chamar submissão.");
         }
     });
 });
 
-function enviarFormulario() {
-    const formData = new FormData();
-    
+async function adicionarCliente() {
+    const btn = document.getElementById("btn-adicionar-cliente"); // Garante que o ID do botão é este
+
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A criar...';
+    }
+
+    const dados = {};
+
+
     document.querySelectorAll('input, select').forEach(el => {
-        if (el.name) formData.append(el.name, el.value);
+        if (el.name) {
+            dados[el.name] = el.type === 'checkbox' ? el.checked : el.value.trim();
+        }
     });
 
-    const csrftoken = getCookie('csrftoken');
+    try {
+        const response = await fetch('/cliente/adicionar/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(dados)
+        });
 
-    fetch('/cliente/adicionar/', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData
-    })
-    .then(response => response.json()) 
-    .then(data => {
-        if (data.status === 'success') {
-            alert(data.message);
-            
+        const data = await response.json();
+        if (data.success || data.status === 'success') {
+            alert(data.message || "Cliente adicionado com sucesso!");
+
             if (data.redirect_url) {
                 window.location.href = data.redirect_url;
             } else {
                 window.location.reload();
             }
         } else {
-            alert("Erro no servidor: " + data.message);
+            throw new Error(data.message || data.error || "Erro ao adicionar cliente.");
         }
-    })
-    .catch(error => console.error('Erro:', error));
-}
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+    } catch (error) {
+        alert(error.message);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus"></i> Adicionar Cliente';
         }
     }
-    return cookieValue;
 }
+$(document).ready(function() {
+
+    $('.col_data').on('click', function() {
+        const $td = $(this);
+        const $container = $td.find('.valor-container');
+
+
+        if ($container.is(':visible')) {
+            $container.hide();
+            const $field = $td.find('.edit-select, .edit-input');
+            $field.show().focus();
+        }
+    });
+
+
+    $('.edit-input, .edit-select').on('click', function(e) {
+        e.stopPropagation();
+    });
+});
+$(document).ready(function() {
+    $('.btn-edit').on('click', function(e) {
+        e.stopPropagation();
+        const $td = $(this).closest('td');
+        $td.find('.valor-container').hide();
+        const $field = $td.find('.edit-select, .edit-input');
+        $field.show().focus();
+    });
+
+    $(document).on('blur change', '.edit-select, .edit-input', function() {
+        const $field = $(this);
+        const $td = $field.closest('td');
+
+
+        let novoTexto = "";
+        if ($field.is('select')) {
+            novoTexto = $field.find('option:selected').text();
+            if ($field.val() === "") novoTexto = "---";
+        } else {
+            novoTexto = $field.val() || "---";
+        }
+
+        $td.find('.texto-ellipsis').text(novoTexto);
+        $field.hide();
+        $td.find('.valor-container').show();
+    });
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const countrySelect = document.getElementById("country");
+    const $spanPais = $(countrySelect).closest('td').find('.texto-ellipsis');
+    const siglaInicial = $spanPais.text().trim().toUpperCase();
+
+    function carregarPaises(siglaParaSelecionar) {
+        fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
+            .then(res => res.json())
+            .then(data => {
+
+                data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+
+                let optionsHtml = '<option value="">Selecione um país...</option>';
+                let nomePorExtensoencontrado = "";
+
+                data.forEach(c => {
+                    const isSelected = c.cca2 === siglaParaSelecionar;
+                    if (isSelected) {
+                        nomePorExtensoencontrado = c.name.common;
+                    }
+
+                    optionsHtml += `<option value="${c.cca2}" ${isSelected ? 'selected' : ''}>
+                        ${c.name.common}
+                    </option>`;
+                });
+
+
+                countrySelect.innerHTML = optionsHtml;
+
+
+
+                if (nomePorExtensoencontrado) {
+                    $spanPais.text(nomePorExtensoencontrado);
+                }
+            })
+            .catch(err => console.error("Erro ao carregar países:", err));
+    }
+
+
+    $(countrySelect).on('change', function() {
+        const nomeCompleto = $(this).find('option:selected').text();
+        if ($(this).val() !== "") {
+            $spanPais.text(nomeCompleto);
+        }
+    });
+
+
+    const postalInput = document.getElementById("postal");
+    if (postalInput) {
+        postalInput.addEventListener("blur", () => {
+            const postal = postalInput.value.replace(/\D/g, "");
+            if (postal.length < 7) return;
+
+            const appId = "ptapi693b74384109f7.12233290";
+            fetch(`https://api.duminio.com/ptcp/v2/${appId}/${postal}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data || data.length === 0) return;
+                    const d = data[0];
+
+
+                    $('input[name="distrito"]').val(d.Distrito).closest('td').find('.texto-ellipsis').text(d.Distrito);
+                    $('input[name="concelho"]').val(d.Concelho).closest('td').find('.texto-ellipsis').text(d.Concelho);
+
+
+                    $(countrySelect).val("PT").trigger('change');
+                });
+        });
+    }
+    carregarPaises(siglaInicial);
+});

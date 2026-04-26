@@ -86,22 +86,19 @@ body {
 
 
 .login-container:hover {
-    
     transform: translateY(-5px);
-
-    
     border-color: rgba(100, 255, 218, 0.6);
-
-    
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5),
                 0 0 15px rgba(100, 255, 218, 0.15);
 }
-
 
 h1 {
     color: #64ffda;
     margin-bottom: 10px;
     font-weight: 800;
+    margin-top: 0;
+    font-size: 24px;
+    letter-spacing: -0.5px;
 }
 
 
@@ -189,40 +186,111 @@ a:hover {
     transform: translateY(-1px);
 }
 
-
 .empresa-container {
-    max-width: 800px !important; 
+    max-width: 700px !important;
+    background: rgba(15, 23, 42, 0.8) !important; /* Azul escuro mais sólido e elegante */
+    border: 1px solid rgba(100, 255, 218, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    text-align: left !important; /* Alinhamento à esquerda é mais profissional */
+}
+
+.empresa-container h1 {
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    text-align: left; 
+    gap: 20px;
 }
 
 .form-group label {
-    margin-bottom: 5px;
-    display: block;
-    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64ffda;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 
-.form-grid input, .form-grid select {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.9);
+.form-grid input,
+.form-grid select {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    color: #f8fafc !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    font-size: 15px;
+    transition: all 0.2s ease;
 }
 
-.full-width { grid-column: span 2; }
+.form-grid input:focus,
+.form-grid select:focus {
+    border-color: #64ffda !important;
+    background: rgba(100, 255, 218, 0.05) !important;
+    box-shadow: 0 0 0 4px rgba(100, 255, 218, 0.1) !important;
+    outline: none;
+}
+
+.full-width {
+    grid-column: span 2;
+}
 
 @media (max-width: 600px) {
     .form-grid { grid-template-columns: 1fr; }
     .full-width { grid-column: span 1; }
 }
-.form-grid select {
-    margin-top:10px;
-    margin-bottom:10px;
+
+.intro-text {
+    color: #94a3b8;
+    font-size: 15px;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#id_pais option {
+    background-color: #0a192f;
+    color: #ffffff;
+    padding: 10px;
+}
+
+select#id_pais {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+.form-group select {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #e6f1ff !important;
+    border: 1px solid rgba(100, 255, 218, 0.2) !important;
+    cursor: pointer;
+}
+
+select {
+    color-scheme: dark;
+}
+.login-logo {
+    width: 80px;
+    height: auto;
+    display: block;
+    margin: 0 auto 20px;
+    filter: drop-shadow(0 0 5px rgba(100, 255, 218, 0.2));
+    transition: all 0.3s ease;
+}
+.login-container:hover .login-logo {
+    transform: scale(1.1) translateY(-5px); /* Sobe um pouco e aumenta */
+    filter: drop-shadow(0 0 15px rgba(100, 255, 218, 0.6)); /* Brilha mais */
 }

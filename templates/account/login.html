@@ -3,13 +3,17 @@
 {% load account socialaccount %} <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <title>Login - Faturamento</title>
+    <title>Login - Faturix</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo_faturix.png' %}">
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
 </head>
 <body>
     <div class="grid-container" id="grid"></div>
     <div class="main-content">
         <div class="login-container">
+            <div class="logo-wrapper">
+                <img src="{% static 'images/logo_faturix.png' %}" alt="Faturix Logo" class="login-logo">
+            </div>
             <h1>Entrar em Faturix</h1>
 
             {% if form.non_field_errors %}

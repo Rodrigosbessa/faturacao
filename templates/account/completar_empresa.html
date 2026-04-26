@@ -3,7 +3,8 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Dados da Empresa - Faturamento</title>
+    <title>Dados da Empresa - Faturix</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo_faturix.png' %}">
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
@@ -11,22 +12,73 @@
     <div class="grid-container" id="grid"></div>
     <div class="main-content">
         <div class="login-container empresa-container">
-            <h1>Dados da Empresa</h1>
-            <p>Por favor, preencha os dados da sua empresa para continuar.</p>
-    
-            <form method="post">
+            <h1>Configurar Identidade</h1>
+            <p class="intro-text">
+                Quase lá! Insira os dados base da sua empresa. <br>
+                <span style="font-size: 13px; color: #64ffda; opacity: 0.8;">
+                    <i class="fas fa-info-circle"></i> Não se preocupe com detalhes, isto é uma Demo.
+                </span>
+            </p>
+        
+            <form method="post" id="empresaForm">
                 {% csrf_token %}
                 
                 <div class="form-grid">
-                    {% for field in form %}
-                        <div class="form-group {% if field.name == 'morada' %}full-width{% endif %}">
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                    {% endfor %}
+                    <div class="form-group full-width">
+                        <label for="id_nome">Nome da Empresa</label>
+                        <input type="text" name="nome" id="id_nome" maxlength="255" placeholder="Ex: Minha Empresa Lda" required>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="id_nif">NIF (Contribuinte)</label>
+                        <input type="text" name="nif" id="id_nif" maxlength="20" placeholder="999999999">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="id_codigo_postal">Código Postal</label>
+                        <input type="text" name="codigo_postal" id="id_codigo_postal" maxlength="20" placeholder="1234-567">
+                    </div>
+            
+                    <div class="form-group full-width">
+                        <label for="id_morada">Morada</label>
+                        <input type="text" name="morada" id="id_morada" maxlength="255" placeholder="Rua, Bloco, Nº">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="id_cidade">Cidade</label>
+                        <input type="text" name="cidade" id="id_cidade" maxlength="100" placeholder="Lisboa">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="id_local">Localidade</label>
+                        <input type="text" name="local" id="id_local" maxlength="100" placeholder="Freguesia/Zona">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="id_telefone">Telefone</label>
+                        <input type="text" name="telefone" id="id_telefone" maxlength="20" placeholder="912345678">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="id_email">Email da Empresa</label>
+                        <input type="email" name="email" id="id_email" maxlength="254" placeholder="geral@empresa.pt">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="id_pais">País</label>
+                        <select name="pais" id="id_pais">
+                            <option value="PT">Portugal</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn-login">Finalizar Registo</button>
+                {% if erro %}
+                    <p style="color: #ff6b6b; margin-top: 15px; font-size: 14px;"><b>Erro:</b> {{ erro }}</p>
+                {% endif %}
+            
+                <button type="submit" class="btn-login">
+                    Começar a Faturar <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
             </form>
         </div>
     </div>

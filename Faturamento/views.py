@@ -81,24 +81,30 @@ def otp_verify_view(request):
 
     return render(request, 'account/verify.html')
 
-from .forms import EmpresaForm
-
 @login_required
 def completar_registo_empresa(request):
     if hasattr(request.user, 'empresa'):
         return redirect('webapp_home')
 
     if request.method == 'POST':
-        form = EmpresaForm(request.POST)
-        if form.is_valid():
-            empresa = form.save(commit=False)
-            empresa.user = request.user
-            empresa.save()
+        try:
+            Empresa.objects.create(
+                user=request.user,
+                nome=request.POST.get('nome'),
+                nif=request.POST.get('nif'),
+                morada=request.POST.get('morada'),
+                codigo_postal=request.POST.get('codigo_postal'),
+                cidade=request.POST.get('cidade'),
+                pais=request.POST.get('pais', 'PT'),
+                email=request.POST.get('email'),
+                telefone=request.POST.get('telefone'),
+                local=request.POST.get('local')
+            )
             return redirect('webapp_home')
-    else:
-        form = EmpresaForm()
+        except Exception as e:
+            return render(request, 'account/completar_empresa.html', {'erro': str(e)})
 
-    return render(request, 'account/completar_empresa.html', {'form': form})
+    return render(request, 'account/completar_empresa.html')
 
 from django.contrib.auth import logout
 @login_required
@@ -3851,21 +3857,35 @@ def dados_dashboard_ajax(request):
 @login_required
 @empresa_obrigatoria
 def editar_empresa_ajax(request, pk):
-    try:
-        empresa = Empresa.objects.get(pk=pk, user=request.user)
-        data = json.loads(request.body)
+    if request.method == 'POST':
+        try:
+            empresa = Empresa.objects.get(pk=pk, user=request.user)
 
-        form = EmpresaForm(data, instance=empresa)
+            data = json.loads(request.body)
 
-        if form.is_valid():
-            form.save()  
-            return JsonResponse({'success': True, 'message': 'Guardado com sucesso!'})
-        else:
-            
-            return JsonResponse({'success': False, 'error': form.errors.as_json()}, status=400)
+            empresa.nome = data.get('nome', empresa.nome)
+            empresa.nif = data.get('nif', empresa.nif)
+            empresa.morada = data.get('morada', empresa.morada)
+            empresa.codigo_postal = data.get('codigo_postal', empresa.codigo_postal)
+            empresa.cidade = data.get('cidade', empresa.cidade)
+            empresa.pais = data.get('pais', empresa.pais)
+            empresa.email = data.get('email', empresa.email)
+            empresa.telefone = data.get('telefone', empresa.telefone)
+            empresa.local = data.get('local', empresa.local)
 
-    except Empresa.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Empresa não encontrada.'}, status=404)
+            empresa.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Alterações guardadas sem restrições!'
+            })
+
+        except Empresa.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Empresa não encontrada.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'error': 'Método não permitido.'}, status=405)
 
 
 @login_required
@@ -4023,19 +4043,18 @@ def gerar_saft(request):
     return response
 
 @login_required
-@empresa_obrigatoria
 def update_logo(request):
     if request.method == 'POST' and request.FILES.get('logo'):
         try:
-            
-            empresa = Empresa.objects.first()
-
-            
+            empresa, created = Empresa.objects.get_or_create(user=request.user)
 
             empresa.logo = request.FILES['logo']
             empresa.save()
 
-            return JsonResponse({'success': True, 'logo_url': empresa.logo.url})
+            return JsonResponse({
+                'success': True,
+                'logo_url': empresa.logo.url
+            })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 

@@ -484,13 +484,11 @@ body {
 .btn-voltar-fixo {
     pointer-events: all !important;
     position: fixed;
-    top: 25px;
+    top: 15px;
     left: 25px;
     display: inline-flex;
     align-items: center;
     gap: 10px;
-
-    
     background: rgba(10, 25, 47, 0.8); 
     color: #64ffda; 
     padding: 12px 20px;

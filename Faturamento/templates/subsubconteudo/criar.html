@@ -3,7 +3,8 @@
 <!DOCTYPE html><html lang="en"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detalhes do Cliente</title>
+  <title>Faturix</title>
+  <link rel="icon" type="image/png" href="{% static 'images/logo_faturix.png' %}">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -12,166 +13,282 @@
 </head>
 <body>
 <div class="grid-container" id="grid"></div>
-<a href="/" class="btn-voltar-fixo">
-    <i class="fa fa-home"></i> Voltar
-</a>
-<div id="tabs">
-  <ul>
-    <li><a href="#tabs-1">Identificação</a></li>
-  </ul>
-    <div id="tabs-1">
-    <table class="object_view">
-        <tbody>
-            <tr>
-                <td class="col_field">Nome</td>
-                <td class="col_data col_data_double">
-                    <input type="text" name="nome" class="edit-input" value="" maxlength="200">
-                </td>
-                <td class="col_field">
-                    Nº Contribuinte
-                </td>
-                <td class="col_data col_data_double">
-                    <input type="text" name="contribuinte" class="edit-input" value="" maxlength="12">
-                </td>
-            </tr>
+<div class="main-content">
+    <a href="/" class="btn-voltar-fixo">
+        <i class="fa fa-home"></i> Voltar
+    </a>
+    <div id="tabs" style="width: 1000px; flex: none; margin: 0 auto; min-height: auto;">
+      <ul>
+        <li><a href="#tabs-1">Identificação</a></li>
+      </ul>
+        <div id="tabs-1">
+            <table class="object_view">
+                <tbody>
+                    <tr>
+                        <td class="col_field">Nome</td>
+                        <td class="col_data col_data_double">
+                            {{ cliente.nome }}
+                        </td>
+                        <td class="col_field">
+                            Nº Contribuinte
+                        </td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.contribuinte }}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <input type="text" name="contribuinte" class="edit-input" value="{{ cliente.contribuinte }}" style="display: none;">
+                        </td>
+                    </tr>
 
-            <tr>
-                <td class="col_field">Morada-1</td>
-                <td class="col_data col_data_double">
-                    <input type="text" name="morada1" class="edit-input" value="" maxlength="100">
-                </td>
-                <td class="col_field">Morada-2</td>
-                <td class="col_data col_data_double">
+                    <tr>
+                        <td class="col_field">Morada-1</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.morada1 }}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <input type="text" name="morada1" class="edit-input" value="{{ cliente.morada1 }}" style="display: none;">
+                        </td>
+                        <td class="col_field">Morada-2</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.morada2 }}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <input type="text" name="morada2" class="edit-input" value="{{ cliente.morada2 }}" style="display: none;">
+                        </td>
+                    </tr>
 
-                    <input type="text" name="morada2" class="edit-input" value="" maxlength="100">
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col_field">Código Postal</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.codigo_postal }}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <input type="text" id="postal" name="codigo_postal" class="edit-input" value="{{ cliente.codigo_postal }}" style="display: none;">
+                        </td>
+                        <td class="col_field">Telemóvel</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.telemovel}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <input type="text" name="telemovel" class="edit-input" value="{{ cliente.telemovel }}" style="display: none;">
+                        </td>
+                    </tr>
 
-            <tr>
-                <td class="col_field">Código Postal</td>
-                <td class="col_data col_data_double">
-                    <div style="position: relative; display: flex; align-items: center;">
-                        <input type="text" id="postal" name="codigo_postal" class="edit-input" value="" maxlength="8" style="flex: 1;">
-                        <div id="loading-postal" style="display: none; margin-left: 8px;">
-                            <div class="spinner"></div>
-                        </div>
-                    </div>
-                </td>
-                <td class="col_field">Telemóvel</td>
-                <td class="col_data col_data_double">
-                    <input type="text" name="telemovel" class="edit-input" value="" maxlength="12">
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col_field">Sigla</td>
+                        <td class="col_data">
+                            <div class="valor-container">
+                                <span id="sigla-text" class="texto-ellipsis">{{ cliente.sigla}}</span>
+                            </div>
+                            <input type="hidden" id="sigla" name="sigla" value="{{ cliente.sigla }}">
+                        </td>
+                        <td class="col_field">País</td>
+                        <td class="col_data">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.pais}}</span>
+                                <button type="button" class="btn-edit" title="Editar">...</button>
+                            </div>
+                            <select id="country" name="pais" class="edit-select" style="display: none;">
+                                <option value="">Selecione um país...</option>
+                            </select>
+                        </td>
+                    </tr>
 
-            <tr>
-                <td class="col_field">Sigla</td>
-                <td class="col_data">
-                    <input type="hidden" id="sigla" name="sigla" value="" maxlength="2">
-                    <span id="sigla-text" style="font-weight: bold; margin-left: 5px;" ></span>
-                </td>
-                <td class="col_field">País</td>
-                <td class="col_data">
-                    <select id="country" name="pais" class="edit-select" >
-                        <option value="">Carregando...</option>
-                    </select>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col_field">Distrito</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.distrito}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <input type="text" name="distrito" class="edit-input" value="{{ cliente.distrito }}" style="display: none;">
+                        </td>
+                        <td class="col_field">Concelho</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.concelho}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <input type="text" name="concelho" class="edit-input" value="{{ cliente.concelho }}" style="display: none;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col_field">Email</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.email}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <input type="text" name="email" class="edit-input" value="{{ cliente.email }}" style="display: none;">
+                        </td>
+                        <td class="col_field">Vendedor</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.vendedor | default:'---'}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <select class="edit-select" name="vendedor" style="display: none">
+                                <option value="">Selecione um Vendedor...</option>
+                                {% for v in vendedores %}
+                                    <option value="{{ v.id_vendedor }}"
+                                        {% if cliente.vendedor_id == v.id_vendedor %}selected{% endif %}>
+                                        {{ v.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col_field">Zona</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.zona | default:'---'}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <select class="edit-select" name="zona" style="display: none">
+                                <option value="">Selecione uma Zona...</option>
+                                {% for z in zonas %}
+                                    <option value="{{ z.id_zona }}"
+                                        {% if cliente.zona_id == z.id_zona %}selected{% endif %}>
+                                        {{ z.zona }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="col_field">Transporte</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.transporte | default:'---'}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <select class="edit-select" name="transporte" style="display: none">
+                                <option value="">Selecione o Transporte...</option>
+                                {% for t in transportes %}
+                                    <option value="{{ t.id_transporte }}"
+                                        {% if cliente.transporte_id == t.id_transporte %}selected{% endif %}>
+                                        {{ t.descricao }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col_field">Impostos</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.impostos | default:'---'}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <select class="edit-select" name="impostos" style="display: none">
+                                <option value="">Selecione o Regime...</option>
+                                {% for i in impostos_list %}
+                                    <option value="{{ i.id_impostos }}"
+                                        {% if cliente.impostos_id == i.id_impostos %}selected{% endif %}>
+                                        {{ i.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="col_field">Pagamento</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.pagamento | default:'---'}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <select class="edit-select" name="pagamento" style="display: none">
+                                <option value="">Selecione o Pagamento...</option>
+                                {% for p in pagamentos %}
+                                    <option value="{{ p.id_pagamento }}"
+                                        {% if cliente.pagamento_id == p.id_pagamento %}selected{% endif %}>
+                                        {{ p.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
 
-            <tr>
-                <td class="col_field">Distrito</td>
-                <td class="col_data col_data_double">
-                    <input type="text" name="distrito" class="edit-input" value="" maxlength="35">
-                </td>
-                <td class="col_field">Concelho</td>
-                <td class="col_data col_data_double">
-                    <input type="text" name="concelho" class="edit-input" value="" maxlength="35">
-                </td>
-            </tr>
-            <tr>
-                <td class="col_field">Email</td>
-                <td class="col_data col_data_double">
-                    <input type="text" name="email" class="edit-input" value="" maxlength="200">
-                </td>
-                <td class="col_field">Vendedor</td>
-                <td class="col_data col_data_double">
-                    <select class="edit-select" name="vendedor">
-                        <option value="">Selecione um Vendedor...</option> {% for v in vendedores %}
-                            <option value="{{ v.id_vendedor }}">{{ v.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td class="col_field">Zona</td>
-                <td class="col_data col_data_double">
-                    <select class="edit-select" name="zona">
-                        <option value="">Selecione uma Zona...</option>
-                        {% for z in zonas %}
-                            <option value="{{ z.id_zona }}">{{ z.zona }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td class="col_field">Transporte</td>
-                <td class="col_data col_data_double">
-                    <select class="edit-select" name="transporte">
-                        <option value="">Selecione o Transporte...</option>
-                        {% for t in transportes %}
-                            <option value="{{ t.id_transporte }}">{{ t.descricao }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-
-            <tr>
-                <td class="col_field">Impostos</td>
-                <td class="col_data col_data_double">
-                    <select class="edit-select" name="impostos">
-                        <option value="">Selecione o Regime...</option>
-                        {% for i in impostos_list %}
-                            <option value="{{ i.id_impostos }}">{{ i.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td class="col_field">Pagamento</td>
-                <td class="col_data col_data_double">
-                    <select class="edit-select" name="pagamento">
-                        <option value="">Selecione o Pagamento...</option>
-                        {% for p in pagamentos %}
-                            <option value="{{ p.id_pagamento }}">{{ p.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-
-            <tr>
-                <td class="col_field">Modalidade</td>
-                <td class="col_data col_data_double">
-                    <select class="edit-select" name="modalidade">
-                        <option value="">Selecione a Modalidade...</option>
-                        {% for m in modalidades %}
-                            <option value="{{ m.id_modalidade }}">{{ m.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td class="col_field">Preços</td>
-                <td class="col_data col_data_double">
-                    <select class="edit-select" name="precos">
-                        <option value="">Selecione o Preço...</option>
-                        {% for pr in precos_list %}
-                            <option value="{{ pr.id_precos }}">{{ pr.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="table-actions">
-        <button type="button" id="btn-guardar-cliente" class="btn-save">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            Guardar Alterações
-        </button>
+                    <tr>
+                        <td class="col_field">Modalidade</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.modalidade | default:'---'}}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <select class="edit-select" name="modalidade" style="display: none">
+                                <option value="">Selecione a Modalidade...</option>
+                                {% for m in modalidades %}
+                                    <option value="{{ m.id_modalidade }}"
+                                        {% if cliente.modalidade_id == m.id_modalidade %}selected{% endif %}>
+                                        {{ m.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="col_field">Preços</td>
+                        <td class="col_data col_data_double">
+                            <div class="valor-container">
+                                <span class="texto-ellipsis">{{ cliente.precos | default:'---' }}</span>
+                                <button type="button" class="btn-edit" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                            <select class="edit-select" name="precos" style="display: none">
+                                <option value="">Selecione o Preço...</option>
+                                {% for pr in precos_list %}
+                                    <option value="{{ pr.id_precos }}"
+                                        {% if cliente.precos_id == pr.id_precos %}selected{% endif %}>
+                                        {{ pr.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="table-actions">
+                <button type="button" id="btn-guardar-cliente" data-id="{{ cliente.id_cliente }}" class="btn-save">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    Guardar Alterações
+                </button>
+            </div>
+          </div>
     </div>
-  </div>
 </div>
 
 </body>

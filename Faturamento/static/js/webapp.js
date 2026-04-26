@@ -1666,30 +1666,6 @@ $(document).ready(function() {
     });
 });
 
-document.getElementById('input-logo').addEventListener('change', function(e) {
-    const reader = new FileReader();
-    const file = e.target.files[0];
-
-    
-    const currentLogo = document.getElementById('logo-preview');
-    const newPreview = document.getElementById('logo-new-preview');
-    const cloudIcon = document.querySelector('.fa-cloud-upload-alt');
-    const btnGuardar = document.getElementById('btn-guardar-logo');
-
-    reader.onload = function(e) {
-        if (currentLogo) currentLogo.classList.add('d-none');
-        if (cloudIcon) cloudIcon.classList.add('d-none');
-
-        newPreview.src = e.target.result;
-        newPreview.classList.remove('d-none');
-        btnGuardar.classList.remove('d-none'); 
-    }
-
-    if (file) {
-        reader.readAsDataURL(file);
-    }
-});
-
 
 document.getElementById('btn-guardar-logo').addEventListener('click', function() {
     const fileInput = document.getElementById('input-logo');
@@ -1716,4 +1692,39 @@ document.getElementById('btn-guardar-logo').addEventListener('click', function()
             alert("Erro ao atualizar o logótipo.");
         }
     });
+});
+
+document.getElementById('input-logo').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    const file = e.target.files[0];
+
+    if (file) {
+        // 1. Validar tamanho (opcional, mas recomendado)
+        if (file.size > 2 * 1024 * 1024) {
+            alert("O ficheiro é demasiado grande! Máximo 2MB.");
+            this.value = "";
+            return;
+        }
+
+        reader.onload = function(event) {
+            // 2. Esconder ícone antigo/texto
+            const oldPreview = document.getElementById('logo-preview');
+            const noLogoText = document.getElementById('no-logo-text');
+            const uploadIcon = document.querySelector('.fa-cloud-upload-alt');
+
+            if (oldPreview) oldPreview.classList.add('d-none');
+            if (noLogoText) noLogoText.classList.add('d-none');
+            if (uploadIcon) uploadIcon.classList.add('d-none');
+
+            // 3. Mostrar a nova pré-visualização
+            const newPreview = document.getElementById('logo-new-preview');
+            newPreview.src = event.target.result;
+            newPreview.classList.remove('d-none');
+
+            // 4. Mostrar o botão de guardar
+            document.getElementById('btn-guardar-logo').classList.remove('d-none');
+        }
+
+        reader.readAsDataURL(file);
+    }
 });

@@ -2,9 +2,6 @@ $(function() {
     
     $("#tabs").tabs();
 
-    
-
-    
     $('.col_data').on('click', function(e) {
         
         if ($(this).find('.edit-input, .edit-select').is(':visible')) return;
