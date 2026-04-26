@@ -78,5 +78,3 @@ urlpatterns = [
     path('gerar-saft/', views.gerar_saft, name='gerar_saft'),
     path('configuracoes/update-logo/', views.update_logo, name='update_logo'),
 ]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
