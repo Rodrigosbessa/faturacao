@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ALLOWED_HOSTS = ['faturix-kya9.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
-    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'allauth',
