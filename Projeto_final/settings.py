@@ -20,11 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ALLOWED_HOSTS = ['faturix-kya9.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'allauth',
@@ -36,8 +38,6 @@ INSTALLED_APPS = [
     'allauth.mfa',
     'allauth.socialaccount.providers.google',
     'Faturamento.apps.FaturamentoConfig',
-    'cloudinary_storage',
-    'cloudinary',
 ]
 
 SITE_ID = 1
@@ -77,8 +77,17 @@ TEMPLATES = [
     },
 ]
 
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 WSGI_APPLICATION = 'Projeto_final.wsgi.application'
 
 import os
@@ -195,4 +204,3 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
