@@ -78,7 +78,6 @@ TEMPLATES = [
 ]
 
 
-
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -89,11 +88,15 @@ STORAGES = {
 }
 
 STATICFILES_STORAGE = "whitenoise.storage.StaticFilesStorage"
+import os
+DEBUG = os.getenv('DEBUG') == 'True'
+
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = DEBUG
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 WSGI_APPLICATION = 'Projeto_final.wsgi.application'
 
-import os
 
 import dj_database_url
 from dotenv import load_dotenv
@@ -164,7 +167,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_ADAPTER = 'Faturamento.adapter.MySocialAccountAdapter'
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-DEBUG = os.getenv('DEBUG') == 'True'
 
 if DEBUG:
     SECURE_SSL_REDIRECT = False
