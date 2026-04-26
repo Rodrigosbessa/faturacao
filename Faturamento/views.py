@@ -4042,20 +4042,23 @@ def gerar_saft(request):
     tree.write(response, encoding='utf-8', xml_declaration=True)
     return response
 
+
 @login_required
 def update_logo(request):
     if request.method == 'POST' and request.FILES.get('logo'):
         try:
             empresa, created = Empresa.objects.get_or_create(user=request.user)
-
             empresa.logo = request.FILES['logo']
             empresa.save()
+
+            print("--- DEBUG CLOUDINARY ---")
+            print(f"Instância do storage: {empresa.logo.storage}")
+            print(f"URL gerada: {empresa.logo.url}")
 
             return JsonResponse({
                 'success': True,
                 'logo_url': empresa.logo.url
             })
         except Exception as e:
+            print(f"ERRO NO UPLOAD: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
-
-    return JsonResponse({'success': False, 'error': 'Pedido inválido'})

@@ -1670,13 +1670,18 @@ $(document).ready(function() {
 document.getElementById('btn-guardar-logo').addEventListener('click', function() {
     const fileInput = document.getElementById('input-logo');
     const file = fileInput.files[0];
+    const btnGuardar = this;
+    const spinner = document.getElementById('loading-spinner');
 
     if (!file) return;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A guardar...';
+    if (spinner) spinner.style.display = 'block';
 
     let formData = new FormData();
     formData.append('logo', file);
 
-    fetch('/configuracoes/update-logo/', { 
+    fetch('/configuracoes/update-logo/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -1686,20 +1691,35 @@ document.getElementById('btn-guardar-logo').addEventListener('click', function()
     .then(res => res.json())
     .then(data => {
         if(data.success) {
-            alert("Logótipo atualizado com sucesso!");
-            location.reload();
+            btnGuardar.innerHTML = '<i class="fas fa-check mr-1"></i> Sucesso!';
+            btnGuardar.style.backgroundColor = '#10b981';
+
+            setTimeout(() => {
+                location.reload();
+            }, 800);
         } else {
-            alert("Erro ao atualizar o logótipo.");
+            alert("Erro ao atualizar o logótipo: " + (data.error || "Erro desconhecido"));
+            resetBtn(btnGuardar, spinner);
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Erro na ligação ao servidor.");
+        resetBtn(btnGuardar, spinner);
     });
 });
+
+function resetBtn(btn, spinner) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check mr-1"></i> Confirmar e Guardar';
+    if (spinner) spinner.style.display = 'none';
+}
 
 document.getElementById('input-logo').addEventListener('change', function(e) {
     const reader = new FileReader();
     const file = e.target.files[0];
 
     if (file) {
-        // 1. Validar tamanho (opcional, mas recomendado)
         if (file.size > 2 * 1024 * 1024) {
             alert("O ficheiro é demasiado grande! Máximo 2MB.");
             this.value = "";
@@ -1707,24 +1727,22 @@ document.getElementById('input-logo').addEventListener('change', function(e) {
         }
 
         reader.onload = function(event) {
-            // 2. Esconder ícone antigo/texto
-            const oldPreview = document.getElementById('logo-preview');
-            const noLogoText = document.getElementById('no-logo-text');
-            const uploadIcon = document.querySelector('.fa-cloud-upload-alt');
+            ['logo-preview', 'no-logo-text'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('d-none');
+            });
 
-            if (oldPreview) oldPreview.classList.add('d-none');
-            if (noLogoText) noLogoText.classList.add('d-none');
+            const uploadIcon = document.querySelector('.fa-cloud-upload-alt');
             if (uploadIcon) uploadIcon.classList.add('d-none');
 
-            // 3. Mostrar a nova pré-visualização
             const newPreview = document.getElementById('logo-new-preview');
-            newPreview.src = event.target.result;
-            newPreview.classList.remove('d-none');
+            if (newPreview) {
+                newPreview.src = event.target.result;
+                newPreview.classList.remove('d-none');
+            }
 
-            // 4. Mostrar o botão de guardar
             document.getElementById('btn-guardar-logo').classList.remove('d-none');
         }
-
         reader.readAsDataURL(file);
     }
 });

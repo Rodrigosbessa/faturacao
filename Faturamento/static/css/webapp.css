@@ -1678,7 +1678,7 @@ img[src=""], img[src="#"], img:not([src]), .d-none {
 }
 
 .info-hero p {
-    color: #3b82f6; /* Azul neon vibrante */
+    color: #3b82f6;
     text-transform: uppercase;
     font-size: 0.95rem;
     letter-spacing: 3px;
@@ -1687,7 +1687,6 @@ img[src=""], img[src="#"], img:not([src]), .d-none {
     opacity: 0.9;
 }
 
-/* 6. BADGE DE STATUS (Detalhe Profissional) */
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -1711,7 +1710,6 @@ img[src=""], img[src="#"], img:not([src]), .d-none {
     position: relative;
 }
 
-/* Animação de pulsação no ponto verde */
 .status-badge .dot::after {
     content: '';
     position: absolute;
@@ -1722,7 +1720,6 @@ img[src=""], img[src="#"], img:not([src]), .d-none {
     animation: pulseStatus 2s infinite;
 }
 
-/* 7. ANIMAÇÕES */
 @keyframes faturixEntrance {
     from {
         opacity: 0;
@@ -1739,7 +1736,7 @@ img[src=""], img[src="#"], img:not([src]), .d-none {
     100% { transform: scale(2.5); opacity: 0; }
 }
 
-/* 8. AJUSTE NAVBAR (Pointer Events) */
+
 .navbar-brand-home {
     cursor: pointer;
     transition: transform 0.2s ease;
@@ -1751,5 +1748,5 @@ img[src=""], img[src="#"], img:not([src]), .d-none {
 
 .navbar-brand-home img,
 .navbar-brand-home span {
-    pointer-events: none; /* Clique nunca falha */
+    pointer-events: none;
 }
