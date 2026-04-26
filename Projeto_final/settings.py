@@ -78,14 +78,17 @@ TEMPLATES = [
 ]
 
 
+
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.StaticFilesStorage",
     },
 }
+
+STATICFILES_STORAGE = "whitenoise.storage.StaticFilesStorage"
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 WSGI_APPLICATION = 'Projeto_final.wsgi.application'
@@ -204,4 +207,3 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
 }
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
