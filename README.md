@@ -21,4 +21,4 @@ O **Faturix** é uma plataforma de gestão e emissão de documentos (faturas e g
 
 1. **Clonar o repositório:**
    ```bash
-   git clone [https://github.com/Rodrigosbessa/faturix.git](https://github.com/Rodrigosbessa/faturix.git)
+   git clone [https://github.com/Rodrigosbessa/faturacao.git](https://github.com/Rodrigosbessa/faturacao.git)
