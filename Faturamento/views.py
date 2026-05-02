@@ -353,49 +353,53 @@ def adicionar_cliente(request):
     }
 
     if request.method == "POST":
+        try:
+            dados_post = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Dados inválidos.'}, status=400)
 
-        valido, mensagem = validar_dados_cliente(request, request.POST, cliente_id=None)
+        valido, mensagem = validar_dados_cliente(request, dados_post, cliente_id=None)
 
         if not valido:
-            messages.error(request, mensagem)
-            context['dados'] = request.POST
             return JsonResponse({'status': 'error', 'message': mensagem}, status=400)
+
         try:
             with transaction.atomic():
-                ultimo = Cliente1.objects.filter(empresa=request.empresa).aggregate(max_codigo=Max('codigo'))['max_codigo']
+                ultimo = Cliente1.objects.filter(empresa=request.empresa).aggregate(
+                    max_codigo=Max('codigo')
+                )['max_codigo']
+
                 if ultimo:
-                    numero = int(ultimo.replace("C", "")) + 1
+                    numero = int(''.join(filter(str.isdigit, ultimo))) + 1
                 else:
                     numero = 1
                 novo_codigo = f"C{numero:03d}"
 
-                
                 novo_cliente = Cliente1.objects.create(
                     empresa=request.empresa,
                     codigo=novo_codigo,
-                    nome=request.POST.get('nome').strip(),
-                    contribuinte=request.POST.get('contribuinte') or "999999990",
-                    morada1=request.POST.get('morada1'),
-                    morada2=request.POST.get('morada2'),
-                    codigo_postal=request.POST.get('codigo_postal'),
-                    telemovel=request.POST.get('telemovel'),
-                    email=request.POST.get('email', '').lower().strip(),
-                    pais=request.POST.get('pais'),
-                    sigla=request.POST.get('sigla'),
-                    distrito=request.POST.get('distrito'),
-                    concelho=request.POST.get('concelho'),
-                    vendedor_id=request.POST.get('vendedor'),
-                    zona_id=request.POST.get('zona'),
-                    transporte_id=request.POST.get('transporte'),
-                    impostos_id=request.POST.get('impostos'),
-                    pagamento_id=request.POST.get('pagamento'),
-                    modalidade_id=request.POST.get('modalidade'),
-                    precos_id=request.POST.get('precos'),
+                    nome=dados_post.get('nome', '').strip(),
+                    contribuinte=dados_post.get('contribuinte') or "999999990",
+                    morada1=dados_post.get('morada1'),
+                    morada2=dados_post.get('morada2'),
+                    codigo_postal=dados_post.get('codigo_postal'),
+                    telemovel=dados_post.get('telemovel'),
+                    email=dados_post.get('email', '').lower().strip(),
+                    pais=dados_post.get('pais'),
+                    sigla=dados_post.get('sigla'),
+                    distrito=dados_post.get('distrito'),
+                    concelho=dados_post.get('concelho'),
+                    vendedor_id=dados_post.get('vendedor') or None,
+                    zona_id=dados_post.get('zona') or None,
+                    transporte_id=dados_post.get('transporte') or None,
+                    impostos_id=dados_post.get('impostos') or None,
+                    pagamento_id=dados_post.get('pagamento') or None,
+                    modalidade_id=dados_post.get('modalidade') or None,
+                    precos_id=dados_post.get('precos') or None,
                 )
 
             url_detalhes = reverse('cliente_detalhes', kwargs={'id_cliente': novo_cliente.id_cliente})
 
-            
             return JsonResponse({
                 'status': 'success',
                 'message': 'Cliente adicionado com sucesso!',
@@ -404,10 +408,9 @@ def adicionar_cliente(request):
 
         except Exception as e:
             print(f"Erro na gravação: {e}")
-            messages.error(request, "Ocorreu um erro inesperado ao gravar na base de dados.")
-            context['dados'] = request.POST
-            return JsonResponse({'status': 'error', 'message': 'Erro ao gravar na base de dados.'}, status=500)
-    return render(request, 'subsubconteudo/criar.html',context)
+            return JsonResponse({'status': 'error', 'message': f'Erro ao gravar: {str(e)}'}, status=500)
+
+    return render(request, 'subsubconteudo/criar.html', context)
 
 @login_required
 @empresa_obrigatoria

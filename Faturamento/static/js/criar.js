@@ -259,6 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
             emailInput.value = emailValue.substring(0, 200);
         }
         const obrigatorios = [
+            { name: 'nome', label: 'Nome' },
             { name: 'morada1', label: 'Morada 1' },
             { name: 'codigo_postal', label: 'Código Postal' },
             { name: 'pais', label: 'País' },
@@ -269,13 +270,20 @@ document.addEventListener("DOMContentLoaded", () => {
         ];
 
         for (let campo of obrigatorios) {
-            let el = document.querySelector(`[name="${campo.name}"]`);
+            let el = document.querySelector(`input[name="${campo.name}"], select[name="${campo.name}"]`);
 
-            if (!el || !el.value || el.value.toString().trim() === "") {
-                alert(`Erro AT: O campo [${campo.label}] é obrigatório.`);
-                el.focus();
-                el.style.border = "2px solid red";
-                return;
+            if (el) {
+                let valor = el.value.trim();
+                if (valor === "" || valor === "---") {
+                    alert(`Erro AT: O campo [${campo.label}] é obrigatório.`);
+
+                    const $td = $(el).closest('td');
+                    $td.find('.valor-container').hide();
+                    $(el).show().focus();
+
+                    el.style.border = "2px solid red";
+                    return;
+                }
             }
         }
 
@@ -285,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (typeof editarCliente === "function") {
+        if (typeof adicionarCliente === "function") {
             adicionarCliente();
         } else {
             console.log("Validação OK. Chamar submissão.");
@@ -294,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function adicionarCliente() {
-    const btn = document.getElementById("btn-adicionar-cliente"); // Garante que o ID do botão é este
+    const btn = document.getElementById("btn-guardar-cliente");
 
 
     if (btn) {
@@ -375,16 +383,18 @@ $(document).ready(function() {
         const $field = $(this);
         const $td = $field.closest('td');
 
-
         let novoTexto = "";
         if ($field.is('select')) {
             novoTexto = $field.find('option:selected').text();
-            if ($field.val() === "") novoTexto = "---";
         } else {
-            novoTexto = $field.val() || "---";
+            novoTexto = $field.val();
         }
 
-        $td.find('.texto-ellipsis').text(novoTexto);
+        if ($field.attr('name') === 'nome' && (!novoTexto || novoTexto.trim() === "")) {
+            return;
+        }
+
+        $td.find('.texto-ellipsis').text(novoTexto || "---");
         $field.hide();
         $td.find('.valor-container').show();
     });

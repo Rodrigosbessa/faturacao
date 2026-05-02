@@ -34,7 +34,6 @@
 
                 {% for field in form %}
                     <div class="form-group">
-                        {# Verifica se o campo é o email para aplicar o texto especial #}
                         {% if field.name == 'email' %}
                             <label for="{{ field.id_for_label }}">E-mail (Opcional - Recomendado para recuperação)</label>
                             <input type="email"
