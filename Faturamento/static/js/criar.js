@@ -98,6 +98,7 @@ document.querySelectorAll('.edit-input, .edit-select').forEach(el => {
     el.addEventListener("change", () => el.style.border = "");
 });
 document.addEventListener("DOMContentLoaded", () => {
+    const nomeInput = document.querySelector('input[name="nome"]');
     const nifInput = document.querySelector('input[name="contribuinte"]');
     const morada1Input = document.querySelector('input[name="morada1"]');
     const morada2Input = document.querySelector('input[name="morada2"]');
@@ -115,7 +116,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const formatarTitulo = (str) => str.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
     const formatarMaiusculas = (str) => str.trim().toUpperCase();
 
+    nomeInput.addEventListener("blur", () => {
+        let valor = nomeInput.value.trim().replace(/\s+/g, " ");
+        if (valor) {
+            nomeInput.value = formatarTitulo(valor);
+        }
+    });
 
+    nomeInput.addEventListener("input", () => {
+        const nome = nomeInput.value.trim();
+        if (nome.length >= 3) {
+            const novaSigla = nome.substring(0, 3).toUpperCase();
+            siglaInput.value = novaSigla;
+            if (siglaSpan) siglaSpan.textContent = novaSigla;
+        }
+    });
     nifInput.addEventListener("input", () => {
         const pais = countrySelect.value;
 
@@ -379,7 +394,8 @@ $(document).ready(function() {
 document.addEventListener("DOMContentLoaded", () => {
     const countrySelect = document.getElementById("country");
     const $spanPais = $(countrySelect).closest('td').find('.texto-ellipsis');
-    const siglaInicial = $spanPais.text().trim().toUpperCase();
+    const siglaHidden = document.getElementById("sigla")?.value;
+    const siglaInicial = (siglaHidden || $spanPais.text().trim()).toUpperCase();
 
     function carregarPaises(siglaParaSelecionar) {
         fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
@@ -416,9 +432,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     $(countrySelect).on('change', function() {
-        const nomeCompleto = $(this).find('option:selected').text();
-        if ($(this).val() !== "") {
+        const nomeCompleto = $(this).find('option:selected').text().trim();
+        const codigoCca2 = $(this).val(); // Ex: "PT"
+
+        if (codigoCca2 !== "") {
             $spanPais.text(nomeCompleto);
+            $('#sigla').val(codigoCca2);
+            $('#sigla-text').text(codigoCca2);
         }
     });
 
