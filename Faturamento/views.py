@@ -106,8 +106,10 @@ def completar_registo_empresa(request):
 
     return render(request, 'account/completar_empresa.html')
 
+from django.views.decorators.cache import never_cache
 from django.contrib.auth import logout
 @login_required
+@never_cache
 def logout_view(request):
     logout(request)
     return redirect('/accounts/login/')
@@ -1918,18 +1920,27 @@ def converter_word_para_pdf(word_buffer):
 @login_required
 @empresa_obrigatoria
 def gerar_pdf_fatura(request, documento_id):
-    
-    documento = DocumentoFinalizado.objects.get(id=documento_id, empresa=request.empresa)
+    try:
+        documento = DocumentoFinalizado.objects.get(id=documento_id, empresa=request.empresa)
 
-    via = request.GET.get("via", "original")
+        via = request.GET.get("via", "original")
 
-    word_buffer = gerar_word_fatura(request, documento, via)
-    pdf_bytes = converter_word_para_pdf(word_buffer)
+        word_buffer = gerar_word_fatura(request, documento, via)
 
-    
-    response = HttpResponse(pdf_bytes, content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="Fatura_{documento.id}.pdf"'
-    return response
+        response = HttpResponse(
+            word_buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+
+        filename = f"Fatura_{documento.id}.docx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        return response
+
+    except Exception as e:
+        print(f"Erro ao gerar documento: {e}")
+        messages.error(request, "Ocorreu um erro ao gerar o documento. Por favor, tente novamente.")
+        return redirect('lista_faturas')
 
 from django.http import HttpResponse
 @login_required

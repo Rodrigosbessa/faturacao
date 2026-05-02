@@ -1746,3 +1746,9 @@ document.getElementById('input-logo').addEventListener('change', function(e) {
         reader.readAsDataURL(file);
     }
 });
+
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        window.location.reload();
+    }
+})

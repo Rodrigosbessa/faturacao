@@ -294,3 +294,73 @@ select {
     transform: scale(1.1) translateY(-5px);
     filter: drop-shadow(0 0 15px rgba(100, 255, 218, 0.6));
 }
+
+/* Container e Input */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 45px !important;
+    /* Se o teu input for clarinho, garantimos que o texto é escuro ou legível */
+    color: #0a192f;
+}
+
+/* Posicionamento do Olho */
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+}
+
+/* --- Ícone com Contraste para Fundo Claro --- */
+.custom-eye {
+    width: 20px;
+    height: 12px;
+    /* Usamos a cor escura do teu fundo principal para o contorno */
+    border: 2px solid #0a192f;
+    border-radius: 50% 50%;
+    position: relative;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.custom-eye::before {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    /* A pupila num tom forte (Verde ou Azul escuro) */
+    background: #0a192f;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Estado: Riscado (Senha Oculta/Visível) */
+.custom-eye.closed::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 18px;
+    /* Um vermelho escuro ou preto para o risco ser bem visível */
+    background: #bd2130;
+    transform: rotate(45deg);
+    left: 7px;
+    top: -5px;
+}
+
+/* Feedback ao passar o rato: ele "acende" */
+.toggle-password:hover .custom-eye {
+    opacity: 1;
+    border-color: #005240; /* Um verde mais escuro e sério */
+    transform: scale(1.1);
+}
