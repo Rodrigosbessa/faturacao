@@ -1262,14 +1262,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const emailInput = document.querySelector('input[name="email"]');
     const localInput = document.querySelector('input[name="local"]');
 
-
     const formatarTitulo = (str) => str.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
     const formatarMaiusculas = (str) => str.trim().toUpperCase();
 
-
     nifInput.addEventListener("input", () => {
         const pais = countrySelect.value;
-
         if (pais === "PT") {
             nifInput.value = nifInput.value.replace(/\D/g, "").slice(0, 9);
         } else {
@@ -1277,26 +1274,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    countrySelect.addEventListener("change", () => {
-        nifInput.value = "";
-    });
-
     telemovelInput.addEventListener("input", () => {
         let tel = telemovelInput.value.replace(/\D/g, "");
         telemovelInput.value = tel.startsWith("351") ? tel.slice(0, 12) : tel.slice(0, 9);
     });
 
-   countrySelect.addEventListener("change", () => {
+    countrySelect.addEventListener("change", () => {
         const nomePais = countrySelect.options[countrySelect.selectedIndex].text;
-
-        
         if (siglaSpan) {
             siglaSpan.textContent = nomePais;
-        }
-
-        
-        if (nifInput) {
-            nifInput.value = "";
         }
     });
 
@@ -1316,6 +1302,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 cidadeInput.value = formatarMaiusculas(d.Concelho);
                 countrySelect.value = "PT";
+
+                // Dispara o evento apenas para atualizar o texto visual se necessário
                 countrySelect.dispatchEvent(new Event('change'));
 
                 if (typeof $ !== 'undefined') {
@@ -1330,14 +1318,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     emailInput.addEventListener("blur", () => {
         let email = emailInput.value.trim().toLowerCase();
-
         email = email.replace(/[<>]/g, "");
         emailInput.value = email;
 
         if (email === "") return;
 
         const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-
         if (!emailRegex.test(email)) {
             alert("Atenção: O formato do email é inválido. Para garantir o envio da fatura eletrónica, use o formato nome@dominio.pt");
             emailInput.style.borderColor = "orange";
@@ -1345,9 +1331,60 @@ document.addEventListener("DOMContentLoaded", () => {
             emailInput.style.borderColor = "";
         }
     });
+
     document.getElementById("btn-guardar-empresa").addEventListener("click", function() {
+
+        if (!countrySelect.value || countrySelect.value.trim() === "") {
+            const spanPais = document.querySelector('.empresa-pais');
+            if (spanPais) {
+                const textoPais = spanPais.textContent.trim().toLowerCase();
+                if (textoPais === "portugal" || textoPais === "pt") {
+                    countrySelect.value = "PT";
+                } else {
+                    for (let option of countrySelect.options) {
+                        if (option.text.toLowerCase() === textoPais) {
+                            countrySelect.value = option.value;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!nifInput.value || nifInput.value.trim() === "") {
+            const spanNif = document.querySelector('.empresa-nif');
+            if (spanNif) nifInput.value = spanNif.textContent.trim();
+        }
+        if (!moradaInput.value || moradaInput.value.trim() === "") {
+            const spanMorada = document.querySelector('.empresa-morada');
+            if (spanMorada) moradaInput.value = spanMorada.textContent.trim();
+        }
+        if (!localInput.value || localInput.value.trim() === "") {
+            const spanLocal = document.querySelector('.empresa-local');
+            if (spanLocal && spanLocal.textContent !== '---') localInput.value = spanLocal.textContent.trim();
+        }
+        if (!cidadeInput.value || cidadeInput.value.trim() === "") {
+            const spanCidade = document.querySelector('.empresa-cidade');
+            if (spanCidade) cidadeInput.value = spanCidade.textContent.trim();
+        }
+        if (!postalInput.value || postalInput.value.trim() === "") {
+            const spanPostal = document.querySelector('.empresa-postal');
+            if (spanPostal) postalInput.value = spanPostal.textContent.trim();
+        }
+        if (!emailInput.value || emailInput.value.trim() === "") {
+            const spanEmail = document.querySelector('.empresa-email');
+            if (spanEmail && spanEmail.textContent !== '---') emailInput.value = spanEmail.textContent.trim();
+        }
+
+        console.group("--- DIAGNÓSTICO DO BOTÃO GUARDAR ---");
+        console.log("1. Objecto NIF Input encontrado?:", nifInput ? "Sim" : "Não");
+        console.log("2. Valor final a enviar no NIF Input:", `"${nifInput.value}"`);
+        console.log("3. País selecionado:", `"${countrySelect.value}"`);
+        console.groupEnd();
+
         nifInput.value = nifInput.value.replace(/\D/g, "");
         const nif = nifInput.value;
+
         if (nif.length > 0 && nif.length < 9 && nif !== "999999990") {
             alert("Erro AT: O NIF deve ter 9 dígitos."); nifInput.focus(); return;
         }
@@ -1362,7 +1399,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (cp && m1.includes(cp)) m1 = m1.replace(cp, "").trim();
         moradaInput.value = formatarTitulo(m1);
 
-        cidadeInput.value = cidadeInput.value.replace(/[<>]/g, "").trim()
+        cidadeInput.value = cidadeInput.value.replace(/[<>]/g, "").trim();
+
         if (!countrySelect.value) { alert("Erro AT: Selecione o País."); return; }
         if (cidadeInput.value.length < 2) {
             alert("Erro AT: Concelho obrigatório."); return;
@@ -1376,6 +1414,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Erro AT: Código Postal inválido (deve ter 7 números)."); return;
             }
         }
+
         const emailValue = emailInput.value.trim().toLowerCase();
         if (emailValue !== "") {
             const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
@@ -1384,6 +1423,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             emailInput.value = emailValue.substring(0, 200);
         }
+
         const obrigatorios = [
             { name: 'nome', label: 'Nome da Empresa' },
             { name: 'nif', label: 'NIF / Contribuinte' },
@@ -1396,12 +1436,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let campo of obrigatorios) {
             let el = document.querySelector(`[name="${campo.name}"]`);
-            
+
             if (!el || !el.value || el.value.toString().trim() === "") {
                 alert(`Erro AT: O campo [${campo.label}] é obrigatório.`);
-                el.focus();
-                el.style.border = "2px solid red";
+                if (el) {
+                    el.focus();
+                    el.style.border = "2px solid red";
+                }
                 return;
+            } else {
+                if (el) el.style.border = "";
             }
         }
 
